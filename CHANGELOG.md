@@ -5,6 +5,7 @@
 - Feat : Comapre two tests side by side
 - Feat : Hide left menu
 - Feat : Select answer of candidate for test review
+- Refactor : Tao_export and Tao_import are now two seperated repo
 
 ### 0.1.2
 
