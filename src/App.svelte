@@ -46,7 +46,7 @@
   <div class="version">v{PKG.version}</div>
   <div>
     <a
-      href="https://github.com/Benoit-Welsch/SPF_Open/blob/Prod/tao_export/CHANGELOG.md"
+      href="https://github.com/SPF-Open/Tao_export/blob/main/CHANGELOG.md"
       target="_blank">CHANGELOG</a
     >
   </div>
