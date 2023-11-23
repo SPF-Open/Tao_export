@@ -1,5 +1,5 @@
 <script lang="ts">
-  import type { QuestionType } from "../lib/helper";
+  import type { QuestionType } from '../lib/helper';
   export let question: QuestionType;
 
   let questionDom;
@@ -26,11 +26,13 @@
     </div>
     <div
       class={`prompt ${
-        question.type.includes("Instruction") ? "grid-row" : ""
+        question.type.includes('Instruction') ? 'grid-row' : ''
       }`}
     >
-      {#each question.prompt as prompt, i}
+      {#each question.prompt as prompt}
+        <!-- eslint-disable svelte/no-at-html-tags -->
         {@html prompt.innerHTML}
+        <!--eslint-enable-->
       {/each}
       {#if question.maxLenght}
         {#each question.maxLenght as maxLenght}
@@ -39,12 +41,12 @@
       {/if}
     </div>
 
-    {#if question.type === "QCM" || question.type === "Instruction QCM"}
+    {#if question.type === 'QCM' || question.type === 'Instruction QCM'}
       <ul
         class="answers"
         style={showLetter
-          ? "--answerStyle:upper-alpha; --answerCorrectStyle:upper-alpha;"
-          : "--answerStyle:circle; --answerCorrectStyle:disc;"}
+          ? '--answerStyle:upper-alpha; --answerCorrectStyle:upper-alpha;'
+          : '--answerStyle:circle; --answerCorrectStyle:disc;'}
       >
         {#each question.answers as answer, n}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
@@ -54,10 +56,14 @@
             class="answer"
             class:inzage
             on:click={() => {
-                inzageSelection[n] = !inzageSelection[n];
+              inzageSelection[n] = !inzageSelection[n];
             }}
           >
-            <div class="text">{@html answer.txt}</div>
+            <div class="text">
+              <!-- eslint-disable svelte/no-at-html-tags -->
+              {@html answer.txt}
+              <!--eslint-enable-->
+            </div>
             {#if !hideAnswer}
               <div class="points">{answer.point || 0}</div>
             {/if}
@@ -117,7 +123,7 @@
     flex-direction: column;
     border: 6px solid #f5f4f2;
     padding: 5px;
-padding-left: 20px;
+    padding-left: 20px;
     list-style: var(--answerStyle);
   }
 

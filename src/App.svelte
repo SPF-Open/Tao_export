@@ -1,11 +1,11 @@
 <script lang="ts">
-  import { writable } from "svelte/store";
-  import { slide } from "svelte/transition";
-  import Settings from "./lib/Settings.svelte";
-  import Tables from "./lib/Tables.svelte";
-  import ZipInput from "./lib/ZipInput.svelte";
-  import type { QuestionType } from "./lib/helper";
-  import Question from "./template/Question.svelte";
+  import { writable } from 'svelte/store';
+  import { slide } from 'svelte/transition';
+  import Settings from './lib/Settings.svelte';
+  import Tables from './lib/Tables.svelte';
+  import ZipInput from './lib/ZipInput.svelte';
+  import type { QuestionType } from './lib/helper';
+  import Question from './template/Question.svelte';
 
   let showLeft = true;
 
@@ -28,9 +28,9 @@
     questions = questions.map((q) => ({
       ...q,
       show:
-        q.type === "Instruction" ||
-        q.type === "Instruction QCM" ||
-        q.type === "Instruction QO"
+        q.type === 'Instruction' ||
+        q.type === 'Instruction QCM' ||
+        q.type === 'Instruction QO'
           ? showInstruction
           : q.show,
     }));
@@ -43,7 +43,9 @@
     <a href="/documentation.pdf" target="_blank">Documentation</a>
   </div>
   <!-- svelte-ignore missing-declaration -->
-  <div class="version">v{PKG.version}</div>
+  <!-- eslint-disable no-undef -->
+  <div class="version">v{VITE_PKG.version}</div>
+  <!--eslint-enable-->
   <div>
     <a
       href="https://github.com/SPF-Open/Tao_export/blob/Prod/CHANGELOG.md"
@@ -70,10 +72,10 @@
       </div>
       <div class="nb-questions hide-print">
         <span class="QO"
-          >QO : {questions.filter((q) => q.type === "QO").length}</span
+          >QO : {questions.filter((q) => q.type === 'QO').length}</span
         >
         <span class="QCM">
-          QCM : {questions.filter((q) => q.type === "QCM").length}
+          QCM : {questions.filter((q) => q.type === 'QCM').length}
         </span>
       </div>
       <Tables bind:questions />

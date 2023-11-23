@@ -1,21 +1,21 @@
 <script lang="ts">
-  import type { QuestionType } from "./helper";
+  import type { QuestionType } from './helper';
 
   export let questions: QuestionType[] = [];
   let checked = true;
 
-  let text = "";
+  let text = '';
 
   $: if (text) {
-    const qn = text.split(",").map((n) => n.trim());
-    questions = questions.map((q, n) => ({
+    const qn = text.split(',').map((n) => n.trim());
+    questions = questions.map((q) => ({
       ...q,
-      show: qn.includes(q.title.split(" ")[1]),
+      show: qn.includes(q.title.split(' ')[1]),
     }));
   }
 
   const changeSelection = () => {
-    console.log("changeSelection", checked);
+    console.log('changeSelection', checked);
     questions = questions.map((q) => ({ ...q, show: checked }));
   };
 </script>
