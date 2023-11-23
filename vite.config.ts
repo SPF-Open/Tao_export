@@ -1,5 +1,5 @@
-import { defineConfig } from 'vite'
-import { svelte } from '@sveltejs/vite-plugin-svelte'
+import { defineConfig } from 'vite';
+import { svelte } from '@sveltejs/vite-plugin-svelte';
 
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
@@ -12,6 +12,6 @@ const pkg = JSON.parse(json);
 export default defineConfig({
   plugins: [svelte()],
   define: {
-    PKG: pkg
+    VITE_PKG: pkg
   }
-})
+});
