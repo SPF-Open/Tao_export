@@ -4,6 +4,7 @@
   export let showLetter = false;
   export let compare = false;
   export let inzage = false;
+
 </script>
 
 <fieldset class="hide-print">

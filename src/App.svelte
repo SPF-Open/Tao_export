@@ -22,6 +22,13 @@
     oldQuestions = [...questions];
   };
 
+  const resetSettings = () => {
+    hideAnswer = false;
+    showInstruction.set(true);
+    showLetter = false;
+    inzage = false;
+  };
+
   $: if (compare) copyQuestion();
 
   showInstruction.subscribe((showInstruction) => {
@@ -68,7 +75,7 @@
         />
       </div>
       <div class="input">
-        <ZipInput bind:questions />
+        <ZipInput bind:questions onInput={resetSettings}/>
       </div>
       <div class="nb-questions hide-print">
         <span class="QO"
