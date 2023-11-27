@@ -10,6 +10,7 @@
   } from './helper';
 
   export let questions: QuestionType[] = [];
+  export let onInput: () => void;
 
   let files: FileList;
   let assets: zipObj[];
@@ -49,6 +50,7 @@
       questions = xmls.map(xmlToObj).filter((q) => q);
     };
     init(); // Work around to use async/await
+    onInput();
   }
 </script>
 
