@@ -6,6 +6,8 @@
 - Feat : Hide left menu
 - Feat : Select answer of candidate for test review
 - Refactor : Tao_export and Tao_import are now two seperated repo
+- Feat : Count the number of questions displayed and their total 
+- Feat : Order questions by title (ignore instruction)
 
 ### 0.1.2
 
