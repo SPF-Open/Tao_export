@@ -115,7 +115,7 @@
     value=true
     bind:group={sort}
   />
-  <label for="orderByTitle-on">Question only</label>
+  <label for="orderByTitle-on">Enable</label>
 
   <input
     type="radio"
@@ -124,12 +124,13 @@
     value={false}
     bind:group={sort}
   />
-  <label for="orderByTitle-off">Original</label>
+  <label for="orderByTitle-off">Disable</label>
 </fieldset>
 
 <style>
   fieldset {
     margin: 0;
-    padding: 5px;
+    padding: 3px 5px;
+    font-size: 14px;
   }
 </style>

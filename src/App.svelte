@@ -137,7 +137,7 @@
     top: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 10px;
+    gap: 8px;
     justify-content: center;
     border: 1px solid var(--border-color);
   }
@@ -168,7 +168,7 @@
   }
 
   .left > * {
-    margin-bottom: 10px;
+    margin-bottom: 5px;
   }
 
   @media print {
