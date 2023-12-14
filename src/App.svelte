@@ -14,6 +14,7 @@
   let showLetter;
   let compare;
   let inzage;
+  let sort;
 
   let questions: QuestionType[] = [];
   let oldQuestions = questions;
@@ -29,7 +30,27 @@
     inzage = false;
   };
 
+  const sortQuestions = () => {
+    copyQuestion();
+    questions = questions.sort((a, b) => {
+      if (a.type.includes('Instruction') || a.type === 'Instruction QCM')
+        return 1;
+      // sort by number find after QO and QCM
+      const aNumber = a.title.match(/\d+/);
+      const bNumber = b.title.match(/\d+/);
+      if (aNumber && bNumber) {
+        return Number(aNumber[0]) - Number(bNumber[0]);
+      }
+      return 0;
+    });
+    console.log(questions);
+  };
+
   $: if (compare) copyQuestion();
+
+  $: if (sort) sortQuestions();
+
+  $: if (!sort && oldQuestions.length > 0) questions = oldQuestions;
 
   showInstruction.subscribe((showInstruction) => {
     questions = questions.map((q) => ({
@@ -74,6 +95,7 @@
           bind:showLetter
           bind:compare
           bind:inzage
+          bind:sort
         />
       </div>
       <div class="input">

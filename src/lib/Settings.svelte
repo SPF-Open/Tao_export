@@ -4,7 +4,7 @@
   export let showLetter = false;
   export let compare = false;
   export let inzage = false;
-
+  export let sort = false;
 </script>
 
 <fieldset class="hide-print">
@@ -12,7 +12,6 @@
   <input
     type="radio"
     id="show-answer"
-    checked
     value={false}
     name="answer"
     bind:group={hideAnswer}
@@ -33,7 +32,6 @@
   <input
     type="radio"
     id="hide-instruction"
-    checked
     value={true}
     name="Instruction"
     bind:group={showInstruction}
@@ -54,7 +52,6 @@
   <input
     type="radio"
     id="hide-letter"
-    checked
     value={true}
     name="Letter"
     bind:group={showLetter}
@@ -75,7 +72,6 @@
   <input
     type="radio"
     id="compare-enable"
-    checked
     value={true}
     name="Compare"
     bind:group={compare}
@@ -105,11 +101,30 @@
     type="radio"
     id="inzage-disable"
     value={false}
-    checked
     name="Inzage"
     bind:group={inzage}
   />
   <label for="inzage-disable">Disable</label>
+</fieldset>
+<fieldset>
+  <legend>Sort question</legend>
+  <input
+    type="radio"
+    name="OrderByTitle"
+    id="orderByTitle-on"
+    value=true
+    bind:group={sort}
+  />
+  <label for="orderByTitle-on">Question only</label>
+
+  <input
+    type="radio"
+    name="OrderByTitle"
+    id="orderByTitle-off"
+    value={false}
+    bind:group={sort}
+  />
+  <label for="orderByTitle-off">Original</label>
 </fieldset>
 
 <style>
