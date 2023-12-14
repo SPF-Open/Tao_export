@@ -28,6 +28,7 @@
     showInstruction.set(true);
     showLetter = false;
     inzage = false;
+    sort = false;
   };
 
   const sortQuestions = () => {
@@ -43,7 +44,6 @@
       }
       return 0;
     });
-    console.log(questions);
   };
 
   $: if (compare) copyQuestion();
