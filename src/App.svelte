@@ -50,7 +50,7 @@
 
   $: if (sort) sortQuestions();
 
-  $: if (!sort && oldQuestions.length > 0) questions = oldQuestions;
+  $: if (!sort && !compare && oldQuestions.length > 0) questions = oldQuestions;
 
   showInstruction.subscribe((showInstruction) => {
     questions = questions.map((q) => ({
