@@ -7,10 +7,11 @@
   import type { QuestionType } from './lib/helper';
   import Question from './template/Question.svelte';
 
-  let showLeft = true;
-  let showExtra = false;
+  import { ThemeWrapper, ToggleSwitch } from '@lv00/sveltelib';
 
-  let hideAnswer;
+  let showLeft = true;
+
+  let showAnswer;
   let showInstruction = writable(true);
   let showLetter;
   let compare;
@@ -25,7 +26,7 @@
   };
 
   const resetSettings = () => {
-    hideAnswer = false;
+    showAnswer = true;
     showInstruction.set(true);
     showLetter = false;
     inzage = false;
@@ -83,56 +84,56 @@
   </div>
 </header>
 
-<main>
-  <button class="controlLeft hide-print" on:click={() => (showLeft = !showLeft)}
-    >></button
-  >
-  {#if showLeft}
-    <div class="left" transition:slide>
-      <div class="settings">
+<ThemeWrapper>
+  <main>
+    <h4 class="controlLeft hide-print">
+      <span>Menu</span>
+      <ToggleSwitch bind:checked={showLeft} />
+    </h4>
+    {#if showLeft}
+      <div class="left" transition:slide>
         <Settings
-          bind:hideAnswer
+          bind:showAnswer
           bind:showInstruction={$showInstruction}
           bind:showLetter
           bind:compare
           bind:inzage
           bind:sort
-          bind:showExtra
         />
+        <div class="input">
+          <ZipInput bind:questions onInput={resetSettings} />
+        </div>
+        <div class="nb-questions hide-print">
+          <span class="QO">
+            QO : {questions.filter((q) => q.type === 'QO').length}
+            ({questions.filter((q) => q.type === 'Instruction QO' && q.show)
+              .length})
+          </span>
+          <span class="QCM">
+            QCM : {questions.filter((q) => q.type === 'QCM').length}
+            ({questions.filter((q) => q.type === 'QCM' && q.show).length})
+          </span>
+        </div>
+        <Tables bind:questions />
       </div>
-      <div class="input">
-        <ZipInput bind:questions onInput={resetSettings} />
-      </div>
-      <div class="nb-questions hide-print">
-        <span class="QO">
-          QO : {questions.filter((q) => q.type === 'QO').length}
-          ({questions.filter((q) => q.type === 'Instruction QO' && q.show)
-            .length})
-        </span>
-        <span class="QCM">
-          QCM : {questions.filter((q) => q.type === 'QCM').length}
-          ({questions.filter((q) => q.type === 'QCM' && q.show).length})
-        </span>
-      </div>
-      <Tables bind:questions />
-    </div>
-  {/if}
-
-  <div class="questions">
-    {#if questions.length > 0}
-      {#each questions as question}
-        <Question bind:question bind:hideAnswer bind:showLetter bind:inzage />
-      {/each}
     {/if}
-  </div>
-  {#if oldQuestions.length > 0 && compare}
+
     <div class="questions">
-      {#each oldQuestions as question}
-        <Question bind:question bind:hideAnswer bind:showLetter bind:inzage />
-      {/each}
+      {#if questions.length > 0}
+        {#each questions as question}
+          <Question bind:question bind:showAnswer bind:showLetter bind:inzage />
+        {/each}
+      {/if}
     </div>
-  {/if}
-</main>
+    {#if oldQuestions.length > 0 && compare}
+      <div class="questions">
+        {#each oldQuestions as question}
+          <Question bind:question bind:showAnswer bind:showLetter bind:inzage />
+        {/each}
+      </div>
+    {/if}
+  </main>
+</ThemeWrapper>
 
 <style>
   header {
@@ -152,6 +153,10 @@
   .controlLeft {
     position: absolute;
     top: 0;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    gap: 5px;
   }
 
   .input {
@@ -164,13 +169,17 @@
   .left {
     position: sticky;
     top: 0;
-    max-width: 320px;
+    max-width: 300px;
     max-height: 100vh;
     padding: 5px;
   }
 
   .left > * {
-    margin-bottom: 5px;
+    margin-top: 5px;
+  }
+
+  .left > :global(*) {
+    font-size: 0.95rem;
   }
 
   @media print {

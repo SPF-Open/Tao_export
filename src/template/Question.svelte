@@ -3,7 +3,7 @@
   export let question: QuestionType;
 
   let questionDom;
-  export let hideAnswer = false;
+  export let showAnswer = true;
   export let showLetter = true;
   export let inzage = false;
 
@@ -51,7 +51,7 @@
         {#each question.answers as answer, n}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
           <li
-            class:correct={(answer.correct && !hideAnswer && !inzage) ||
+            class:correct={(answer.correct && showAnswer && !inzage) ||
               (inzage && inzageSelection[n])}
             class="answer"
             class:inzage
@@ -64,7 +64,7 @@
               {@html answer.txt}
               <!--eslint-enable-->
             </div>
-            {#if !hideAnswer}
+            {#if showAnswer}
               <div class="points">{answer.point || 0}</div>
             {/if}
           </li>
