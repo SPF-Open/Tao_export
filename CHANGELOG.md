@@ -1,7 +1,13 @@
 ## Changelog
 
+### 0.1.4
+
+- Feat : Add a button to show/hide the extra options
+- Update dependencies
+
 ### 0.1.3
 
+- Feat : Reorder item
 - Feat : Comapre two tests side by side
 - Feat : Hide left menu
 - Feat : Select answer of candidate for test review
