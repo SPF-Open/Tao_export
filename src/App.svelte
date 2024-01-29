@@ -8,6 +8,7 @@
   import Question from './template/Question.svelte';
 
   let showLeft = true;
+  let showExtra = false;
 
   let hideAnswer;
   let showInstruction = writable(true);
@@ -96,6 +97,7 @@
           bind:compare
           bind:inzage
           bind:sort
+          bind:showExtra
         />
       </div>
       <div class="input">
