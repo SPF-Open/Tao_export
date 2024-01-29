@@ -31,7 +31,7 @@
         <input type="checkbox" id="show-all-q" bind:checked on:change={changeSelection} />
         <label for="show-all-q">All</label>
       </li>
-      {#each questions as question,i (question.title)}
+      {#each questions as question, i}
         <li>
           <input type="checkbox" id="{question.title}-{i}" bind:checked={question.show} />
           <label for="{question.title}-{i}">{question.title}</label>

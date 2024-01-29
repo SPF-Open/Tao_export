@@ -31,7 +31,8 @@
       assets = entries
         .filter(
           (entry) =>
-            !entry.filename.endsWith('.css') && !entry.filename.endsWith('.xml')
+            !entry.filename.endsWith('.css') &&
+            !entry.filename.endsWith('.xml'),
         )
         .map(entryToObj); // format obj
 
@@ -41,10 +42,10 @@
           .filter(
             (entry) =>
               entry.filename.endsWith('.xml') &&
-              entry.filename !== 'imsmanifest.xml'
+              entry.filename !== 'imsmanifest.xml',
           )
           .map(entryToObj) // format obj
-          .map((obj) => readAndParseXml(obj, assets)) // parse xml
+          .map((obj) => readAndParseXml(obj, assets)), // parse xml
       );
 
       questions = xmls.map(xmlToObj).filter((q) => q);
@@ -59,6 +60,35 @@
 </svelte:head>
 
 <input type="file" name="zip" id="zip" accept=".zip" bind:files />
-<button class="hide-print" on:click|preventDefault={() => window.print()}
-  >Get PDF</button
->
+<button class="hide-print" on:click|preventDefault={() => window.print()}>
+  Get PDF
+</button>
+
+<style>
+  button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		font-weight: bold;
+		border-radius: 0.25rem;
+		border: none;
+		cursor: pointer;
+		transition: all 0.2s ease-in-out;
+		background-color: var(--active);
+		border: 1px solid var(--active);
+		color: var(--bg);
+	}
+
+	button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	button:hover:not(:disabled),
+	button:focus,
+	button:active {
+		background-color: var(--bg-accent);
+		border-color: var(--border);
+		color: var(--txt);
+	}
+</style>

@@ -2,7 +2,7 @@
 
 ### 0.1.4
 
-- Feat : Add a button to show/hide the extra options
+- Feat : Unified the layout
 - Update dependencies
 
 ### 0.1.3
