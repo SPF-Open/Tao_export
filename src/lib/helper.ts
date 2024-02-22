@@ -133,8 +133,8 @@ export const xmlToObj = (xml: zipObj): QuestionType => {
       type = 'QO';
     }
     answers = [];
-    prompt = [inner];
-    maxLenght = Array
+    prompt = inner.getElementsByClassName('grid-row');
+    const maxLenghtTemp = Array
       .from(xDoc.getElementsByTagName('extendedTextInteraction'))
       .map(i => i.getAttribute('patternMask'))
       .map(i => {
@@ -144,6 +144,18 @@ export const xmlToObj = (xml: zipObj): QuestionType => {
           return '∞';
         }
       });
+      maxLenght = [];
+      for (let index = 0; index < prompt.length; index++) {
+        const p = prompt.item(index);
+        const extendedTextInteraction = p.getElementsByTagName('extendedTextInteraction');
+
+        if (extendedTextInteraction.length > 0) {
+          maxLenght.push(maxLenghtTemp.shift());
+        }
+        else {
+          maxLenght.push(undefined);
+        }
+      }
   } else {
     if (
       ['Voorbeeld', 'Exemple'].find((t) =>

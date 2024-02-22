@@ -29,16 +29,16 @@
         question.type.includes('Instruction') ? 'grid-row' : ''
       }`}
     >
-      {#each question.prompt as prompt}
+      {#each question.prompt as prompt, i}
         <!-- eslint-disable svelte/no-at-html-tags -->
         {@html prompt.innerHTML}
+        <p class="maxChar">
+          {question.maxLenght && question.maxLenght[i]
+            ? question.maxLenght[i] + ' caractères maximum.' || ''
+            : ''}
+        </p>
         <!--eslint-enable-->
       {/each}
-      {#if question.maxLenght}
-        {#each question.maxLenght as maxLenght}
-          <p>{maxLenght} caractères maximum.</p>
-        {/each}
-      {/if}
     </div>
 
     {#if question.type === 'QCM' || question.type === 'Instruction QCM'}
@@ -89,7 +89,7 @@
   }
 
   .question {
-    font-family: "Source Sans Pro";
+    font-family: 'Source Sans Pro';
     border: 3px solid #007f9f;
     margin: 30px 10px;
     max-width: 1080px;
@@ -150,5 +150,9 @@
     background-color: white;
     width: 12px;
     text-align: center;
+  }
+
+  .maxChar{
+    margin-bottom: 10px;
   }
 </style>
