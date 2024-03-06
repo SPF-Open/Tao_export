@@ -33,9 +33,9 @@
         <!-- eslint-disable svelte/no-at-html-tags -->
         {@html prompt.innerHTML}
         <p class="maxChar">
-          {question.maxLenght && question.maxLenght[i]
+          {question.type == 'QO' && (question.maxLenght && question.maxLenght[i])
             ? question.maxLenght[i] + ' caractères maximum.' || ''
-            : ''}
+            :  ''}
         </p>
         <!--eslint-enable-->
       {/each}
@@ -114,7 +114,6 @@
   .prompt :global(img) {
     max-height: calc(297mm - 100px);
     max-width: 98%;
-    width: auto;
   }
 
   .answers {
