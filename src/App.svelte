@@ -1,70 +1,14 @@
 <script lang="ts">
-  import { writable } from 'svelte/store';
   import { slide } from 'svelte/transition';
   import Settings from './lib/Settings.svelte';
   import Tables from './lib/Tables.svelte';
   import ZipInput from './lib/ZipInput.svelte';
-  import type { QuestionType } from './lib/helper';
   import Question from './template/Question.svelte';
 
   import { ThemeWrapper, ToggleSwitch } from '@lv00/sveltelib';
+  import { compareMode, showMenu, questions, oldQuestions, pushError } from './store';
+  import Errors from './lib/Errors.svelte';
 
-  let showLeft = true;
-
-  let showAnswer;
-  let showInstruction = writable(true);
-  let showLetter;
-  let compare;
-  let inzage;
-  let sort;
-
-  let questions: QuestionType[] = [];
-  let oldQuestions = questions;
-
-  const copyQuestion = () => {
-    oldQuestions = [...questions];
-  };
-
-  const resetSettings = () => {
-    showAnswer = true;
-    showInstruction.set(true);
-    showLetter = false;
-    inzage = false;
-    sort = false;
-  };
-
-  const sortQuestions = () => {
-    copyQuestion();
-    questions = questions.sort((a, b) => {
-      if (a.type.includes('Instruction') || a.type === 'Instruction QCM')
-        return 1;
-      // sort by number find after QO and QCM
-      const aNumber = a.title.match(/\d+/);
-      const bNumber = b.title.match(/\d+/);
-      if (aNumber && bNumber) {
-        return Number(aNumber[0]) - Number(bNumber[0]);
-      }
-      return 0;
-    });
-  };
-
-  $: if (compare) copyQuestion();
-
-  $: if (sort) sortQuestions();
-
-  $: if (!sort && !compare && oldQuestions.length > 0) questions = oldQuestions;
-
-  showInstruction.subscribe((showInstruction) => {
-    questions = questions.map((q) => ({
-      ...q,
-      show:
-        q.type === 'Instruction' ||
-        q.type === 'Instruction QCM' ||
-        q.type === 'Instruction QO'
-          ? showInstruction
-          : q.show,
-    }));
-  });
 </script>
 
 <header>
@@ -85,50 +29,44 @@
 </header>
 
 <ThemeWrapper>
+  <Errors />
   <main>
     <h4 class="controlLeft hide-print">
       <span>Menu</span>
-      <ToggleSwitch bind:checked={showLeft} />
+      <ToggleSwitch bind:checked={$showMenu} />
     </h4>
-    {#if showLeft}
+    {#if $showMenu}
       <div class="left" transition:slide>
-        <Settings
-          bind:showAnswer
-          bind:showInstruction={$showInstruction}
-          bind:showLetter
-          bind:compare
-          bind:inzage
-          bind:sort
-        />
+        <Settings />
         <div class="input">
-          <ZipInput bind:questions onInput={resetSettings} />
+          <ZipInput />
         </div>
         <div class="nb-questions hide-print">
           <span class="QO">
-            QO : {questions.filter((q) => q.type === 'QO').length}
-            ({questions.filter((q) => q.type === 'Instruction QO' && q.show)
+            QO : {$questions.filter((q) => q.type === 'QO').length}
+            ({$questions.filter((q) => q.type === 'Instruction QO' && q.show)
               .length})
           </span>
           <span class="QCM">
-            QCM : {questions.filter((q) => q.type === 'QCM').length}
-            ({questions.filter((q) => q.type === 'QCM' && q.show).length})
+            QCM : {$questions.filter((q) => q.type === 'QCM').length}
+            ({$questions.filter((q) => q.type === 'QCM' && q.show).length})
           </span>
         </div>
-        <Tables bind:questions />
+        <Tables />
       </div>
     {/if}
 
     <div class="questions">
-      {#if questions.length > 0}
-        {#each questions as question}
-          <Question bind:question bind:showAnswer bind:showLetter bind:inzage />
+      {#if $questions.length > 0}
+        {#each $questions as question}
+          <Question bind:question />
         {/each}
       {/if}
     </div>
-    {#if oldQuestions.length > 0 && compare}
+    {#if $oldQuestions.length > 0 && $compareMode}
       <div class="questions">
-        {#each oldQuestions as question}
-          <Question bind:question bind:showAnswer bind:showLetter bind:inzage />
+        {#each $oldQuestions as question}
+          <Question bind:question />
         {/each}
       </div>
     {/if}

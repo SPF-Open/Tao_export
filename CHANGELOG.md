@@ -1,5 +1,12 @@
 ## Changelog
 
+### 0.1.5
+
+- Feat : Error menu
+- Fix : Using store to prevent var inject hell
+- Fix : One answer per questions for test review
+- Update : Svelte 4.x 
+
 ### 0.1.4
 
 - Feat : Unified the layout

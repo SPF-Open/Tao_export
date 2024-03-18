@@ -1,13 +1,15 @@
 <script lang="ts">
   import type { QuestionType } from '../lib/helper';
+  import { inzage, showAnswer, showLetter } from '../store';
   export let question: QuestionType;
 
   let questionDom;
-  export let showAnswer = true;
-  export let showLetter = true;
-  export let inzage = false;
+  let inzageSelection = -1;
 
-  let inzageSelection = [false, false, false, false];
+  $: inzage.subscribe(() => {
+    inzageSelection = -1;
+  });
+
 </script>
 
 {#if question.show}
@@ -44,19 +46,20 @@
     {#if question.type === 'QCM' || question.type === 'Instruction QCM'}
       <ul
         class="answers"
-        style={showLetter
+        style={$showLetter
           ? '--answerStyle:upper-alpha; --answerCorrectStyle:upper-alpha;'
           : '--answerStyle:circle; --answerCorrectStyle:disc;'}
       >
         {#each question.answers as answer, n}
           <!-- svelte-ignore a11y-click-events-have-key-events -->
-          <li
-            class:correct={(answer.correct && showAnswer && !inzage) ||
-              (inzage && inzageSelection[n])}
+          <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
+          <li 
+            class:correct={(answer.correct && $showAnswer && !$inzage) ||
+              (inzage && inzageSelection === n)}
             class="answer"
             class:inzage
             on:click={() => {
-              inzageSelection[n] = !inzageSelection[n];
+              inzageSelection = n;
             }}
           >
             <div class="text">
@@ -64,7 +67,7 @@
               {@html answer.txt}
               <!--eslint-enable-->
             </div>
-            {#if showAnswer}
+            {#if $showAnswer}
               <div class="points">{answer.point || 0}</div>
             {/if}
           </li>

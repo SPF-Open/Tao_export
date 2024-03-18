@@ -1,34 +1,28 @@
 <script lang="ts">
   import { ToggleSwitch } from '@lv00/sveltelib';
-
-  export let showAnswer = true;
-  export let showInstruction = true;
-  export let showLetter = false;
-  export let compare = false;
-  export let inzage = false;
-  export let sort = false;
+  import { compareMode, inzage, showAnswer, showInstruction, showLetter, sort } from '../store';
 
 </script>
 
 <h4>🏠 Main</h4>
-<div class="options hide-print">
+<div class="options">
   <legend>Answer</legend>
-  <ToggleSwitch bind:checked={showAnswer} />
+  <ToggleSwitch bind:checked={$showAnswer} />
   <legend>Instruction</legend>
-  <ToggleSwitch bind:checked={showInstruction} />
+  <ToggleSwitch bind:checked={$showInstruction} />
 </div>
 <h4>
   <span>✨ Extra</span>
 </h4>
   <div class="options">
     <legend>Letter</legend>
-    <ToggleSwitch bind:checked={showLetter} />
+    <ToggleSwitch bind:checked={$showLetter} />
     <legend>Compare test</legend>
-    <ToggleSwitch bind:checked={compare} />
+    <ToggleSwitch bind:checked={$compareMode} />
     <legend>Inzage mode</legend>
-    <ToggleSwitch bind:checked={inzage} />
+    <ToggleSwitch bind:checked={$inzage} />
     <legend>Sort question</legend>
-    <ToggleSwitch bind:checked={sort}  />
+    <ToggleSwitch bind:checked={$sort}  />
   </div>
 <style>
   h4 {
