@@ -5,12 +5,9 @@
     entryToObj,
     readAndParseXml,
     xmlToObj,
-    type QuestionType,
     type zipObj,
   } from './helper';
-
-  export let questions: QuestionType[] = [];
-  export let onInput: () => void;
+  import { questions, resetSettings } from '../store';
 
   let files: FileList;
   let assets: zipObj[];
@@ -48,10 +45,10 @@
           .map((obj) => readAndParseXml(obj, assets)), // parse xml
       );
 
-      questions = xmls.map(xmlToObj).filter((q) => q);
+      questions.update(() => xmls.map(xmlToObj).filter((q) => q));
     };
     init(); // Work around to use async/await
-    onInput();
+    resetSettings();
   }
 </script>
 
