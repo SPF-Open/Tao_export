@@ -130,15 +130,10 @@ export const xmlToObj = (xml: zipObj): QuestionType => {
     );
   }
 
-  //console.log(QCM)
-
-  //console.log(QCM ? "QCM" : QO ? "QO" : "unknown",);
-
   return {
     title,
     type: answers.length > 0 ? 'QCM' : 'QO',
     prompt,
     answers,
   };
-  //console.log(title, question);
 };

@@ -6,8 +6,8 @@
   import Question from './template/Question.svelte';
 
   import { ThemeWrapper, ToggleSwitch } from '@lv00/sveltelib';
-  import { compareMode, showMenu, questions, oldQuestions, pushError } from './store';
-  import Errors from './lib/Errors.svelte';
+  import { compareMode, showMenu, questions, oldQuestions } from './store';
+  import Log from './lib/Log.svelte';
 
 </script>
 
@@ -17,9 +17,7 @@
     <a href="/documentation.pdf" target="_blank">Documentation</a>
   </div>
   <!-- svelte-ignore missing-declaration -->
-  <!-- eslint-disable no-undef -->
   <div class="version">v{VITE_PKG.version}</div>
-  <!--eslint-enable-->
   <div>
     <a
       href="https://github.com/SPF-Open/Tao_export/blob/Prod/CHANGELOG.md"
@@ -29,7 +27,7 @@
 </header>
 
 <ThemeWrapper>
-  <Errors />
+<Log />
   <main>
     <h4 class="controlLeft hide-print">
       <span>Menu</span>

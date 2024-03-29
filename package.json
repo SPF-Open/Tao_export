@@ -25,6 +25,7 @@
   },
   "dependencies": {
     "@lv00/sveltelib": "^0.1.4",
+    "@lv00/toolkit": "^1.1.11",
     "@zip.js/zip.js": "^2.7.40"
   }
 }

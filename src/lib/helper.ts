@@ -196,10 +196,6 @@ export const xmlToObj = (xml: zipObj): QuestionType => {
     );
   }
 
-  //console.log(QCM)
-
-  //console.log(QCM ? "QCM" : QO ? "QO" : "unknown",);
-
   return {
     title,
     type,
@@ -208,5 +204,4 @@ export const xmlToObj = (xml: zipObj): QuestionType => {
     maxLenght,
     show: true
   };
-  //console.log(title, question);
 };

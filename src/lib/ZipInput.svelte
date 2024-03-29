@@ -1,13 +1,9 @@
 <script lang="ts">
   import { ZipReader } from '@zip.js/zip.js';
 
-  import {
-    entryToObj,
-    readAndParseXml,
-    xmlToObj,
-    type zipObj,
-  } from './helper';
+  import { entryToObj, readAndParseXml, xmlToObj, type zipObj } from './helper';
   import { questions, resetSettings } from '../store';
+  import logger from './log';
 
   let files: FileList;
   let assets: zipObj[];
@@ -15,39 +11,50 @@
 
   $: if (files) {
     const init = async () => {
-      const zipReader = new ZipReader(files[0].stream());
-      const entries = await zipReader.getEntries();
+      const file = files[0];
+      if (file.name.split('.').pop() !== 'zip')
+        throw new Error('Please select a zip file');
 
-      const newTitle = files[0].name.split('.')[0].split('_')[0].toUpperCase();
+      try {
+        const zipReader = new ZipReader(file.stream());
+        const entries = await zipReader.getEntries();
+        const newTitle = files[0].name
+          .split('.')[0]
+          .split('_')[0]
+          .toUpperCase();
 
-      if (title == newTitle) return;
+        if (title == newTitle) return;
 
-      title = newTitle;
+        title = newTitle;
 
-      // Parse asset
-      assets = entries
-        .filter(
-          (entry) =>
-            !entry.filename.endsWith('.css') &&
-            !entry.filename.endsWith('.xml'),
-        )
-        .map(entryToObj); // format obj
-
-      // Parse questions
-      const xmls = await Promise.all(
-        entries
+        // Parse asset
+        assets = entries
           .filter(
             (entry) =>
-              entry.filename.endsWith('.xml') &&
-              entry.filename !== 'imsmanifest.xml',
+              !entry.filename.endsWith('.css') &&
+              !entry.filename.endsWith('.xml'),
           )
-          .map(entryToObj) // format obj
-          .map((obj) => readAndParseXml(obj, assets)), // parse xml
-      );
+          .map(entryToObj); // format obj
 
-      questions.update(() => xmls.map(xmlToObj).filter((q) => q));
+        // Parse questions
+        const xmls = await Promise.all(
+          entries
+            .filter(
+              (entry) =>
+                entry.filename.endsWith('.xml') &&
+                entry.filename !== 'imsmanifest.xml',
+            )
+            .map(entryToObj) // format obj
+            .map((obj) => readAndParseXml(obj, assets)), // parse xml
+        );
+
+        questions.update(() => xmls.map(xmlToObj).filter((q) => q));
+        logger.log('Questions parsed');
+      } catch (e) {
+        throw new Error('Invalid zip file');
+      }
     };
-    init(); // Work around to use async/await
+    init().catch((err) => logger.catch(err)); // Work around to use async/await
     resetSettings();
   }
 </script>
@@ -63,29 +70,29 @@
 
 <style>
   button {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		font-weight: bold;
-		border-radius: 0.25rem;
-		border: none;
-		cursor: pointer;
-		transition: all 0.2s ease-in-out;
-		background-color: var(--active);
-		border: 1px solid var(--active);
-		color: var(--bg);
-	}
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    border-radius: 0.25rem;
+    border: none;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+    background-color: var(--active);
+    border: 1px solid var(--active);
+    color: var(--bg);
+  }
 
-	button:disabled {
-		opacity: 0.5;
-		cursor: not-allowed;
-	}
+  button:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
 
-	button:hover:not(:disabled),
-	button:focus,
-	button:active {
-		background-color: var(--bg-accent);
-		border-color: var(--border);
-		color: var(--txt);
-	}
+  button:hover:not(:disabled),
+  button:focus,
+  button:active {
+    background-color: var(--bg-accent);
+    border-color: var(--border);
+    color: var(--txt);
+  }
 </style>

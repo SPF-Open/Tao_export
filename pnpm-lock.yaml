@@ -8,6 +8,9 @@ dependencies:
   '@lv00/sveltelib':
     specifier: ^0.1.4
     version: 0.1.4(svelte@4.2.12)
+  '@lv00/toolkit':
+    specifier: ^1.1.11
+    version: 1.1.11(typescript@5.4.2)
   '@zip.js/zip.js':
     specifier: ^2.7.40
     version: 2.7.40
@@ -170,6 +173,15 @@ packages:
       svelte: ^4.0.0
     dependencies:
       svelte: 4.2.12
+    dev: false
+
+  /@lv00/toolkit@1.1.11(typescript@5.4.2):
+    resolution: {integrity: sha512-UpKiQ6qw7tPf7DNJS9auNYyI0IJNlluCtjAHki/z1POhr8IxT5x/XLM+rl2FRGcRLq4gwzCvW6rKBQCykuHuVw==}
+    peerDependencies:
+      typescript: ^5.0.0
+    dependencies:
+      lodash.mergewith: 4.6.2
+      typescript: 5.4.2
     dev: false
 
   /@nodelib/fs.scandir@2.1.5:
@@ -1234,6 +1246,10 @@ packages:
     resolution: {integrity: sha512-0KpjqXRVvrYyCsX1swR/XTK0va6VQkQM6MNo7PqW77ByjAhoARA8EfrP1N4+KlKj8YS0ZUCtRT/YUuhyYDujIQ==}
     dev: true
 
+  /lodash.mergewith@4.6.2:
+    resolution: {integrity: sha512-GK3g5RPZWTRSeLSpgP8Xhra+pnjBC56q9FZYe1d5RN3TJ35dbkGy3YqBSMbyCrlbi+CM9Z3Jk5yTL7RCsqboyQ==}
+    dev: false
+
   /lru-cache@6.0.0:
     resolution: {integrity: sha512-Jo6dJ04CmSjuznwJSS3pUeWmd/H0ffTlkXXgwZi+eq1UCmqQwCh+eLsYOYCwY991i2Fah4h1BEMCx4qThGbsiA==}
     engines: {node: '>=10'}
@@ -1761,7 +1777,6 @@ packages:
     resolution: {integrity: sha512-+2/g0Fds1ERlP6JsakQQDXjZdZMM+rqpamFZJEKh4kwTIn3iDkgKtby0CeNd5ATNZ4Ry1ax15TMx0W2V+miizQ==}
     engines: {node: '>=14.17'}
     hasBin: true
-    dev: true
 
   /uri-js@4.4.1:
     resolution: {integrity: sha512-7rKUyy33Q1yc98pQ1DAmLtwX109F7TIfWlW1Ydo8Wl1ii1SeHieeh0HHfPeL2fMXK6z0s8ecKs9frCuLJvndBg==}
