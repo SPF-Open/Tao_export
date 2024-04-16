@@ -6,8 +6,11 @@
   import Question from './template/Question.svelte';
 
   import { ThemeWrapper, ToggleSwitch } from '@lv00/sveltelib';
-  import { compareMode, showMenu, questions, oldQuestions } from './store';
+  import { compareMode, showMenu, questions, oldQuestions, inzage } from './store';
   import Log from './lib/Log.svelte';
+
+  let titleHeader = '';
+  let rrnHeader = '';
 
 </script>
 
@@ -55,6 +58,15 @@
     {/if}
 
     <div class="questions">
+      {#if $inzage}
+      <div class="header">
+        <input type="text" bind:value={titleHeader} class="hide-print" placeholder="Test name">
+        <p class="show-print">{titleHeader}</p>
+        <input type="text" bind:value={rrnHeader} class="hide-print" placeholder="RRN">
+        <p class="show-print">{rrnHeader}</p>
+      </div>
+      {/if}
+  
       {#if $questions.length > 0}
         {#each $questions as question}
           <Question bind:question />
@@ -116,6 +128,17 @@
 
   .left > :global(*) {
     font-size: 0.95rem;
+  }
+
+  .questions > .header {
+    padding: 5px;
+    border-bottom: 1px solid var(--border-color);
+    display: flex;
+    justify-content: center;
+  }
+
+  .questions > .header > *{
+    margin: auto;
   }
 
   @media print {

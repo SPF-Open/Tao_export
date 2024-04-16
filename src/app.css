@@ -80,6 +80,13 @@ body {
   .hidePrint {
     display: none !important;
   }
+  .show-print {
+    display: block !important;
+  }
+}
+
+.show-print {
+  display: none;
 }
 
 @page {
