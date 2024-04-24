@@ -3,7 +3,7 @@
 
   import { entryToObj, readAndParseXml, xmlToObj, type zipObj } from './helper';
   import { questions, resetSettings } from '../store';
-  import logger from './log';
+  // import logger from './log';
 
   let files: FileList;
   let assets: zipObj[];
@@ -54,7 +54,8 @@
         throw new Error('Invalid zip file');
       }
     };
-    init().catch((err) => logger.catch(err)); // Work around to use async/await
+    init() // Work around to use async/await
+    // .catch((err) => logger.catch(err)); 
     resetSettings();
   }
 </script>

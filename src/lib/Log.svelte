@@ -1,9 +1,8 @@
-<script lang="ts">
-  import type { Payload } from "@lv00/toolkit";
+<!-- <script lang="ts">
   import { Level, errors } from "./log";
   import { slide } from "svelte/transition";
 
-  const remove = (err: Payload) =>
+  const remove = (err: any) =>
       errors.update((errs) => errs.filter((e) => e !== err));
 </script>
 
@@ -62,4 +61,4 @@
       background-color: #d4edda;
       color: #155724;
   }
-</style>
+</style> -->
