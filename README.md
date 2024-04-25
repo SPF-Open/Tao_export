@@ -17,23 +17,26 @@ No changes will be made to comply to use cases other than those of the SPF Finan
 
 ## Options
 
-- **Answers**: This option allows you to hide the answers in your PDF.
-- **Instruction**: This option allows you to show the instructions specific to the assessment in your PDF.
-- **Letter**: This option allows you to add letter to each alternative.
+- **Answers**: Hide the answers in your PDF.
+- **Instruction**: Hide the instructions specific to the assessment in your PDF.
+- **Letter**: Replace the dot to letter for each alternative.
+- **Compare test**: Show two test side by side. (NL/FR)
+- **Inzage mode**: Change the alternative with the underline (Used dugin test review • Test Inzage -> Test Review ).
+- **Sort question**: Force the question to be ordered by their title. (When exporting individual question in bulk instead of exam)
 
 ## Requirements
 
-- Node.js
-- npm
+- Node.js 😭
+- pnpm
 
 ## Installation
 
-1. Clone the repository: `git clone https://github.com/username/repo.git`
+1. Clone the repository: `git clone git@github.com:SPF-Open/Tao_export.git`
 2. Install the dependencies: `pnpm install`
 3. Start the development server: `pnpm run dev`
 4. Open the link provided in the console.
 
 ## Build
 
-1. Run the build command: `npm run build`
+1. Run the build command: `pnpm run build`
 2. The build files will be located in the `public` directory.
