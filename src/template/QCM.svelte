@@ -9,27 +9,33 @@
   $: inzage.subscribe(() => {
     inzageSelection = -1;
   });
+
+  const onClick = (n: number) => {
+    if (inzageSelection == n) {
+      inzageSelection = -1;
+    }
+    else if ($inzage && !question.answers[n].correct) {
+      inzageSelection = n;
+    }
+  };
 </script>
 
 <ul class="answers" class:alpha={$showLetter}>
   {#each question.answers as answer, n}
+    {@const { txt, point, correct } = answer}
     <!-- svelte-ignore a11y-click-events-have-key-events -->
     <!-- svelte-ignore a11y-no-noninteractive-element-interactions -->
     <li
-      class:correct={(answer.correct && $showAnswer && !$inzage) ||
+      class:correct={(correct && $showAnswer && !$inzage) ||
         (inzage && inzageSelection === n)}
       class="answer"
-      on:click={() => {
-        inzageSelection = $inzage && !answer.correct ? n : -1;
-      }}
+      on:click={() => onClick(n)}
     >
       <div class="text">
-        <!-- eslint-disable svelte/no-at-html-tags -->
-        {@html answer.txt}
-        <!--eslint-enable-->
+        {@html txt}
       </div>
       {#if $showAnswer}
-        <div class="points">{answer.point || 0}</div>
+        <div class="points">{point || 0}</div>
       {/if}
     </li>
   {/each}

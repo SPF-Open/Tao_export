@@ -7,7 +7,7 @@
 
   import { ThemeWrapper, ToggleSwitch } from '@lv00/sveltelib';
   import { compareMode, showMenu, questions, oldQuestions, inzage } from './store';
-  // import Log from './lib/Log.svelte';
+  import Log from './lib/Log.svelte';
 
   let titleHeader = '';
   let rrnHeader = '';
@@ -30,7 +30,7 @@
 </header>
 
 <ThemeWrapper>
-<!-- <Log /> -->
+<Log />
   <main>
     <h4 class="controlLeft hide-print">
       <span>Menu</span>

@@ -1,4 +1,4 @@
-<!-- <script lang="ts">
+<script lang="ts">
   import { Level, errors } from "./log";
   import { slide } from "svelte/transition";
 
@@ -61,4 +61,4 @@
       background-color: #d4edda;
       color: #155724;
   }
-</style> -->
+</style>
