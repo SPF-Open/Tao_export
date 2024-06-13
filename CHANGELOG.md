@@ -1,5 +1,10 @@
 ## Changelog
 
+### 0.1.6
+- Feat : Properly show table and it's content (Test de dossier)
+- Feat : Better log
+- Update : dependencies
+
 ### 0.1.5
 
 - Feat : Error menu

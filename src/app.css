@@ -71,6 +71,31 @@ body {
   white-space: pre;
 }
 
+.table-center {
+  margin: 0 auto;
+}
+
+table {
+  border: 1px solid #8d949e;
+  border-collapse: collapse;
+}
+
+th,
+td {
+  border: 1px solid #8d949e;
+  min-width: 30px;
+  padding: 3px 5px;
+}
+
+tr:nth-child(odd) {
+  background: #f2f2f3;
+}
+
+th {
+  background-color: rgba(64, 64, 64, .25);
+  font-weight: bold;
+}
+
 @media print {
   #zip {
     display: none !important;
@@ -80,6 +105,7 @@ body {
   .hidePrint {
     display: none !important;
   }
+
   .show-print {
     display: block !important;
   }
