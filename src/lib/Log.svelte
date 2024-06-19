@@ -6,7 +6,7 @@
       errors.update((errs) => errs.filter((e) => e !== err));
 </script>
 
-<div class="errors">
+<div class="errors hidePrint">
   {#if $errors}
       {#each $errors as error}
           <button
