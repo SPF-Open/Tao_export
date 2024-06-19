@@ -116,6 +116,8 @@
 
   .left {
     position: sticky;
+    display: flex;
+    flex-direction: column;
     top: 0;
     max-width: 300px;
     max-height: 100vh;

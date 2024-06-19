@@ -56,7 +56,7 @@
 </script>
 
 {#if !$questions || $questions.length}
-  <div class="hide-print">
+  <div class="hide-print table">
     <h3>Show/Hide Question</h3>
     <div>
       <input
@@ -126,6 +126,11 @@
 {/if}
 
 <style>
+  .table{
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
   input[type='text'] {
     width: 99%;
   }
@@ -137,8 +142,9 @@
     list-style: none;
     padding-left: 2px;
     overflow-y: scroll;
-    max-height: 40vh;
     position: relative;
+    flex: 1;
+    max-height: 48vh;
   }
   li {
     display: flex;
