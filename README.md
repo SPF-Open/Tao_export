@@ -39,4 +39,4 @@ No changes will be made to comply to use cases other than those of the SPF Finan
 ## Build
 
 1. Run the build command: `pnpm run build`
-2. The build files will be located in the `public` directory.
+2. The build files will be located in the `dist` directory.
