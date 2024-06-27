@@ -1,7 +1,14 @@
 <script lang="ts">
-  import { ToggleSwitch } from '@lv00/sveltelib';
-  import { compareMode, inzage, showAnswer, showInstruction, showLetter, sort } from '../store';
-
+  import { ToggleSwitch,  } from '@lv00/sveltelib';
+  import {
+    compareMode,
+    inzage,
+    showAnswer,
+    showInstruction,
+    showLetter,
+    sort,
+    zoom,
+  } from '../store';
 </script>
 
 <h4>🏠 Main</h4>
@@ -14,16 +21,20 @@
 <h4>
   <span>✨ Extra</span>
 </h4>
-  <div class="options">
-    <legend>Letter</legend>
-    <ToggleSwitch bind:checked={$showLetter} />
-    <legend>Compare test</legend>
-    <ToggleSwitch bind:checked={$compareMode} />
-    <legend>Inzage mode</legend>
-    <ToggleSwitch bind:checked={$inzage} />
-    <legend>Sort question</legend>
-    <ToggleSwitch bind:checked={$sort}  />
-  </div>
+<div class="options">
+  <legend>Letter</legend>
+  <ToggleSwitch bind:checked={$showLetter} />
+  <legend>Compare test</legend>
+  <ToggleSwitch bind:checked={$compareMode} />
+  <legend>Inzage mode</legend>
+  <ToggleSwitch bind:checked={$inzage} />
+  <legend>Sort question</legend>
+  <ToggleSwitch bind:checked={$sort} />
+  <legend>Font size</legend>
+  <input type="range" min="0.8" max="1.5" step="0.1" bind:value={$zoom} />
+
+</div>
+
 <style>
   h4 {
     margin: 2px 0;
@@ -32,7 +43,7 @@
     display: flex;
     gap: 5px;
   }
-  .options{
+  .options {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(100px, 1fr));
     grid-gap: 2px;

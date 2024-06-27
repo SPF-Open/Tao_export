@@ -55,6 +55,7 @@ export const showLetter = writable(false);
 export const inzage = writable(false);
 export const sort = writable(false);
 export const compareMode = writable(false);
+export const zoom = writable(1);
 
 sort.subscribe((value) => {
     if (value) sortQuestions();

@@ -6,7 +6,7 @@
   import Question from './template/Question.svelte';
 
   import { ThemeWrapper, ToggleSwitch } from '@lv00/sveltelib';
-  import { compareMode, showMenu, questions, oldQuestions, inzage } from './store';
+  import { compareMode, showMenu, questions, oldQuestions, inzage, zoom } from './store';
   import Log from './lib/Log.svelte';
 
   let titleHeader = '';
@@ -57,7 +57,7 @@
       </div>
     {/if}
 
-    <div class="questions">
+    <div class="questions" style="zoom:{$zoom};">
       {#if $inzage}
       <div class="header">
         <input type="text" bind:value={titleHeader} class="hide-print" placeholder="Test name">

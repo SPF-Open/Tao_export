@@ -4,6 +4,7 @@
 - Feat : Change item order
 - Update : dependencies
 - Fix : Global typing on PKG
+- Feat : Zoom level for the preview  
 
 ### 0.1.6
 - Feat : Properly show table and it's content (Test de dossier)
