@@ -7,7 +7,7 @@
 
   let files: FileList;
   let assets: zipObj[];
-  let title = 'Tao-PDF exporter';
+  let title = 'Export-TAO';
 
   $: if (files) {
     const init = async () => {
