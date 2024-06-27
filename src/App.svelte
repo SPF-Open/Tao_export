@@ -20,7 +20,7 @@
     <a href="/documentation.pdf" target="_blank">Documentation</a>
   </div>
   <!-- svelte-ignore missing-declaration -->
-  <div class="version">v{VITE_PKG.version}</div>
+  <div class="version">v{PKG.version}</div>
   <div>
     <a
       href="https://github.com/SPF-Open/Tao_export/blob/Prod/CHANGELOG.md"

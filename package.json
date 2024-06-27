@@ -10,18 +10,18 @@
     "check": "svelte-check --tsconfig ./tsconfig.json"
   },
   "devDependencies": {
-    "@sveltejs/vite-plugin-svelte": "^2.5.3",
-    "@tsconfig/svelte": "^3.0.0",
+    "@sveltejs/vite-plugin-svelte": "^3.1.1",
+    "@tsconfig/svelte": "^5.0.4",
+    "svelte": "^4.2.18",
+    "svelte-check": "^3.8.1",
+    "tslib": "^2.6.3",
+    "typescript": "^5.2.2",
+    "vite": "^5.3.1",
     "@typescript-eslint/eslint-plugin": "^6.21.0",
     "@typescript-eslint/parser": "^6.21.0",
     "eslint": "^8.57.0",
-    "eslint-plugin-svelte": "^2.39.3",
-    "svelte": "^4.2.18",
-    "svelte-check": "^3.8.0",
-    "svelte-preprocess": "^5.1.4",
-    "tslib": "^2.6.3",
-    "typescript": "^5.4.5",
-    "vite": "^3.2.10"
+    "eslint-plugin-svelte": "^2.41.0",
+    "svelte-preprocess": "^5.1.4"
   },
   "dependencies": {
     "@lv00/sveltelib": "^0.1.4",
