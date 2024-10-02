@@ -4,7 +4,8 @@
 - Feat : Change item order
 - Update : dependencies
 - Fix : Global typing on PKG
-- Feat : Zoom level for the preview  
+- Feat : Zoom level for the preview
+- Update : User Doc
 
 ### 0.1.6
 - Feat : Properly show table and it's content (Test de dossier)
