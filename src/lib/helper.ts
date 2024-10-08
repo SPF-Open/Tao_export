@@ -9,7 +9,16 @@ export type zipObj = {
   xml: Document | undefined;
 };
 
-export const entryToObj = (entry: Entry) => {
+export type EntryObj ={
+  path:string
+  dir:boolean
+  name:string
+  questionId:string
+  _raw:Entry
+  xml:Document | undefined
+} 
+
+export const entryToObj = (entry: Entry): EntryObj => {
   const { filename, directory } = entry;
   const pathArr = filename.split('/');
   return {
@@ -29,9 +38,13 @@ export const associateAssets = (xml: zipObj, assets: zipObj[]) => {
   return { ...xml, assets: asset };
 };
 
-export const readAndParseXml = async (xml: zipObj, assets: zipObj[]) => {
+export const readAndParseXml = async (xml: EntryObj, assets: EntryObj[]) => {
   const writter = new TextWriter();
   const parser = new DOMParser();
+
+  if(!xml._raw || !xml._raw.getData){
+    return { ...xml, xml: undefined };
+  }
 
   const xmlDoc = parser.parseFromString(
     await xml._raw.getData(writter),
@@ -80,11 +93,20 @@ export type QuestionType = {
   show: boolean
 };
 
-export const xmlToObj = (xml: zipObj): QuestionType => {
+export const xmlToObj = (xml: EntryObj): QuestionType => {
+  if (!xml.xml) {
+    return {
+      title: 'unknown',
+      type: 'unknown',
+      prompt: [],
+      answers: [],
+      show: false
+    };
+  }
   const xDoc = xml.xml;
   const Instructie = xDoc.getElementsByTagName('assessmentTest').length > 0;
 
-  let title;
+  let title: string | null ;
 
   if (Instructie) {
     title = xDoc
@@ -95,6 +117,8 @@ export const xmlToObj = (xml: zipObj): QuestionType => {
       .getElementsByTagName('assessmentItem')[0]
       .getAttribute('title');
   }
+
+  if(!title) title = 'unknown';
 
   const QCM = xDoc.getElementsByTagName('mapping').length > 0;
 
@@ -111,7 +135,7 @@ export const xmlToObj = (xml: zipObj): QuestionType => {
     };
   }
 
-  let answers;
+  let answers = [];
   let prompt;
   let type;
   let maxLenght = undefined;
@@ -120,7 +144,6 @@ export const xmlToObj = (xml: zipObj): QuestionType => {
 
   if (Instructie) {
     prompt = Array.from(xDoc.getElementsByTagName('assessmentTest'));
-    answers = [];
     type = 'Instruction';
   } else if (QO) {
     if (
@@ -132,13 +155,13 @@ export const xmlToObj = (xml: zipObj): QuestionType => {
     } else {
       type = 'QO';
     }
-    answers = [];
     prompt = inner.getElementsByClassName('grid-row');
     const maxLenghtTemp = Array
       .from(xDoc.getElementsByTagName('extendedTextInteraction'))
       .map(i => i.getAttribute('patternMask'))
       .map(i => {
         try {
+          if(i === null) return '∞';
           return i.split(',')[1].split('}')[0];
         } catch (e) {
           return '∞';

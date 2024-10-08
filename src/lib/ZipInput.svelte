@@ -1,12 +1,12 @@
 <script lang="ts">
   import { ZipReader } from '@zip.js/zip.js';
 
-  import { entryToObj, readAndParseXml, xmlToObj, type zipObj } from './helper';
+  import { entryToObj, readAndParseXml, xmlToObj, type EntryObj } from './helper';
   import { questions, resetSettings } from '../store';
   import logger from './log';
 
   let files: FileList;
-  let assets: zipObj[];
+  let assets: EntryObj[];
   let title = 'Export-TAO';
 
   $: if (files) {
@@ -55,7 +55,7 @@
       }
     };
     init() // Work around to use async/await
-    .catch((err) => logger.catch(err)); 
+      .catch((err) => logger.catch(err));
     resetSettings();
   }
 </script>
