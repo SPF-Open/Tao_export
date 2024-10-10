@@ -1,7 +1,12 @@
 <script lang="ts">
   import { ZipReader } from '@zip.js/zip.js';
 
-  import { entryToObj, readAndParseXml, xmlToObj, type EntryObj } from './helper';
+  import {
+    entryToObj,
+    readAndParseXml,
+    xmlToObj,
+    type EntryObj,
+  } from './helper';
   import { questions, resetSettings } from '../store';
   import logger from './log';
 

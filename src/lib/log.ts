@@ -1,6 +1,6 @@
 import { writable } from "svelte/store"
 
-import { Log, type Payload } from "@lv00/toolkit"
+import { Log, type Payload } from "@lv00/toolkit/web"
 const { Logger, Transporter, Level, Console } = Log;
 
 export { Level };
