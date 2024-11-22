@@ -1,5 +1,7 @@
 <script lang="ts">
   import { questions } from '../store';
+  import Question from '../template/Question.svelte';
+  import type { QuestionType } from './helper';
   let checked = true;
   let text = '';
 
@@ -13,42 +15,46 @@
     );
   }
 
+  const OnDragStart = (
+    e: DragEvent & { currentTarget: EventTarget & HTMLImageElement },
+    i: number,
+    question: QuestionType,
+  ) => {
+    mouseYCoordinate = e.clientY;
+    itemDragged = question;
+    itemDraggingIndex = i;
+
+    distanceTopGrabbedVsPointer =
+      e.currentTarget.getBoundingClientRect().y - e.clientY;
+  };
+
   const changeSelection = () => {
     questions.update((o) => o.map((q) => ({ ...q, show: checked })));
   };
 
-  let mouseYCoordinate = null; // pointer y coordinate within client
-  let distanceTopGrabbedVsPointer = null;
+  let mouseYCoordinate: number = -1; // pointer y coordinate within client
+  let distanceTopGrabbedVsPointer: number = -1;
 
-  let draggingItem = null;
-  let draggingItemId = null;
-  let draggingItemIndex = null;
-
-  let hoveredItemIndex = null;
-
-  $: {
-    // prevents the ghost flickering at the top
-    if (mouseYCoordinate == null || mouseYCoordinate == 0) {
-      // showGhost = false;
-    }
-  }
+  let itemDraggingIndex: number = -1;
+  let itemHoveredIndex: number = -1;
+  let itemDragged: QuestionType | null = null;
 
   $: {
     if (
-      draggingItemIndex != null &&
-      hoveredItemIndex != null &&
-      draggingItemIndex != hoveredItemIndex
+      itemDraggingIndex != -1 &&
+      itemHoveredIndex != -1 &&
+      itemDraggingIndex != itemHoveredIndex
     ) {
       // swap items
       questions.update((list) => {
-        [list[draggingItemIndex], list[hoveredItemIndex]] = [
-          list[hoveredItemIndex],
-          list[draggingItemIndex],
+        [list[itemDraggingIndex], list[itemHoveredIndex]] = [
+          list[itemHoveredIndex],
+          list[itemDraggingIndex],
         ];
         return list;
       });
       // balance
-      draggingItemIndex = hoveredItemIndex;
+      itemDraggingIndex = itemHoveredIndex;
     }
   }
 
@@ -67,15 +73,6 @@
       />
     </div>
     <ul bind:this={container}>
-      {#if mouseYCoordinate}
-        <li
-          class="item ghost"
-          style="top: {mouseYCoordinate +
-            distanceTopGrabbedVsPointer}px; background: {draggingItem.value};"
-        >
-          {draggingItem.value}
-        </li>
-      {/if}
       <li>
         <input
           type="checkbox"
@@ -94,29 +91,10 @@
           />
           <img
             src="/reorder-three.svg"
-            alt=""
+            alt="Drag to reorder"
             draggable="true"
-            on:dragstart={(e) => {
-              mouseYCoordinate = e.clientY;
-              //console.log('dragstart', mouseYCoordinate);
-
-              draggingItem = question;
-              draggingItemIndex = i;
-              draggingItemId = i;
-
-              distanceTopGrabbedVsPointer =
-                e.target.getBoundingClientRect().y - e.clientY;
-            }}
-            on:drag={(e) => {
-              mouseYCoordinate = e.clientY;
-            }}
-            on:dragover={(e) => {
-              hoveredItemIndex = i;
-            }}
-            on:dragend={(e) => {
-              draggingItemId = null; // makes item visible
-              hoveredItemIndex = null; // prevents instant swap
-            }}
+            on:dragstart={(e) => OnDragStart(e, i, question)}
+            on:dragover={() => (itemHoveredIndex = i)}
           />
           <label for="{question.title}-{i}">{question.title}</label>
         </li>
@@ -126,7 +104,7 @@
 {/if}
 
 <style>
-  .table{
+  .table {
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -156,14 +134,5 @@
     width: 1.2rem;
     height: 1.2rem;
     cursor: grab;
-  }
-  .ghost {
-    margin-bottom: 10px;
-    pointer-events: none;
-    z-index: 99;
-    position: absolute;
-    top: 0;
-    left: 10;
-    background-color: white;
   }
 </style>

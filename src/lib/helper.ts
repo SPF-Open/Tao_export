@@ -9,14 +9,14 @@ export type zipObj = {
   xml: Document | undefined;
 };
 
-export type EntryObj ={
-  path:string
-  dir:boolean
-  name:string
-  questionId:string
-  _raw:Entry
-  xml:Document | undefined
-} 
+export type EntryObj = {
+  path: string
+  dir: boolean
+  name: string
+  questionId: string
+  _raw: Entry
+  xml: Document | undefined
+}
 
 export const entryToObj = (entry: Entry): EntryObj => {
   const { filename, directory } = entry;
@@ -42,7 +42,7 @@ export const readAndParseXml = async (xml: EntryObj, assets: EntryObj[]) => {
   const writter = new TextWriter();
   const parser = new DOMParser();
 
-  if(!xml._raw || !xml._raw.getData){
+  if (!xml._raw || !xml._raw.getData) {
     return { ...xml, xml: undefined };
   }
 
@@ -58,7 +58,7 @@ export const readAndParseXml = async (xml: EntryObj, assets: EntryObj[]) => {
     await Promise.all(
       Array.from(imgs).map(async (img) => {
         const data = {
-          id: img.getAttribute('src').split('/').pop(),
+          id: img.getAttribute('src')?.split('/').pop(),
           src: img.getAttribute('src'),
           alt: img.getAttribute('alt'),
           type: img.getAttribute('type'),
@@ -67,9 +67,9 @@ export const readAndParseXml = async (xml: EntryObj, assets: EntryObj[]) => {
         const asset = assets.find((asset) => asset.name === data.id);
         if (asset) {
           const writter = new BlobWriter();
-          asset._raw.getData(writter);
+          asset._raw.getData!(writter);
           img.setAttribute('src', URL.createObjectURL(await writter.getData()));
-          img.parentElement.replaceChild(img, img);
+          img.parentElement!.replaceChild(img, img);
         }
       })
     );
@@ -89,7 +89,7 @@ export type QuestionType = {
   | 'unknown';
   prompt: Element[];
   answers: { txt: string; point: string; id: string; correct: boolean }[];
-  maxLenght?: string;
+  maxLenght?: string[];
   show: boolean
 };
 
@@ -106,7 +106,7 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
   const xDoc = xml.xml;
   const Instructie = xDoc.getElementsByTagName('assessmentTest').length > 0;
 
-  let title: string | null ;
+  let title: string | null;
 
   if (Instructie) {
     title = xDoc
@@ -118,7 +118,7 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
       .getAttribute('title');
   }
 
-  if(!title) title = 'unknown';
+  if (!title) title = 'unknown';
 
   const QCM = xDoc.getElementsByTagName('mapping').length > 0;
 
@@ -135,10 +135,10 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
     };
   }
 
-  let answers = [];
-  let prompt;
+  let answers: QuestionType['answers'] = [];
+  let prompt: HTMLCollectionOf<Element> | Element[];
   let type;
-  let maxLenght = undefined;
+  let maxLenght: string[] = [];
 
   const inner = Array.from(xDoc.getElementsByTagName('itemBody'))[0];
 
@@ -161,24 +161,24 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
       .map(i => i.getAttribute('patternMask'))
       .map(i => {
         try {
-          if(i === null) return '∞';
+          if (i === null) return '∞';
           return i.split(',')[1].split('}')[0];
         } catch (e) {
           return '∞';
         }
       });
-      maxLenght = [];
-      for (let index = 0; index < prompt.length; index++) {
-        const p = prompt.item(index);
-        const extendedTextInteraction = p.getElementsByTagName('extendedTextInteraction');
+    maxLenght = [];
+    for (let index = 0; index < prompt.length; index++) {
+      const p = prompt.item(index);
+      const extendedTextInteraction = p?.getElementsByTagName('extendedTextInteraction') || [];
 
-        if (extendedTextInteraction.length > 0) {
-          maxLenght.push(maxLenghtTemp.shift());
-        }
-        else {
-          maxLenght.push(undefined);
-        }
+      if (extendedTextInteraction.length > 0) {
+        maxLenght.push(maxLenghtTemp.shift() || '');
       }
+      else {
+        maxLenght.push('');
+      }
+    }
   } else {
     if (
       ['Voorbeeld', 'Exemple'].find((t) =>
@@ -203,15 +203,15 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
     ).map((child) => ({
       id: child.attributes[0].nodeValue,
       point: child.attributes[1].nodeValue || 0,
-      correct: Number.parseInt(child.attributes[1].nodeValue) > 0 || false,
+      correct: Number.parseInt(child.attributes[1].nodeValue || "") > 0 || false,
     }));
     answers = Array.from(xDoc.getElementsByTagName('simpleChoice')).map(
       (answer) => ({
         txt: answer.innerHTML,
         point:
           answerMapping.find((m) => m.id === answer.getAttribute('identifier'))
-            ?.point || 0,
-        id: answer.getAttribute('identifier'),
+            ?.point.toString() || "0",
+        id: answer.getAttribute('identifier') || 'unknown',
         correct:
           answerMapping.find((m) => m.id === answer.getAttribute('identifier'))
             ?.correct || false,
@@ -221,8 +221,8 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
 
   return {
     title,
-    type,
-    prompt,
+    type: type as QuestionType['type'],
+    prompt: prompt as Element[],
     answers,
     maxLenght,
     show: true
