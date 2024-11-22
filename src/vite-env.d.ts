@@ -8,3 +8,5 @@ declare const PKG: {
   devDependencies: Record<string, string>;
   peerDependencies: Record<string, string>;
 };
+
+declare const BUILD_DATE: string;
