@@ -1,11 +1,13 @@
 <script lang="ts">
-  import { slide } from 'svelte/transition';
-  import Settings from './lib/Settings.svelte';
-  import Tables from './lib/Tables.svelte';
-  import ZipInput from './lib/ZipInput.svelte';
-  import Question from './template/Question.svelte';
+  import { slide } from "svelte/transition";
+  import Settings from "./lib/Settings.svelte";
+  import Tables from "./lib/Tables.svelte";
+  import ZipInput from "./lib/ZipInput.svelte";
+  import Question from "./template/Question.svelte";
 
-  import { ThemeWrapper, ToggleSwitch } from '@lv00/sveltelib';
+  import "@gzlab/uui/main.css";
+  import { Switch, Text } from "@gzlab/uui/index";
+
   import {
     compareMode,
     showMenu,
@@ -13,11 +15,11 @@
     oldQuestions,
     inzage,
     zoom,
-  } from './store';
-  import Log from './lib/Log.svelte';
+  } from "./store";
+  import Log from "./lib/Log.svelte";
 
-  let titleHeader = '';
-  let rrnHeader = '';
+  let titleHeader = "";
+  let rrnHeader = "";
 </script>
 
 <header class="hide-print">
@@ -25,7 +27,7 @@
     <span>Tao Export</span>
     <span>---</span>
     <span>Menu</span>
-    <ToggleSwitch bind:checked={$showMenu} />
+    <Switch bind:checked={$showMenu} />
   </div>
   <div class="right">
     <a href="/documentation.pdf" target="_blank">Documentation</a>
@@ -36,65 +38,55 @@
   </div>
 </header>
 
-<ThemeWrapper>
-  <Log />
-  <main>
-    {#if $showMenu}
-      <div class="left hide-print" transition:slide>
-        <Settings />
-        <div class="input">
-          <ZipInput />
-        </div>
-        <div class="nb-questions hide-print">
-          <span class="QO">
-            QO : {$questions.filter((q) => q.type === 'QO').length}
-            ({$questions.filter((q) => q.type === 'Instruction QO' && q.show)
-              .length})
-          </span>
-          <span class="QCM">
-            QCM : {$questions.filter((q) => q.type === 'QCM').length}
-            ({$questions.filter((q) => q.type === 'QCM' && q.show).length})
-          </span>
-        </div>
-        <Tables />
+<Log />
+<main>
+  {#if $showMenu}
+    <div class="left hide-print" transition:slide>
+      <Settings />
+      <div class="input">
+        <ZipInput />
       </div>
-    {/if}
-
-    <div class="questions" style="zoom:{$zoom};">
-      {#if $inzage}
-        <div class="header">
-          <input
-            type="text"
-            bind:value={titleHeader}
-            class="hide-print"
-            placeholder="Test name"
-          />
-          <p class="show-print">{titleHeader}</p>
-          <input
-            type="text"
-            bind:value={rrnHeader}
-            class="hide-print"
-            placeholder="RRN"
-          />
-          <p class="show-print">{rrnHeader}</p>
-        </div>
-      {/if}
-
-      {#if $questions.length > 0}
-        {#each $questions as question}
-          <Question bind:question />
-        {/each}
-      {/if}
+      <div class="nb-questions hide-print">
+        <span class="QO">
+          QO : {$questions.filter((q) => q.type === "QO").length}
+          ({$questions.filter((q) => q.type === "Instruction QO" && q.show)
+            .length})
+        </span>
+        <span class="QCM">
+          QCM : {$questions.filter((q) => q.type === "QCM").length}
+          ({$questions.filter((q) => q.type === "QCM" && q.show).length})
+        </span>
+      </div>
+      <Tables />
     </div>
-    {#if $oldQuestions.length > 0 && $compareMode}
-      <div class="questions">
-        {#each $oldQuestions as question}
-          <Question bind:question />
-        {/each}
+  {/if}
+
+  <div class="questions" style="zoom:{$zoom};">
+    {#if $inzage}
+      <div class="header hide-print">
+        <Text bind:value={titleHeader} placeholder="Test name" />
+        <Text bind:value={rrnHeader} placeholder="RRN" />
+      </div>
+      <div class="header show-print">
+        <p class="show-print">{titleHeader}</p>
+        <p class="show-print">{rrnHeader}</p>
       </div>
     {/if}
-  </main>
-</ThemeWrapper>
+
+    {#if $questions.length > 0}
+      {#each $questions as question}
+        <Question bind:question />
+      {/each}
+    {/if}
+  </div>
+  {#if $oldQuestions.length > 0 && $compareMode}
+    <div class="questions">
+      {#each $oldQuestions as question}
+        <Question bind:question />
+      {/each}
+    </div>
+  {/if}
+</main>
 
 <footer class="hide-print">
   <div class="left">
@@ -190,7 +182,7 @@
     padding: 5px;
     border-bottom: 1px solid var(--border-color);
     display: flex;
-    justify-content: center;
+    justify-content: space-evenly;
   }
 
   .questions > .header > * {

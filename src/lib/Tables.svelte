@@ -1,6 +1,5 @@
 <script lang="ts">
   import { questions } from '../store';
-  import Question from '../template/Question.svelte';
   import type { QuestionType } from './helper';
   let checked = true;
   let text = '';
