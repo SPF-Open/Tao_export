@@ -18,7 +18,7 @@
     "vite": "^6.1.0"
   },
   "dependencies": {
-    "@gzlab/uui": "^0.0.31",
+    "@gzlab/uui": "^0.1.0",
     "@lv00/toolkit": "^1.2.10",
     "@zip.js/zip.js": "^2.7.57"
   }

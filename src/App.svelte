@@ -5,9 +5,6 @@
   import ZipInput from "./lib/ZipInput.svelte";
   import Question from "./template/Question.svelte";
 
-  import "@gzlab/uui/main.css";
-  import { Switch, Text } from "@gzlab/uui/index";
-
   import {
     compareMode,
     showMenu,
@@ -17,6 +14,8 @@
     zoom,
   } from "./store";
   import Log from "./lib/Log.svelte";
+
+  import { Switch, Text } from "@gzlab/uui";
 
   let titleHeader = "";
   let rrnHeader = "";

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Switch } from '@gzlab/uui/index';
+  import { Switch } from '@gzlab/uui';
   import {
     compareMode,
     inzage,

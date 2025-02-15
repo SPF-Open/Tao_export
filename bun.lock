@@ -4,19 +4,19 @@
     "": {
       "name": "tao_export",
       "dependencies": {
-        "@gzlab/uui": "latest",
-        "@lv00/toolkit": "latest",
-        "@zip.js/zip.js": "latest",
+        "@gzlab/uui": "^0.1.0",
+        "@lv00/toolkit": "^1.2.10",
+        "@zip.js/zip.js": "^2.7.57",
       },
       "devDependencies": {
-        "@sveltejs/vite-plugin-svelte": "latest",
-        "@tsconfig/svelte": "latest",
-        "svelte": "latest",
-        "svelte-check": "latest",
-        "svelte-preprocess": "latest",
-        "tslib": "latest",
-        "typescript": "latest",
-        "vite": "latest",
+        "@sveltejs/vite-plugin-svelte": "^5.0.3",
+        "@tsconfig/svelte": "^5.0.4",
+        "svelte": "^5.20.0",
+        "svelte-check": "^4.1.4",
+        "svelte-preprocess": "^6.0.3",
+        "tslib": "^2.8.1",
+        "typescript": "^5.7.3",
+        "vite": "^6.1.0",
       },
     },
   },
@@ -73,7 +73,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.24.2", "", { "os": "win32", "cpu": "x64" }, "sha512-7VTgWzgMGvup6aSqDPLiW5zHaxYJGTO4OokMjIlrCtf+VpEL+cXKtCvg723iguPYI5oaUNdS+/V7OU2gvXVWEg=="],
 
-    "@gzlab/uui": ["@gzlab/uui@0.0.31", "", { "peerDependencies": { "svelte": "^4.0.0" } }, "sha512-kUkVRO02U0K/wCk2wNe8PJurc72UZ03rWfYEzpHs3HGsT9ov6m5u/vOqrr7khh5pRMYhhR1xzX5qwsxqKyj31A=="],
+    "@gzlab/uui": ["@gzlab/uui@0.1.0", "", { "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-ldFNCQ/eshqNXew5k1mx9ITqp8lCYpX48jLXEWXSbtXn3R2HkOLB4cbo1eAneFOhoLpR1PU0ekG5jygJhEBcuQ=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.8", "", { "dependencies": { "@jridgewell/set-array": "^1.2.1", "@jridgewell/sourcemap-codec": "^1.4.10", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA=="],
 
