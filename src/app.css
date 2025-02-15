@@ -8,13 +8,6 @@
   -moz-osx-font-smoothing: grayscale;
   -webkit-text-size-adjust: 100%;
 
-  /*   --bg: rgb(13, 13, 13);
-  --border-color: rgb(32, 32, 32);
-  --txt: white;
-  --txt-secondary: rgba(255, 255, 255, 0.78);
-  --txt-accent: rgb(153, 255, 153);
-  --txt-accent2: rgba(153, 255, 153, 0.20); */
-
   --bg: #fff;
   --border-color: rgb(223, 223, 223);
   --question-border: #f5f4f2;
@@ -28,8 +21,6 @@ body {
   margin: 0;
   min-width: 320px;
   min-height: 100vh;
-  color: var(--txt);
-  background-color: var(--bg);
 }
 
 @media (prefers-color-scheme: light) {

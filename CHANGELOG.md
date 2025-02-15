@@ -1,5 +1,8 @@
 ## Changelog
 
+### 0.1.8
+- Feat : New lib style
+
 ### 0.1.7
 - Feat : Change item order
 - Update : dependencies

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { ToggleSwitch } from '@lv00/sveltelib';
+  import { Switch } from '@gzlab/uui';
   import {
     compareMode,
     inzage,
@@ -14,22 +14,22 @@
 <h4>🏠 Main</h4>
 <div class="options">
   <legend>Answer</legend>
-  <ToggleSwitch bind:checked={$showAnswer} />
+  <Switch bind:checked={$showAnswer} />
   <legend>Instruction</legend>
-  <ToggleSwitch bind:checked={$showInstruction} />
+  <Switch bind:checked={$showInstruction} />
 </div>
 <h4>
   <span>✨ Extra</span>
 </h4>
 <div class="options">
   <legend>Letter</legend>
-  <ToggleSwitch bind:checked={$showLetter} />
+  <Switch bind:checked={$showLetter} />
   <legend>Compare test</legend>
-  <ToggleSwitch bind:checked={$compareMode} />
+  <Switch bind:checked={$compareMode} />
   <legend>Inzage mode</legend>
-  <ToggleSwitch bind:checked={$inzage} />
+  <Switch bind:checked={$inzage} />
   <legend>Sort question</legend>
-  <ToggleSwitch bind:checked={$sort} />
+  <Switch bind:checked={$sort} />
   <legend>Font size</legend>
   <input type="range" min="0.8" max="1.5" step="0.1" bind:value={$zoom} />
 </div>
