@@ -15,6 +15,7 @@
   } from "./store";
   import Log from "./lib/Log.svelte";
 
+  import "@gzlab/uui/main.css"
   import { Switch, Text } from "@gzlab/uui";
 
   let titleHeader = "";

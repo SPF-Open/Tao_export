@@ -4,7 +4,7 @@
     "": {
       "name": "tao_export",
       "dependencies": {
-        "@gzlab/uui": "^0.1.0",
+        "@gzlab/uui": "^0.1.1",
         "@lv00/toolkit": "^1.2.10",
         "@zip.js/zip.js": "^2.7.57",
       },
@@ -73,7 +73,7 @@
 
     "@esbuild/win32-x64": ["@esbuild/win32-x64@0.24.2", "", { "os": "win32", "cpu": "x64" }, "sha512-7VTgWzgMGvup6aSqDPLiW5zHaxYJGTO4OokMjIlrCtf+VpEL+cXKtCvg723iguPYI5oaUNdS+/V7OU2gvXVWEg=="],
 
-    "@gzlab/uui": ["@gzlab/uui@0.1.0", "", { "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-ldFNCQ/eshqNXew5k1mx9ITqp8lCYpX48jLXEWXSbtXn3R2HkOLB4cbo1eAneFOhoLpR1PU0ekG5jygJhEBcuQ=="],
+    "@gzlab/uui": ["@gzlab/uui@0.1.1", "", { "peerDependencies": { "svelte": "^5.0.0" } }, "sha512-sBhzOY0zSqPuXwMvY7GjZ1F8mD3SwkatWk7bgcwIomEg47edFIkTAyHR2+uK4BAfAHft+aOI8YuRBcTIwZFJ/A=="],
 
     "@jridgewell/gen-mapping": ["@jridgewell/gen-mapping@0.3.8", "", { "dependencies": { "@jridgewell/set-array": "^1.2.1", "@jridgewell/sourcemap-codec": "^1.4.10", "@jridgewell/trace-mapping": "^0.3.24" } }, "sha512-imAbBGkb+ebQyxKgzv5Hu2nmROxoDOXHh80evxdoXNOrvAnVx7zimzc1Oo5h9RlfV4vPXaE2iM5pOFbvOCClWA=="],
 
