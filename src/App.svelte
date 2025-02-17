@@ -5,6 +5,8 @@
   import ZipInput from "./lib/ZipInput.svelte";
   import Question from "./template/Question.svelte";
 
+  import "./app.css";
+
   import {
     compareMode,
     showMenu,
