@@ -9,6 +9,7 @@
   } from './helper';
   import { questions, resetSettings } from '../store';
   import logger from './log';
+  import { Button } from '@gzlab/uui';
 
   let files: FileList;
   let assets: EntryObj[];
@@ -70,9 +71,9 @@
 </svelte:head>
 
 <input type="file" name="zip" id="zip" accept=".zip" bind:files />
-<button class="hide-print" on:click|preventDefault={() => window.print()}>
+<Button onClick={() => window.print()} type="info">
   Get PDF
-</button>
+</Button>
 
 <style>
   button {
