@@ -152,6 +152,8 @@
   main {
     display: grid;
     grid-auto-flow: column;
+    min-height: 100vh;
+
   }
 
   .input {
