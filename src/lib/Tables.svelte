@@ -1,15 +1,16 @@
 <script lang="ts">
-  import { questions } from '../store';
-  import type { QuestionType } from './helper';
+  import { Text } from "@gzlab/uui";
+  import { questions } from "../store";
+  import type { QuestionType } from "./helper";
   let checked = true;
-  let text = '';
+  let text = "";
 
   $: if (text) {
-    const qn = text.split(',').map((n) => n.trim());
+    const qn = text.split(",").map((n) => n.trim());
     questions.update((o) =>
       o.map((q) => ({
         ...q,
-        show: qn.includes(q.title.split(' ')[1]),
+        show: qn.includes(q.title.split(" ")[1]),
       })),
     );
   }
@@ -62,15 +63,18 @@
 
 {#if !$questions || $questions.length}
   <div class="hide-print table">
-    <h3>Show/Hide Question</h3>
-    <div>
-      <input
-        type="text"
-        id="SelectQuestion"
-        placeholder="ex : 12,13,15"
-        bind:value={text}
-      />
+    <div class="nb-questions hide-print">
+      <span class="QO">
+        QO : {$questions.filter((q) => q.type === "QO").length}
+        ({$questions.filter((q) => q.type === "Instruction QO" && q.show)
+          .length})
+      </span>
+      <span class="QCM">
+        QCM : {$questions.filter((q) => q.type === "QCM").length}
+        ({$questions.filter((q) => q.type === "QCM" && q.show).length})
+      </span>
     </div>
+    <Text id="SelectQuestion" placeholder="Filter (ex : 12,13,15)" bind:value={text} />
     <ul bind:this={container}>
       <li>
         <input
@@ -107,17 +111,12 @@
     flex: 1;
     display: flex;
     flex-direction: column;
-  }
-  input[type='text'] {
-    width: 99%;
-  }
-  h3 {
-    margin: 0;
-    font-size: 18px;
+    gap: 0.3rem;
   }
   ul {
     list-style: none;
     padding-left: 2px;
+    margin: 0;
     overflow-y: scroll;
     position: relative;
     flex: 1;

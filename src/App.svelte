@@ -46,26 +46,12 @@
   <Log />
   <div class="hero">
     {#if $showMenu}
-      <div class="left hide-print" transition:slide>
+      <div class="left hide-print" transition:slide={{ axis: "x" }}>
         <Settings />
-        <div class="input">
-          <ZipInput />
-        </div>
-        <div class="nb-questions hide-print">
-          <span class="QO">
-            QO : {$questions.filter((q) => q.type === "QO").length}
-            ({$questions.filter((q) => q.type === "Instruction QO" && q.show)
-              .length})
-          </span>
-          <span class="QCM">
-            QCM : {$questions.filter((q) => q.type === "QCM").length}
-            ({$questions.filter((q) => q.type === "QCM" && q.show).length})
-          </span>
-        </div>
+        <ZipInput />
         <Tables />
       </div>
     {/if}
-
     <div class="questions" style="zoom:{$zoom};">
       {#if $inzage}
         <div class="header hide-print">
@@ -111,10 +97,9 @@
     display: flex;
     flex-wrap: wrap;
     position: sticky;
+    gap: 0.3rem;
     top: 0;
-    height: 20px;
-    gap: 5px;
-    padding: 5px;
+    padding: 0.3rem;
     font-weight: bold;
     background-color: var(--bg);
   }
@@ -123,7 +108,7 @@
     display: inline-flex;
     flex-wrap: nowrap;
     width: fit-content;
-    gap: 5px;
+    gap: 0.3rem;
   }
 
   header > .right {
@@ -136,21 +121,17 @@
     position: sticky;
     display: flex;
     flex-wrap: wrap;
-    gap: 5px;
-    padding: 5px;
+    gap: 0.3rem;
+    padding: 0.3rem;
     font-weight: bold;
     bottom: 0;
-  }
-
-  footer .left {
-    margin-right: auto;
   }
 
   footer .right {
     margin-left: auto;
   }
 
-  main{
+  main {
     min-height: 100vh;
   }
 
@@ -159,18 +140,12 @@
     grid-auto-flow: column;
   }
 
-  .input {
-    display: flex;
-    flex-direction: column;
-    gap: 10px;
-    width: fit-content;
-  }
-
   .hero .left {
     position: sticky;
     display: flex;
     flex-direction: column;
-    top: 30px;  
+    top: 30px;
+    gap: 0.6rem;  
     max-width: 300px;
     height: 90vh;
     flex: 1;
