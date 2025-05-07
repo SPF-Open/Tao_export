@@ -17,10 +17,18 @@
   --txt-accent2: rgba(255, 90, 120, 0.5);
 }
 
+* {
+  -webkit-print-color-adjust: exact !important;
+  /* Chrome, Safari 6 – 15.3, Edge */
+  color-adjust: exact !important;
+  /* Firefox 48 – 96 */
+  print-color-adjust: exact !important;
+  /* Firefox 97+, Safari 15.4+ */
+}
+
 body {
   margin: 0;
   min-width: 320px;
-  min-height: 100vh;
 }
 
 @media (prefers-color-scheme: light) {
@@ -37,7 +45,6 @@ body {
 
 #app {
   max-width: 1920px;
-  min-height: 100vh;
   margin: 0 auto;
 }
 
