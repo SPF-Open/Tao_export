@@ -61,7 +61,7 @@
   let container = null;
 </script>
 
-{#if !$questions || $questions.length}
+{#if $questions && $questions.length}
   <div class="hide-print table">
     <div class="nb-questions hide-print">
       <span class="QO">

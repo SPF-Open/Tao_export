@@ -14,14 +14,29 @@
     oldQuestions,
     inzage,
     zoom,
+    multiple,
+    merge,
+    examsIndex,
+    exams,
   } from "./store";
   import Log from "./lib/Log.svelte";
 
   import "@gzlab/uui/main.css";
   import { Switch, Text } from "@gzlab/uui";
-
+  import { get } from "svelte/store";
   let titleHeader = "";
   let rrnHeader = "";
+
+  function moveIndex(n: number) {
+    const maxLength = get(exams).length - 1;
+    if (!maxLength) return;
+    examsIndex.update((i) => {
+      i += n;
+      if (i < 0) i = maxLength;
+      if (i > maxLength) i = 0;
+      return i;
+    });
+  }
 </script>
 
 <main>
@@ -31,6 +46,13 @@
       <span>---</span>
       <span>Menu</span>
       <Switch bind:checked={$showMenu} />
+    </div>
+    <div class="middle">
+      {#if $multiple && !$merge}
+        <button onclick={() => moveIndex(-1)}> {"<"} </button>
+        <span>{$examsIndex}</span>
+        <button onclick={() => moveIndex(+1)}> {">"} </button>
+      {/if}
     </div>
     <div class="right">
       <a href="/documentation.pdf" target="_blank">Documentation</a>
@@ -46,7 +68,7 @@
   <Log />
   <div class="hero">
     {#if $showMenu}
-      <div class="left hide-print" transition:slide={{ axis: "x" }}>
+      <div class="left hide-print" >
         <Settings />
         <ZipInput />
         <Tables />
@@ -66,14 +88,14 @@
 
       {#if $questions.length > 0}
         {#each $questions as question}
-          <Question bind:question />
+          <Question {question} />
         {/each}
       {/if}
     </div>
     {#if $oldQuestions.length > 0 && $compareMode}
       <div class="questions">
         {#each $oldQuestions as question}
-          <Question bind:question />
+          <Question {question} />
         {/each}
       </div>
     {/if}
@@ -111,6 +133,13 @@
     gap: 0.3rem;
   }
 
+  .middle {
+    flex: 1;
+    margin: auto;
+    display: flex;
+    justify-content: center;
+  }
+
   header > .right {
     margin-left: auto;
   }
@@ -145,15 +174,12 @@
     display: flex;
     flex-direction: column;
     top: 30px;
-    gap: 0.6rem;  
-    max-width: 300px;
-    height: 90vh;
+    gap: 0.6rem;
+    max-width: 350px;
+    height: 91vh;
+    overflow-y: auto;
     flex: 1;
-    padding: 5px;
-  }
-
-  .hero .left > * {
-    margin-top: 5px;
+    padding: 0 5px;
   }
 
   .hero .left > :global(*) {

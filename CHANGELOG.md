@@ -1,5 +1,14 @@
 ## Changelog
 
+### 0.2.0
+
+- Feat : Multiple file support
+  - One test a the time
+  - Merge all file
+- Update : Settings more compact
+- Update : Dev container now install bun
+- Refactor : Migration to svelte 5 in progress
+
 ### 0.1.8
 - Feat : New lib style
 
