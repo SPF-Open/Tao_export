@@ -14,6 +14,7 @@
     multiple,
     questions,
     resetSettings,
+    windowName,
   } from "../store";
   import { Button, Files } from "@gzlab/uui";
   import { get } from "svelte/store";
@@ -62,18 +63,30 @@
               .map((obj) => readAndParseXml(obj, assets)), // parse xml
           );
 
+          const name = file.name.replace("_", " ").split("-")[0].toUpperCase();
+
           return {
             questions: xmls.map(xmlToObj).filter((q) => q),
             error: null,
+            name,
           };
         } catch (e) {
-          return { questions: [] as QuestionType[], error: e as Error };
+          return {
+            questions: [] as QuestionType[],
+            error: e as Error,
+            name: "",
+          };
         }
       }),
     ).then((data) => {
       exams.set(data);
       const q = data[get(examsIndex)];
-      if (q && q.questions && q.questions.length) questions.set(q.questions);
+      if (q && q.questions && q.questions.length) {
+        questions.set(q.questions);
+        windowName.set(
+          q.name || "TAO-Export" + Math.floor(Math.random() * 1000),
+        );
+      }
     });
     resetSettings();
   });

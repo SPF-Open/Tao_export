@@ -18,6 +18,7 @@
     merge,
     examsIndex,
     exams,
+    windowName,
   } from "./store";
   import Log from "./lib/Log.svelte";
 
@@ -38,6 +39,10 @@
     });
   }
 </script>
+
+<svelte:head>
+    <title>{$windowName}</title> 
+</svelte:head>
 
 <main>
   <header class="hide-print">

@@ -1,5 +1,8 @@
 ## Changelog
 
+### 0.2.1
+- Feat : Window name change according to file name
+
 ### 0.2.0
 
 - Feat : Multiple file support

@@ -13,10 +13,11 @@ export const pushError = (title: string, txt: string) => {
 }
 
 // Assesments
-export let exams = writable<{ questions: QuestionType[], error: null | Error }[]>([])
+export let exams = writable<{ questions: QuestionType[], error: null | Error, name: string }[]>([])
 export let questions = writable<QuestionType[]>([]);
 export let oldQuestions = writable<QuestionType[]>([]);
-export let examsIndex = writable(0);
+export let examsIndex = writable<number>(0);
+export let windowName = writable<string>("TAO Export")
 
 examsIndex.subscribe((index) => {
   const ex = get(exams)
@@ -28,8 +29,9 @@ examsIndex.subscribe((index) => {
   if (!q) return
 
   questions.set(q.questions)
-  console.log(questions)
+  windowName.set(q.name || "TAO-Export" + Math.floor(Math.random() * 1000))
 })
+
 // Assesments action
 
 export const resetQuestions = () => {
