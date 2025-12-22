@@ -1,10 +1,11 @@
 {
   "lockfileVersion": 1,
+  "configVersion": 0,
   "workspaces": {
     "": {
       "name": "tao_export",
       "dependencies": {
-        "@gzlab/uui": "^0.1.13",
+        "@gzlab/uui": "^0.1.14",
         "@lv00/toolkit": "^1.2.10",
         "@zip.js/zip.js": "^2.7.60",
       },

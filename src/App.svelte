@@ -25,6 +25,7 @@
   import "@gzlab/uui/main.css";
   import { Switch, Text } from "@gzlab/uui";
   import { get } from "svelte/store";
+  import MaintenanceOverlay from "./lib/MaintenanceOverlay.svelte";
   let titleHeader = "";
   let rrnHeader = "";
 
@@ -44,6 +45,7 @@
     <title>{$windowName}</title> 
 </svelte:head>
 
+<MaintenanceOverlay endTime={new Date('2026-01-02')} />
 <main>
   <header class="hide-print">
     <div class="left">
