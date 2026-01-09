@@ -45,7 +45,7 @@
     <title>{$windowName}</title> 
 </svelte:head>
 
-<MaintenanceOverlay endTime={new Date('2026-01-02')} />
+<MaintenanceOverlay endTime={new Date('2026-01-17')} />
 <main>
   <header class="hide-print">
     <div class="left">
