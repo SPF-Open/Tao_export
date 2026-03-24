@@ -233,8 +233,21 @@ export const getAnswerMapping = (questionTitle: string, currentAnswers: { id: st
 };
 
 sort.subscribe((value) => {
-  if (value) sortQuestions();
-  else questions.set(get(oldQuestions));
+  if (value) {
+    sortQuestions();
+    oldQuestions.update((qs) => [...qs].sort((a, b) => {
+      if (a.type.includes('Instruction') || a.type === 'Instruction QCM')
+        return 1;
+      const aNumber = a.title.match(/\d+/);
+      const bNumber = b.title.match(/\d+/);
+      if (aNumber && bNumber) {
+        return Number(aNumber[0]) - Number(bNumber[0]);
+      }
+      return 0;
+    }));
+  } else {
+    questions.set(get(oldQuestions));
+  }
 });
 
 compareMode.subscribe((value) => {
@@ -244,6 +257,15 @@ compareMode.subscribe((value) => {
 
 showInstruction.subscribe((showInstruction) => {
   questions.update((o) => o.map((q) => ({
+    ...q,
+    show:
+      q.type === 'Instruction' ||
+        q.type === 'Instruction QCM' ||
+        q.type === 'Instruction QO'
+        ? showInstruction
+        : q.show,
+  })))
+  oldQuestions.update((o) => o.map((q) => ({
     ...q,
     show:
       q.type === 'Instruction' ||

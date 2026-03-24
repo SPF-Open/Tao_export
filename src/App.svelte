@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { slide } from "svelte/transition";
+  import { slide, fly,blur } from "svelte/transition";
   import Settings from "./lib/Settings.svelte";
   import Tables from "./lib/Tables.svelte";
   import ZipInput from "./lib/ZipInput.svelte";
@@ -35,6 +35,7 @@
   
   let titleHeader = "";
   let rrnHeader = "";
+  let showDebug = $state(false);
 
   function moveIndex(n: number) {
     const maxLength = get(exams).length - 1;
@@ -129,6 +130,26 @@
         </svg>
         <span>Changelog</span>
       </a>
+      <div class="debug-container">
+        <button class="icon-btn" onclick={() => showDebug = !showDebug} aria-label="Debug info">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <circle cx="12" cy="12" r="3"></circle>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+          </svg>
+        </button>
+        {#if showDebug}
+          <div class="debug-menu">
+            <div class="debug-item">
+              <span class="debug-label">Version</span>
+              <span class="debug-value">{PKG.version}</span>
+            </div>
+            <div class="debug-item">
+              <span class="debug-label">Build</span>
+              <span class="debug-value">{BUILD_DATE}</span>
+            </div>
+          </div>
+        {/if}
+      </div>
     </div>
   </header>
 
@@ -136,7 +157,7 @@
   
   <div class="content" class:sidebar-open={$showMenu}>
     {#if $showMenu}
-      <aside class="sidebar" transition:slide={{ duration: 300 }}>
+      <aside class="sidebar" >
         <div class="sidebar-content">
           <Settings />
           <ZipInput />
@@ -146,95 +167,118 @@
     {/if}
     
     <div class="main-area">
-      <div class="questions-container" style="zoom:{$zoom};">
-        {#if $inzage}
-          <div class="inzage-header hide-print">
-            <div class="inzage-field">
-              <Text bind:value={titleHeader} placeholder="Test name" />
-            </div>
-            <div class="inzage-field">
-              <Text bind:value={rrnHeader} placeholder="RRN" />
+      {#if $oldQuestions.length > 0 && $compareMode}
+        <div class="compare-wrapper">
+          <div class="compare-column">
+            <div class="compare-label">Test A</div>
+            <div class="questions-container" style="zoom:{$zoom};">
+              {#if $inzage}
+                <div class="inzage-header hide-print">
+                  <div class="inzage-field">
+                    <Text bind:value={titleHeader} placeholder="Test name" />
+                  </div>
+                  <div class="inzage-field">
+                    <Text bind:value={rrnHeader} placeholder="RRN" />
+                  </div>
+                </div>
+              {/if}
+              {#each $questions as question}
+                <Question {question} />
+              {/each}
             </div>
           </div>
-          <div class="inzage-header inzage-header-print">
-            <div class="inzage-field-print">
-              <span class="inzage-label">Test:</span>
-              <span class="inzage-value">{titleHeader}</span>
-            </div>
-            <div class="inzage-field-print">
-              <span class="inzage-label">RRN:</span>
-              <span class="inzage-value">{rrnHeader}</span>
+          <div class="compare-column">
+            <div class="compare-label">Test B</div>
+            <div class="questions-container" style="zoom:{$zoom};">
+              {#if $inzage}
+                <div class="inzage-header hide-print">
+                  <div class="inzage-field">
+                    <Text bind:value={titleHeader} placeholder="Test name" />
+                  </div>
+                  <div class="inzage-field">
+                    <Text bind:value={rrnHeader} placeholder="RRN" />
+                  </div>
+                </div>
+              {/if}
+              {#each $oldQuestions as question}
+                <Question {question} />
+              {/each}
             </div>
           </div>
-        {/if}
+        </div>
+      {:else}
+        <div class="questions-container" style="zoom:{$zoom};">
+          {#if $inzage}
+            <div class="inzage-header hide-print">
+              <div class="inzage-field">
+                <Text bind:value={titleHeader} placeholder="Test name" />
+              </div>
+              <div class="inzage-field">
+                <Text bind:value={rrnHeader} placeholder="RRN" />
+              </div>
+            </div>
+            <div class="inzage-header inzage-header-print">
+              <div class="inzage-field-print">
+                <span class="inzage-label">Test:</span>
+                <span class="inzage-value">{titleHeader}</span>
+              </div>
+              <div class="inzage-field-print">
+                <span class="inzage-label">RRN:</span>
+                <span class="inzage-value">{rrnHeader}</span>
+              </div>
+            </div>
+          {/if}
 
-        {#if $questions.length > 0}
-          {#each $questions as question}
-            <Question {question} />
-          {/each}
-        {/if}
-         
-        {#if ($randomizeQuestion || $randomizeAnswer) && $questions.length > 0}
-          <div class="mapping-table">
-            <h3>Mapping</h3>
-            <table class="mapping-main-table">
-              <thead>
-                <tr>
-                  {#if $randomizeQuestion}
-                    <th>#</th>
-                    <th>Question</th>
-                    <th>Orig</th>
-                  {/if}
-                  {#if $randomizeAnswer}<th>Answers</th>{/if}
-                </tr>
-              </thead>
-              <tbody>
-                {#each $questionMapping.filter((m: { type: string }) => m.type !== 'Instruction' && m.type !== 'Instruction QCM' && m.type !== 'Instruction QO') as qm, i}
-                  {@const ansMap = $answerMapping.find((a: { title: string }) => a.title.trim() === qm.title.trim())?.mapping || []}
+          {#if $questions.length > 0}
+            {#each $questions as question}
+              <Question {question} />
+            {/each}
+          {/if}
+           
+          {#if ($randomizeQuestion || $randomizeAnswer) && $questions.length > 0}
+            <div class="mapping-table">
+              <h3>Mapping</h3>
+              <table class="mapping-main-table">
+                <thead>
                   <tr>
                     {#if $randomizeQuestion}
-                      <td>{qm.currentIndex}</td>
-                      <td>{qm.title}</td>
-                      <td>{qm.originalIndex}</td>
+                      <th>#</th>
+                      <th>Question</th>
+                      <th>Orig</th>
                     {/if}
-                    {#if $randomizeAnswer && ansMap.length > 0}
-                      <td class="answer-cell">
-                        {#each ansMap as am: { currentIndex: number; originalIndex: number; id: string }}
-                          <span class="answer-item" title="Original: {$showLetter ? String.fromCharCode(64 + am.originalIndex) : am.originalIndex}">
-                            {am.currentIndex}→{am.originalIndex}
-                          </span>{#if am !== ansMap[ansMap.length-1]}, {/if}
-                        {/each}
-                      </td>
-                    {:else if $randomizeAnswer}
-                      <td class="answer-cell">-</td>
-                    {/if}
+                    {#if $randomizeAnswer}<th>Answers</th>{/if}
                   </tr>
-                {/each}
-              </tbody>
-            </table>
-          </div>
-        {/if}
-      </div>
-      
-      {#if $oldQuestions.length > 0 && $compareMode}
-        <div class="questions-container compare-mode">
-          {#each $oldQuestions as question}
-            <Question {question} />
-          {/each}
+                </thead>
+                <tbody>
+                  {#each $questionMapping.filter((m: { type: string }) => m.type !== 'Instruction' && m.type !== 'Instruction QCM' && m.type !== 'Instruction QO') as qm, i}
+                    {@const ansMap = $answerMapping.find((a: { title: string }) => a.title.trim() === qm.title.trim())?.mapping || []}
+                    <tr>
+                      {#if $randomizeQuestion}
+                        <td>{qm.currentIndex}</td>
+                        <td>{qm.title}</td>
+                        <td>{qm.originalIndex}</td>
+                      {/if}
+                      {#if $randomizeAnswer && ansMap.length > 0}
+                        <td class="answer-cell">
+                          {#each ansMap as am: { currentIndex: number; originalIndex: number; id: string }}
+                            <span class="answer-item" title="Original: {$showLetter ? String.fromCharCode(64 + am.originalIndex) : am.originalIndex}">
+                              {am.currentIndex}→{am.originalIndex}
+                            </span>{#if am !== ansMap[ansMap.length-1]}, {/if}
+                          {/each}
+                        </td>
+                      {:else if $randomizeAnswer}
+                        <td class="answer-cell">-</td>
+                      {/if}
+                    </tr>
+                  {/each}
+                </tbody>
+              </table>
+            </div>
+          {/if}
         </div>
       {/if}
     </div>
   </div>
-
-  <footer class="footer">
-    <div class="footer-left">
-      <span>&copy; Benoit-Welsch</span>
-      <span class="version">v{PKG.version}</span>
-    </div>
-    <div class="footer-right">
-      <span class="build-time">Build time: {BUILD_DATE}</span>
-    </div>
-  </footer>
 </main>
 
 <style>
@@ -345,6 +389,47 @@
     background: var(--surface);
   }
 
+  .debug-container {
+    position: relative;
+  }
+
+  .debug-menu {
+    position: absolute;
+    top: 100%;
+    right: 0;
+    margin-top: 8px;
+    padding: 12px 16px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    min-width: 160px;
+    z-index: 200;
+    animation: fadeIn 0.15s ease;
+  }
+
+  .debug-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 6px 0;
+  }
+
+  .debug-item:not(:last-child) {
+    border-bottom: 1px solid var(--border);
+  }
+
+  .debug-label {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .debug-value {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--text);
+  }
+
   .header-link {
     display: flex;
     align-items: center;
@@ -370,17 +455,18 @@
   }
 
   .sidebar {
+    position: sticky;
+    top: var(--header-height);
+    height: calc(100vh - var(--header-height));
     width: var(--sidebar-width);
-    flex-shrink: 0;
     background: var(--surface);
     border-right: 1px solid var(--border);
-    overflow: hidden;
+    box-shadow: var(--shadow-lg);
+    z-index: 50;
+    overflow-y: auto;
   }
 
   .sidebar-content {
-    position: fixed;
-    height: calc(100vh - var(--header-height));
-    overflow-y: auto;
     padding: 16px;
     display: flex;
     flex-direction: column;
@@ -391,11 +477,36 @@
     flex: 1;
     padding: 0 16px;
     min-width: 0;
+    transition: margin-left 0.3s ease;
   }
-
+  
   .questions-container {
     max-width: 1080px;
     margin: 0 auto;
+  }
+
+  .compare-wrapper {
+    margin-top: 16px;
+    display: flex;
+    gap: 24px;
+    align-items: flex-start;
+  }
+
+  .compare-column {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .compare-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-align: center;
+    padding: 8px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin-bottom: 16px;
   }
 
   .questions-container.compare-mode {
