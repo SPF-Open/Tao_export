@@ -1,5 +1,8 @@
 ## Changelog
 
+### 1.2.0
+- Refactor : remove unused transition import and adjust font size and padding in settings
+
 ### 1.1.0
 - Feat : Changelog modal accessible from header
 - Feat : Documentation modal with 3 languages (FR/EN/NL)
