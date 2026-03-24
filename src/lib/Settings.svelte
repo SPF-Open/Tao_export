@@ -38,32 +38,32 @@
     {#if state.main}
       <div class="section-content" transition:slide={{ duration: 200 }}>
         <div class="setting-row">
-          <label class="setting-label">
+          <span class="setting-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
               <circle cx="12" cy="12" r="3"></circle>
             </svg>
             <span>Show Answer</span>
-          </label>
+          </span>
           <Switch bind:checked={$showAnswer} />
         </div>
         <div class="setting-row">
-          <label class="setting-label">
+          <span class="setting-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
               <line x1="1" y1="1" x2="23" y2="23"></line>
             </svg>
             <span>Show Instruction</span>
-          </label>
+          </span>
           <Switch bind:checked={$showInstruction} />
         </div>
         <div class="setting-row">
-          <label class="setting-label">
+          <span class="setting-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
             </svg>
             <span>Dark Mode</span>
-          </label>
+          </span>
           <Switch bind:checked={$darkMode} />
         </div>
       </div>
@@ -89,18 +89,18 @@
     {#if state.extra}
       <div class="section-content" transition:slide={{ duration: 200 }}>
         <div class="setting-row">
-          <label class="setting-label">
+          <span class="setting-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="4 7 4 4 20 4 20 7"></polyline>
               <line x1="9" y1="20" x2="15" y2="20"></line>
               <line x1="12" y1="4" x2="12" y2="20"></line>
             </svg>
             <span>Letter (A,B,C)</span>
-          </label>
+          </span>
           <Switch bind:checked={$showLetter} />
         </div>
         <div class="setting-row">
-          <label class="setting-label">
+          <span class="setting-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="16 3 21 3 21 8"></polyline>
               <line x1="4" y1="20" x2="21" y2="3"></line>
@@ -109,11 +109,11 @@
               <line x1="4" y1="4" x2="9" y2="9"></line>
             </svg>
             <span>Randomize Answer</span>
-          </label>
+          </span>
           <Switch bind:checked={$randomizeAnswer} />
         </div>
         <div class="setting-row">
-          <label class="setting-label">
+          <span class="setting-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <polyline points="16 3 21 3 21 8"></polyline>
               <line x1="4" y1="20" x2="21" y2="3"></line>
@@ -122,32 +122,32 @@
               <line x1="4" y1="4" x2="9" y2="9"></line>
             </svg>
             <span>Randomize Question</span>
-          </label>
+          </span>
           <Switch bind:checked={$randomizeQuestion} />
         </div>
         
         <div class="setting-row">
-          <label class="setting-label">
+          <span class="setting-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
               <line x1="12" y1="3" x2="12" y2="21"></line>
             </svg>
             <span>Compare Test</span>
-          </label>
+          </span>
           <Switch bind:checked={$compareMode} />
         </div>
         <div class="setting-row">
-          <label class="setting-label">
+          <span class="setting-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
               <circle cx="12" cy="12" r="3"></circle>
             </svg>
             <span>Inzage Mode</span>
-          </label>
+          </span>
           <Switch bind:checked={$inzage} />
         </div>
         <div class="setting-row">
-          <label class="setting-label">
+          <span class="setting-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <line x1="4" y1="9" x2="20" y2="9"></line>
               <line x1="4" y1="15" x2="20" y2="15"></line>
@@ -155,13 +155,13 @@
               <line x1="16" y1="3" x2="14" y2="21"></line>
             </svg>
             <span>Sort Question</span>
-          </label>
+          </span>
           <Switch bind:checked={$sort} />
         </div>
         <div class="setting-row">
-          <label class="setting-label">
+          <span class="setting-label">
             <span>Font Size</span>
-          </label>
+          </span>
           <div class="zoom-control">
             <input 
               type="range" 
@@ -195,17 +195,17 @@
     {#if state.file}
       <div class="section-content" transition:slide={{ duration: 200 }}>
         <div class="setting-row">
-          <label class="setting-label">
+          <span class="setting-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
             </svg>
             <span>Multiple Files</span>
-          </label>
+          </span>
           <Switch bind:checked={$multiple} />
         </div>
         {#if $multiple}
           <div class="setting-row sub-setting">
-            <label class="setting-label">
+            <span class="setting-label">
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
                 <rect x="3" y="3" width="7" height="7"></rect>
                 <rect x="14" y="3" width="7" height="7"></rect>
@@ -213,7 +213,7 @@
                 <rect x="3" y="14" width="7" height="7"></rect>
               </svg>
               <span>Merge Files</span>
-            </label>
+            </span>
             <Switch bind:checked={$merge} />
           </div>
         {/if}

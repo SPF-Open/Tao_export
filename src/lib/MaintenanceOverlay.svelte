@@ -167,11 +167,5 @@
 		font-weight: 300;
 		margin-bottom: 1.5rem;
 	}
-
-	.submessage {
-		margin: 1.5rem 0 0 0;
-		color: rgba(255, 255, 255, 0.5);
-		font-size: 0.9rem;
-	}
 </style>
 
