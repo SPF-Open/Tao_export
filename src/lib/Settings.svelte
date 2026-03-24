@@ -256,7 +256,7 @@
     display: flex;
     align-items: center;
     gap: 8px;
-    font-size: 13px;
+    font-size: 14px;
     font-weight: 600;
     color: var(--text);
   }
@@ -274,7 +274,7 @@
   }
 
   .section-content {
-    padding: 8px 14px 14px;
+    padding: 8px 14px;
     display: flex;
     flex-direction: column;
     gap: 8px;

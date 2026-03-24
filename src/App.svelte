@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { slide, fly,blur } from "svelte/transition";
   import Settings from "./lib/Settings.svelte";
   import Tables from "./lib/Tables.svelte";
   import ZipInput from "./lib/ZipInput.svelte";
@@ -61,7 +60,6 @@
     <title>{$windowName}</title> 
 </svelte:head>
 
-<MaintenanceOverlay endTime={new Date('2026-01-17')} />
 <main>
   <header class="header">
     <div class="header-left">
