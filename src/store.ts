@@ -77,6 +77,7 @@ export const compareMode = writable(false);
 export const zoom = writable(1);
 export const multiple = writable(false)
 export const merge = writable(false)
+export const darkMode = writable(false)
 
 // Randomization
 export const randomizeAnswer = writable(false);
@@ -277,7 +278,16 @@ export const settings = derived([showAnswer, showInstruction, showLetter, inzage
   }
 });
 
-// Store action
+darkMode.subscribe((value) => {
+  if (typeof document !== 'undefined') {
+    if (value) {
+      document.documentElement.classList.add('dark');
+    } else {
+      document.documentElement.classList.remove('dark');
+    }
+  }
+});
+
 export const resetSettings = () => {
   showAnswer.set(true);
   showInstruction.set(true);

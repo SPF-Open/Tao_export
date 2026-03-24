@@ -31,7 +31,10 @@
       class="answer"
       on:click={() => onClick(n)}
     >
-      <div class="text">
+      <div class="answer-indicator">
+        {$showLetter ? String.fromCharCode(65 + n) : n + 1}
+      </div>
+      <div class="answer-text">
         {@html txt}
       </div>
       {#if $showAnswer}
@@ -44,38 +47,87 @@
 <style>
   .answers {
     margin: 0;
+    padding: 8px 16px 16px;
+    list-style: none;
     display: flex;
     flex-direction: column;
-    border: 6px solid #f5f4f2;
-    padding: 5px;
-    padding-left: 20px;
-    list-style: circle;
+    gap: 6px;
   }
 
   .answer {
-    position: relative;
-    padding: 10px;
-    font-weight: bold;
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    transition: all 0.15s;
   }
 
-  .alpha {
-    list-style: upper-alpha;
+  .answer:hover {
+    background: color-mix(in srgb, var(--accent) 5%, var(--surface));
+    border-color: var(--border-strong);
+  }
+
+  .alpha .answer {
+    list-style: none;
   }
 
   .correct {
-    list-style-type: disc;
-    text-decoration: underline;
+    background: color-mix(in srgb, var(--success) 15%, var(--surface));
+    border-color: var(--success);
+  }
+
+  .answer-indicator {
+    flex-shrink: 0;
+    width: 24px;
+    height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--border);
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .correct .answer-indicator {
+    background: var(--success);
+    color: var(--success-foreground);
+  }
+
+  .answer-text {
+    flex: 1;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--text);
+  }
+
+  .answer-text :global(img) {
+    max-width: 100%;
+    border-radius: var(--radius);
+    margin: 8px 0;
   }
 
   .points {
-    position: absolute;
-    font-weight: bold;
-    right: -22px;
-    top: 0;
-    border: 2px solid #266d9c;
-    padding: 2px 3px;
-    background-color: white;
-    width: 12px;
-    text-align: center;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    padding: 0 8px;
+    background: var(--accent);
+    color: var(--accent-foreground);
+    border-radius: var(--radius);
+    font-size: 12px;
+    font-weight: 600;
+  }
+
+  .correct .points {
+    background: var(--success);
+    color: var(--success-foreground);
   }
 </style>

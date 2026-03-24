@@ -42,16 +42,14 @@
             .split("_")[0]
             .toUpperCase();
 
-          // Parse asset
           assets = entries
             .filter(
               (entry) =>
                 !entry.filename.endsWith(".css") &&
                 !entry.filename.endsWith(".xml"),
             )
-            .map(entryToObj); // format obj
+            .map(entryToObj);
 
-          // Parse questions
           const xmls = await Promise.all(
             entries
               .filter(
@@ -59,8 +57,8 @@
                   entry.filename.endsWith(".xml") &&
                   entry.filename !== "imsmanifest.xml",
               )
-              .map(entryToObj) // format obj
-              .map((obj) => readAndParseXml(obj, assets)), // parse xml
+              .map(entryToObj)
+              .map((obj) => readAndParseXml(obj, assets)),
           );
 
           const name = file.name.replace("_", " ").split("-")[0].toUpperCase();
@@ -92,8 +90,22 @@
   });
 </script>
 
-<Files bind:file={files} accept=".zip" size="md" multiple={$multiple} />
-<Button onClick={() => window.print()} type="info">Get PDF</Button>
+<div class="zip-input">
+  <Files bind:file={files} accept=".zip" size="md" multiple={$multiple} />
+  <Button onClick={() => window.print()} type="info">
+    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <polyline points="6 9 6 2 18 2 18 9"></polyline>
+      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
+      <rect x="6" y="14" width="12" height="8"></rect>
+    </svg>
+    Get PDF
+  </Button>
+</div>
 
 <style>
+  .zip-input {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
 </style>

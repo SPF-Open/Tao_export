@@ -14,11 +14,14 @@
     style="page-break-inside: avoid !important; break-inside: avoid;"
   >
     <div class="title">
-      <input
-        class="hide-print"
-        type="checkbox"
-        bind:checked={question.show}
-      />{question.title}
+      <label class="checkbox-wrapper">
+        <input
+          class="hide-print"
+          type="checkbox"
+          bind:checked={question.show}
+        />
+      </label>
+      <span class="title-text">{question.title}</span>
     </div>
     <div
       class="prompt"
@@ -41,10 +44,46 @@
 {/if}
 
 <style>
-  @media print {
-    div {
-      break-inside: avoid;
-    }
+  .question {
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    margin: 24px 0;
+    overflow: hidden;
+    background: var(--surface-elevated);
+    box-shadow: var(--shadow);
+  }
+
+  .title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 7px;
+    background: var(--accent);
+    color: var(--accent-foreground);
+    font-size: 15px;
+    font-weight: 600;
+  }
+
+  .checkbox-wrapper {
+    display: flex;
+    align-items: center;
+    flex-shrink: 0;
+  }
+
+  .checkbox-wrapper input {
+    width: 14px;
+    height: 14px;
+    accent-color: var(--accent-foreground);
+    cursor: pointer;
+  }
+
+  .title-text {
+    flex: 1;
+  }
+
+  .prompt {
+    padding: 8px;
+    line-height: 1.5;
   }
 
   .grid-row {
@@ -54,35 +93,34 @@
     align-items: center;
   }
 
-  .question {
-    font-family: 'Source Sans Pro';
-    border: 3px solid #007f9f;
-    margin: 30px 10px;
-    max-width: 1080px;
-    line-height: 1.4;
-    font-size: 13px;
-  }
-
-  .title {
-    padding: 1px 0px 3px 5px;
-    background-color: #007f9f;
-    color: white;
-    font-size: 16px;
-    font-weight: bold;
-    height: fit-content;
-  }
-
-  .prompt {
-    padding: 0 0 0 8px;
-    margin: 5px 0;
-  }
-
   .prompt :global(img) {
     max-height: calc(297mm - 100px);
     max-width: 98%;
+    border-radius: var(--radius);
+  }
+
+  .prompt :global(p) {
+    margin-bottom: 12px;
+  }
+
+  .prompt :global(p:last-child) {
+    margin-bottom: 0;
   }
 
   .maxChar{
-    margin-bottom: 10px;
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  @media print {
+    div {
+      break-inside: avoid;
+    }
+
+    .question {
+      box-shadow: none;
+      border: 1px solid #000;
+    }
   }
 </style>
