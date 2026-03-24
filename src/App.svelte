@@ -19,6 +19,11 @@
     examsIndex,
     exams,
     windowName,
+    randomizeQuestion,
+    randomizeAnswer,
+    questionMapping,
+    answerMapping,
+    showLetter,
   } from "./store";
   import Log from "./lib/Log.svelte";
 
@@ -97,6 +102,47 @@
         {#each $questions as question}
           <Question {question} />
         {/each}
+      {/if}
+       
+      {#if ($randomizeQuestion || $randomizeAnswer) && $questions.length > 0}
+        <div class="mapping-table">
+          <h3>Mapping</h3>
+          <table class="mapping-main-table">
+            <thead>
+              <tr>
+                {#if $randomizeQuestion}
+                  <th>#</th>
+                  <th>Question</th>
+                  <th>Orig</th>
+                {/if}
+                {#if $randomizeAnswer}<th>Answers</th>{/if}
+              </tr>
+            </thead>
+            <tbody>
+              {#each $questionMapping.filter(m => m.type !== 'Instruction' && m.type !== 'Instruction QCM' && m.type !== 'Instruction QO') as qm, i}
+                {@const ansMap = $answerMapping.find(a => a.title.trim() === qm.title.trim())?.mapping || []}
+                <tr>
+                  {#if $randomizeQuestion}
+                    <td>{qm.currentIndex}</td>
+                    <td>{qm.title}</td>
+                    <td>{qm.originalIndex}</td>
+                  {/if}
+                  {#if $randomizeAnswer && ansMap.length > 0}
+                    <td class="answer-cell">
+                      {#each ansMap as am: { currentIndex: number; originalIndex: number; id: string }}
+                        <span class="answer-item" title="Original: {$showLetter ? String.fromCharCode(64 + am.originalIndex) : am.originalIndex}">
+                          {am.currentIndex}→{am.originalIndex}
+                        </span>{#if am !== ansMap[ansMap.length-1]}, {/if}
+                      {/each}
+                    </td>
+                  {:else if $randomizeAnswer}
+                    <td class="answer-cell">-</td>
+                  {/if}
+                </tr>
+              {/each}
+            </tbody>
+          </table>
+        </div>
       {/if}
     </div>
     {#if $oldQuestions.length > 0 && $compareMode}
@@ -202,6 +248,72 @@
 
   .questions > .header > * {
     margin: auto;
+  }
+
+  .mapping-table {
+    margin-top: 20px;
+    padding: 10px;
+    border: 2px solid #007f9f;
+    max-width: 1080px;
+  }
+
+  .mapping-table h3 {
+    margin: 0 0 10px 0;
+    color: #007f9f;
+  }
+
+  .mapping-table table {
+    width: 100%;
+    border-collapse: collapse;
+  }
+
+  .mapping-table th,
+  .mapping-table td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+  }
+
+  .mapping-table th {
+    background-color: #007f9f;
+    color: white;
+  }
+
+  .mapping-section {
+    margin-bottom: 15px;
+  }
+
+  .mapping-section h4 {
+    margin: 0 0 5px 0;
+    color: #333;
+  }
+
+  .mapping-main-table {
+    font-size: 0.8rem;
+    width: 100%;
+  }
+
+  .mapping-main-table th,
+  .mapping-main-table td {
+    padding: 4px 8px;
+    text-align: left;
+  }
+
+  .mapping-main-table th {
+    background-color: #266d9c;
+  }
+
+  .answer-cell {
+    white-space: nowrap;
+  }
+
+  .answer-item {
+    display: inline-block;
+    background: #e0e0e0;
+    padding: 1px 4px;
+    margin: 1px;
+    border-radius: 2px;
+    font-size: 0.7rem;
   }
 
   @media print {

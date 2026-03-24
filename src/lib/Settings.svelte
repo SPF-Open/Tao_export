@@ -10,6 +10,8 @@
     zoom,
     multiple,
     merge,
+    randomizeAnswer,
+    randomizeQuestion,
   } from "../store";
   import { slide } from "svelte/transition";
 
@@ -23,6 +25,8 @@
     <Switch bind:checked={$showAnswer} />
     <legend>Instruction</legend>
     <Switch bind:checked={$showInstruction} />
+    <legend>Randomize Answer</legend>
+    <Switch bind:checked={$randomizeAnswer} />
   </div>
 {/if}
 
@@ -40,6 +44,8 @@
     <Switch bind:checked={$inzage} />
     <legend>Sort question</legend>
     <Switch bind:checked={$sort} />
+    <legend>Randomize Question</legend>
+    <Switch bind:checked={$randomizeQuestion} />
     <legend>Font size</legend>
     <input type="range" min="0.8" max="1.5" step="0.1" bind:value={$zoom} />
   </div>
