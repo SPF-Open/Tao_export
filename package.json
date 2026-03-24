@@ -20,6 +20,7 @@
   "dependencies": {
     "@gzlab/uui": "^0.1.14",
     "@lv00/toolkit": "^1.2.10",
-    "@zip.js/zip.js": "^2.8.23"
+    "@zip.js/zip.js": "^2.8.23",
+    "marked": "^17.0.5"
   }
 }

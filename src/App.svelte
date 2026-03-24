@@ -27,6 +27,7 @@
     darkMode,
   } from "./store";
   import Log from "./lib/Log.svelte";
+  import ChangelogModal from "./lib/ChangelogModal.svelte";
 
   import "@gzlab/uui/main.css";
   import { Switch, Text } from "@gzlab/uui";
@@ -36,6 +37,7 @@
   let titleHeader = "";
   let rrnHeader = "";
   let showDebug = $state(false);
+  let showChangelog = $state(false);
 
   function moveIndex(n: number) {
     const maxLength = get(exams).length - 1;
@@ -119,17 +121,16 @@
         </svg>
         <span>Docs</span>
       </a>
-      <a
-        href="https://github.com/SPF-Open/Tao_export/blob/Prod/CHANGELOG.md"
-        target="_blank"
-        class="header-link"
-        aria-label="Changelog"
-      >
+      <button class="header-link" onclick={() => showChangelog = true} aria-label="Changelog">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M9 19c-5 1.5-5-2.5-7-3m14 6v-3.87a3.37 3.37 0 0 0-.94-2.61c3.14-.35 6.44-1.54 6.44-7A5.44 5.44 0 0 0 20 4.77 5.07 5.07 0 0 0 19.91 1S18.73.65 16 2.48a13.38 13.38 0 0 0-7 0C6.27.65 5.09 1 5.09 1A5.07 5.07 0 0 0 5 4.77a5.44 5.44 0 0 0-1.5 3.78c0 5.42 3.3 6.61 6.44 7A3.37 3.37 0 0 0 9 18.13V22"></path>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="16" y1="13" x2="8" y2="13"></line>
+          <line x1="16" y1="17" x2="8" y2="17"></line>
+          <polyline points="10 9 9 9 8 9"></polyline>
         </svg>
         <span>Changelog</span>
-      </a>
+      </button>
       <div class="debug-container">
         <button class="icon-btn" onclick={() => showDebug = !showDebug} aria-label="Debug info">
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -279,6 +280,10 @@
       {/if}
     </div>
   </div>
+
+  {#if showChangelog}
+    <ChangelogModal onClose={() => showChangelog = false} />
+  {/if}
 </main>
 
 <style>
