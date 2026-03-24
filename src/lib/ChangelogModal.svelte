@@ -7,6 +7,7 @@
   let loading = $state(true);
 
   onMount(async () => {
+    document.body.style.overflow = 'hidden';
     try {
       const res = await fetch('/CHANGELOG.md');
       content = await res.text();
@@ -14,6 +15,9 @@
       content = '# Error\nCould not load changelog';
     }
     loading = false;
+    return () => {
+      document.body.style.overflow = '';
+    };
   });
 </script>
 
@@ -54,8 +58,8 @@
     background: var(--surface-elevated);
     border-radius: var(--radius-xl);
     width: 100%;
-    max-width: 700px;
-    max-height: 80vh;
+    max-width: 900px;
+    max-height: 90vh;
     display: flex;
     flex-direction: column;
     box-shadow: var(--shadow-xl);

@@ -28,6 +28,7 @@
   } from "./store";
   import Log from "./lib/Log.svelte";
   import ChangelogModal from "./lib/ChangelogModal.svelte";
+  import DocumentationModal from "./lib/DocumentationModal.svelte";
 
   import "@gzlab/uui/main.css";
   import { Switch, Text } from "@gzlab/uui";
@@ -38,6 +39,7 @@
   let rrnHeader = "";
   let showDebug = $state(false);
   let showChangelog = $state(false);
+  let showDocumentation = $state(false);
 
   function moveIndex(n: number) {
     const maxLength = get(exams).length - 1;
@@ -111,7 +113,7 @@
           </svg>
         {/if}
       </button>
-      <a href="/documentation.pdf" target="_blank" class="header-link" aria-label="Documentation">
+      <button class="header-link" onclick={() => showDocumentation = true} aria-label="Documentation">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
           <polyline points="14 2 14 8 20 8"></polyline>
@@ -120,7 +122,7 @@
           <polyline points="10 9 9 9 8 9"></polyline>
         </svg>
         <span>Docs</span>
-      </a>
+      </button>
       <button class="header-link" onclick={() => showChangelog = true} aria-label="Changelog">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -284,6 +286,10 @@
   {#if showChangelog}
     <ChangelogModal onClose={() => showChangelog = false} />
   {/if}
+
+  {#if showDocumentation}
+    <DocumentationModal onClose={() => showDocumentation = false} />
+  {/if}
 </main>
 
 <style>
@@ -442,15 +448,18 @@
     padding: 6px 12px;
     font-size: 13px;
     font-weight: 500;
-    color: var(--text-muted);
+    color: var(--accent);
+    background: transparent;
+    border: none;
+    cursor: pointer;
     border-radius: var(--radius);
     transition: all 0.2s;
+    text-decoration: none;
   }
 
   .header-link:hover {
     background: var(--surface);
-    color: var(--text);
-    text-decoration: none;
+    text-decoration: underline;
   }
 
   .content {
