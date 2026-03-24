@@ -1,6 +1,6 @@
 ## Changelog
 
-### 0.2.2
+### 1.0.1
 - Refactor : Complete UI redesign with modern admin dashboard aesthetic
   - New design tokens (colors, shadows, radius, animations)
   - Inter font instead of Source Sans Pro
