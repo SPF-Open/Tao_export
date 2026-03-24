@@ -261,7 +261,7 @@
                       {/if}
                       {#if $randomizeAnswer && ansMap.length > 0}
                         <td class="answer-cell">
-                          {#each ansMap as am: { currentIndex: number; originalIndex: number; id: string }}
+                          {#each ansMap as am}
                             <span class="answer-item" title="Original: {$showLetter ? String.fromCharCode(64 + am.originalIndex) : am.originalIndex}">
                               {am.currentIndex}→{am.originalIndex}
                             </span>{#if am !== ansMap[ansMap.length-1]}, {/if}
