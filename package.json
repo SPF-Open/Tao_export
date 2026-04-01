@@ -1,7 +1,7 @@
 {
   "name": "tao_export",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.3.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -21,6 +21,8 @@
     "@gzlab/uui": "^0.1.14",
     "@lv00/toolkit": "^1.2.10",
     "@zip.js/zip.js": "^2.8.23",
-    "marked": "^17.0.5"
+    "marked": "^17.0.5",
+    "talisman": "^1.1.4",
+    "xlsx": "^0.18.5"
   }
 }

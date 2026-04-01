@@ -32,14 +32,19 @@
         <p class="maxChar">
           {question.type == 'QO' && (question.maxLenght && question.maxLenght[i])
             ? question.maxLenght[i] + ' caractères maximum.' || ''
-            :  ''}
+            : ''}
         </p>
       {/each}
     </div>
-
     {#if question.type === 'QCM' || question.type === 'Instruction QCM'}
-      <Qcm bind:question/>
+      <Qcm bind:question />
     {/if}
+  </div>
+{:else}
+  <div class="question question-hidden">
+    <div class="title">
+      <span class="title-text">Question masquée: {question.title || 'sans titre'}</span>
+    </div>
   </div>
 {/if}
 

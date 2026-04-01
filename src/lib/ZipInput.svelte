@@ -45,8 +45,8 @@
           assets = entries
             .filter(
               (entry) =>
-                !entry.filename.endsWith(".css") &&
-                !entry.filename.endsWith(".xml"),
+                !entry.filename.toLowerCase().endsWith(".css") &&
+                !entry.filename.toLowerCase().endsWith(".xml"),
             )
             .map(entryToObj);
 
@@ -54,8 +54,8 @@
             entries
               .filter(
                 (entry) =>
-                  entry.filename.endsWith(".xml") &&
-                  entry.filename !== "imsmanifest.xml",
+                  entry.filename.toLowerCase().endsWith(".xml") &&
+                  entry.filename.toLowerCase() !== "imsmanifest.xml",
               )
               .map(entryToObj)
               .map((obj) => readAndParseXml(obj, assets)),

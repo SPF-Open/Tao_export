@@ -219,10 +219,12 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
     );
   }
 
+  const normalizedPrompt = Array.isArray(prompt) ? prompt : Array.from(prompt as any || []);
+
   return {
     title,
     type: type as QuestionType['type'],
-    prompt: prompt as Element[],
+    prompt: normalizedPrompt,
     answers,
     maxLenght,
     show: true

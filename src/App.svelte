@@ -3,6 +3,7 @@
   import Tables from "./lib/Tables.svelte";
   import ZipInput from "./lib/ZipInput.svelte";
   import Question from "./template/Question.svelte";
+  import AuditTab from "./lib/audit/AuditTab.svelte";
 
   import "./app.css";
 
@@ -24,6 +25,7 @@
     answerMapping,
     showLetter,
     darkMode,
+    auditTab,
   } from "./store";
   import Log from "./lib/Log.svelte";
   import ChangelogModal from "./lib/ChangelogModal.svelte";
@@ -34,8 +36,8 @@
   import { get } from "svelte/store";
   import MaintenanceOverlay from "./lib/MaintenanceOverlay.svelte";
   
-  let titleHeader = "";
-  let rrnHeader = "";
+  let titleHeader = $state("");
+  let rrnHeader = $state("");
   let showDebug = $state(false);
   let showChangelog = $state(false);
   let showDocumentation = $state(false);
@@ -53,6 +55,58 @@
 
   function toggleDarkMode() {
     darkMode.update((v: boolean) => !v);
+  }
+
+  function exportToJson() {
+    const data = {
+      title: titleHeader || "Exported Questions",
+      rrn: rrnHeader || "",
+      questions: get(questions).map(q => {
+        const promptArray = Array.isArray(q.prompt)
+          ? q.prompt
+          : q.prompt && typeof (q.prompt as any).length === 'number'
+          ? Array.from(q.prompt as any)
+          : [q.prompt as any];
+
+        return {
+          title: q.title,
+          type: q.type,
+          prompt: promptArray
+            .map((el) => (el && (el as Element).outerHTML ? (el as Element).outerHTML : String(el)))
+            .join(''),
+          answers: q.answers.map((a) => ({
+            text: a.txt,
+            points: a.point,
+            id: a.id,
+            correct: a.correct,
+          })),
+          maxLength: q.maxLenght || [],
+          show: q.show,
+        };
+      }),
+
+      mappings: {
+        questionMapping: get(questionMapping),
+        answerMapping: get(answerMapping)
+      },
+      settings: {
+        randomizeQuestion: get(randomizeQuestion),
+        randomizeAnswer: get(randomizeAnswer),
+        showLetter: get(showLetter),
+        zoom: get(zoom),
+        inzage: get(inzage)
+      }
+    };
+
+    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `${get(windowName).replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.json`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
   }
 </script>
 
@@ -92,6 +146,15 @@
     </div>
     
     <div class="header-right">
+      {#if $questions.length > 0}
+        <button class="icon-btn" onclick={exportToJson} aria-label="Export to JSON">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+            <polyline points="7 10 12 15 17 10"></polyline>
+            <line x1="12" y1="15" x2="12" y2="3"></line>
+          </svg>
+        </button>
+      {/if}
       <button class="icon-btn" onclick={toggleDarkMode} aria-label="Toggle dark mode">
         {#if $darkMode}
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
@@ -111,6 +174,20 @@
           </svg>
         {/if}
       </button>
+      {#if $questions.length > 0}
+        <button 
+          class="header-link" 
+          class:active={$auditTab}
+          onclick={() => auditTab.update(v => !v)} 
+          aria-label="Audit TAO"
+          title="Compare Excel with loaded questions"
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <polyline points="22 12 18 12 15 20 9 4 6 12 2 12"></polyline>
+          </svg>
+          <span>Audit</span>
+        </button>
+      {/if}
       <button class="header-link" onclick={() => showDocumentation = true} aria-label="Documentation">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
@@ -168,7 +245,10 @@
     {/if}
     
     <div class="main-area">
-      {#if $oldQuestions.length > 0 && $compareMode}
+      {#if $auditTab}
+        <!-- Audit View -->
+        <AuditTab />
+      {:else if $oldQuestions.length > 0 && $compareMode}
         <div class="compare-wrapper">
           <div class="compare-column">
             <div class="compare-label">Test A</div>
@@ -458,6 +538,12 @@
   .header-link:hover {
     background: var(--surface);
     text-decoration: underline;
+  }
+
+  .header-link.active {
+    color: var(--color-success);
+    background: var(--color-success);
+    color: white;
   }
 
   .content {

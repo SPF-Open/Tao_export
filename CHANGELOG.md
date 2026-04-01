@@ -1,5 +1,8 @@
 ## Changelog
 
+### 1.3.0
+ - Feat : Audit based on original Excel file
+
 ### 1.2.0
 - Refactor : remove unused transition import and adjust font size and padding in settings
 

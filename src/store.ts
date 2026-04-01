@@ -317,3 +317,52 @@ export const resetSettings = () => {
   inzage.set(false);
   sort.set(false);
 }
+
+// ============================================================================
+// AUDIT STORES
+// ============================================================================
+
+import type { AuditReport, ExcelConfig } from './lib/audit/types';
+import { DEFAULT_CONFIG } from './lib/audit/config';
+
+// Audit UI state
+export const auditTab = writable<boolean>(false);
+export const auditLoading = writable<boolean>(false);
+export const auditReport = writable<AuditReport | null>(null);
+export const auditConfig = writable<ExcelConfig>(DEFAULT_CONFIG);
+export const auditFilename = writable<string>('');
+export const auditError = writable<string | null>(null);
+
+// Reset audit state
+export const resetAudit = () => {
+  auditLoading.set(false);
+  auditReport.set(null);
+  auditFilename.set('');
+  auditError.set(null);
+  auditConfig.set(DEFAULT_CONFIG);
+};
+
+// Audit stats derived from report
+export const auditStats = derived([auditReport], ([$report]) => {
+  if (!$report) {
+    return {
+      total: 0,
+      matched: 0,
+      unmatched: 0,
+      bloquants: 0,
+      majeurs: 0,
+      mineurs: 0,
+      status: 'idle' as const,
+    };
+  }
+
+  return {
+    total: $report.summary.total,
+    matched: $report.summary.matched,
+    unmatched: $report.summary.unmatched,
+    bloquants: $report.summary.bloquants,
+    majeurs: $report.summary.majeurs,
+    mineurs: $report.summary.mineurs,
+    status: $report.summary.bloquants > 0 ? 'fail' : $report.summary.majeurs > 0 ? 'warning' : 'pass' as const,
+  };
+});
