@@ -1,5 +1,8 @@
 ## Changelog
 
+### 1.5.1
+- Fix : Audit link color now properly displays when active
+
 ### 1.5.0
 - Refactor : Audit functionality styling unified with app design system
   - Migrated all hardcoded colors in audit components to CSS variables for consistency

@@ -542,8 +542,7 @@
 
   .header-link.active {
     color: var(--color-success);
-    background: var(--color-success);
-    color: white;
+    background: var(--surface);
   }
 
   .content {
