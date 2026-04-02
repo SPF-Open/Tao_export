@@ -6,22 +6,35 @@
   let content = $state('');
   let loading = $state(true);
 
-  onMount(async () => {
+  onMount(() => {
     document.body.style.overflow = 'hidden';
-    try {
-      const res = await fetch('/CHANGELOG.md');
-      content = await res.text();
-    } catch (e) {
-      content = '# Error\nCould not load changelog';
-    }
-    loading = false;
+    
+    (async () => {
+      try {
+        const res = await fetch('/CHANGELOG.md');
+        content = await res.text();
+      } catch (e) {
+        content = '# Error\nCould not load changelog';
+      }
+      loading = false;
+    })();
+
     return () => {
       document.body.style.overflow = '';
     };
   });
 </script>
 
-<div class="modal-overlay" onclick={onClose} role="dialog" aria-modal="true">
+<div 
+  class="modal-overlay" 
+  onclick={onClose} 
+  onkeydown={(e) => e.key === 'Escape' && onClose()}
+  role="dialog" 
+  aria-modal="true"
+  tabindex="-1"
+>
+  <!-- svelte-ignore a11y_click_events_have_key_events -->
+  <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
   <div class="modal-content" onclick={(e) => e.stopPropagation()} role="document">
     <div class="modal-header">
       <h2>Changelog</h2>

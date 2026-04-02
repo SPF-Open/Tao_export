@@ -1,5 +1,13 @@
 ## Changelog
 
+### 1.4.0
+- Fix : TypeScript type errors in XML parsing with proper type casting and error handling
+- Fix : Modal onMount callback async/await handling in ChangelogModal and DocumentationModal
+- Fix : A11y improvements - dialog elements now have proper tabindex and keyboard event handlers
+- Fix : Escape key now closes modals for better accessibility
+- Refactor : Remove unused CSS selectors (.footer, .footer-left, .footer-right, .version, .questions-container.compare-mode)
+- Fix : Improve modal accessibility with proper role attributes and keyboard support
+
 ### 1.3.0
  - Feat : Audit based on original Excel file
 

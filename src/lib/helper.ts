@@ -42,40 +42,45 @@ export const readAndParseXml = async (xml: EntryObj, assets: EntryObj[]) => {
   const writter = new TextWriter();
   const parser = new DOMParser();
 
-  if (!xml._raw || !xml._raw.getData) {
+  if (!xml._raw) {
     return { ...xml, xml: undefined };
   }
 
-  const xmlDoc = parser.parseFromString(
-    await xml._raw.getData(writter),
-    'text/xml'
-  );
-
-  // Inject assets
-  const imgs = xmlDoc.getElementsByTagName('img');
-
-  if (imgs.length > 0) {
-    await Promise.all(
-      Array.from(imgs).map(async (img) => {
-        const data = {
-          id: img.getAttribute('src')?.split('/').pop(),
-          src: img.getAttribute('src'),
-          alt: img.getAttribute('alt'),
-          type: img.getAttribute('type'),
-          width: img.getAttribute('width'),
-        };
-        const asset = assets.find((asset) => asset.name === data.id);
-        if (asset) {
-          const writter = new BlobWriter();
-          asset._raw.getData!(writter);
-          img.setAttribute('src', URL.createObjectURL(await writter.getData()));
-          img.parentElement!.replaceChild(img, img);
-        }
-      })
+  try {
+    const xmlDoc = parser.parseFromString(
+      await (xml._raw as any).getData(writter),
+      'text/xml'
     );
-  }
 
-  return { ...xml, xml: xmlDoc };
+    // Inject assets
+    const imgs = xmlDoc.getElementsByTagName('img');
+
+    if (imgs.length > 0) {
+      await Promise.all(
+        Array.from(imgs).map(async (img) => {
+          const data = {
+            id: img.getAttribute('src')?.split('/').pop(),
+            src: img.getAttribute('src'),
+            alt: img.getAttribute('alt'),
+            type: img.getAttribute('type'),
+            width: img.getAttribute('width'),
+          };
+          const asset = assets.find((asset) => asset.name === data.id);
+          if (asset) {
+            const writter = new BlobWriter();
+            await (asset._raw as any).getData(writter);
+            img.setAttribute('src', URL.createObjectURL(await writter.getData()));
+            img.parentElement!.replaceChild(img, img);
+          }
+        })
+      );
+    }
+
+    return { ...xml, xml: xmlDoc };
+  } catch (error) {
+    console.error('Error parsing XML:', error);
+    return { ...xml, xml: undefined };
+  }
 };
 
 export type QuestionType = {
@@ -219,7 +224,9 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
     );
   }
 
-  const normalizedPrompt = Array.isArray(prompt) ? prompt : Array.from(prompt as any || []);
+  const normalizedPrompt: Element[] = Array.isArray(prompt) 
+    ? prompt as Element[] 
+    : Array.from((prompt as any) || []);
 
   return {
     title,
