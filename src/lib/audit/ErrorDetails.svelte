@@ -15,13 +15,13 @@
   function getSeverityColor(severity: string): string {
     switch (severity) {
       case 'BLOQUANT':
-        return '#e74c3c';
+        return 'var(--danger)';
       case 'MAJEUR':
-        return '#f39c12';
+        return 'var(--warning)';
       case 'MINEUR':
-        return '#3498db';
+        return 'var(--accent)';
       default:
-        return '#95a5a6';
+        return 'var(--text-muted)';
     }
   }
 </script>
@@ -194,19 +194,19 @@
 <style>
   .error-details {
     padding: 20px;
-    background: white;
+    background: var(--surface-elevated);
     border-radius: 6px;
   }
 
   .detail-header {
     margin-bottom: 20px;
-    border-bottom: 2px solid #e0e0e0;
+    border-bottom: 2px solid var(--border);
     padding-bottom: 10px;
   }
 
   .detail-header h4 {
     margin: 0;
-    color: #2c3e50;
+    color: var(--text);
   }
 
   .detail-section {
@@ -215,7 +215,7 @@
 
   .detail-section h5 {
     margin: 0 0 12px 0;
-    color: #34495e;
+    color: var(--text);
     font-size: 0.95em;
     font-weight: 600;
   }
@@ -235,13 +235,13 @@
 
   .comp-item .label {
     font-size: 0.8em;
-    color: #7f8c8d;
+    color: var(--text-muted);
     font-weight: 500;
   }
 
   .comp-item .value {
     font-size: 0.95em;
-    color: #2c3e50;
+    color: var(--text);
   }
 
   .match-score {
@@ -252,27 +252,27 @@
   }
 
   .match-score.excellent {
-    background: #d4edda;
-    color: #155724;
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--success);
   }
 
   .match-score.good {
-    background: #d1ecf1;
-    color: #0c5460;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text);
   }
 
   .match-score.fair {
-    background: #fff3cd;
-    color: #856404;
+    background: rgba(202, 138, 4, 0.1);
+    color: var(--warning);
   }
 
   .match-score.poor {
-    background: #f8d7da;
-    color: #721c24;
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--danger);
   }
 
   .mismatch {
-    color: #e74c3c;
+    color: var(--danger);
     font-weight: 600;
   }
 
@@ -297,18 +297,18 @@
 
   .comp-label {
     font-size: 0.85em;
-    color: #7f8c8d;
+    color: var(--text-muted);
     font-weight: 500;
   }
 
   .comp-text {
     padding: 10px;
-    background: #f8f9fa;
-    border-left: 3px solid #3498db;
+    background: var(--surface);
+    border-left: 3px solid var(--accent);
     border-radius: 3px;
     font-size: 0.9em;
     line-height: 1.4;
-    color: #2c3e50;
+    color: var(--text);
     word-break: break-word;
   }
 
@@ -319,15 +319,15 @@
   }
 
   .answer-item {
-    background: #f8f9fa;
+    background: var(--surface);
     padding: 12px;
     border-radius: 4px;
-    border: 1px solid #e0e0e0;
+    border: 1px solid var(--border);
   }
 
   .answer-index {
     font-size: 0.8em;
-    color: #7f8c8d;
+    color: var(--text-muted);
     font-weight: 600;
     margin-bottom: 8px;
   }
@@ -346,22 +346,22 @@
 
   .answer-label {
     font-size: 0.75em;
-    color: #7f8c8d;
+    color: var(--text-muted);
     font-weight: 500;
   }
 
   .answer-text {
     font-size: 0.85em;
     padding: 6px;
-    background: white;
+    background: var(--surface-elevated);
     border-radius: 3px;
-    color: #2c3e50;
+    color: var(--text);
     line-height: 1.3;
     word-break: break-word;
   }
 
   .missing {
-    color: #e74c3c;
+    color: var(--danger);
     font-style: italic;
   }
 
@@ -369,16 +369,16 @@
     display: inline-block;
     margin-left: 4px;
     padding: 2px 6px;
-    background: #d4edda;
-    color: #155724;
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--success);
     border-radius: 2px;
     font-size: 0.75em;
     font-weight: 600;
   }
 
   .error-section {
-    background: #fff5f5;
-    border: 1px solid #f5c6cb;
+    background: rgba(220, 38, 38, 0.05);
+    border: 1px solid rgba(220, 38, 38, 0.2);
     border-radius: 4px;
     padding: 15px;
     margin-top: 15px;
@@ -391,10 +391,10 @@
   }
 
   .error-item {
-    background: white;
+    background: var(--surface-elevated);
     padding: 12px;
     border-radius: 3px;
-    border-left: 4px solid #e74c3c;
+    border-left: 4px solid var(--danger);
   }
 
   .error-header {
@@ -408,30 +408,31 @@
     display: inline-block;
     padding: 2px 8px;
     border-radius: 3px;
-    color: white;
+    color: var(--accent-foreground);
     font-size: 0.75em;
     font-weight: 600;
   }
 
   .error-type {
     font-weight: 600;
-    color: #2c3e50;
+    color: var(--text);
     font-size: 0.9em;
   }
 
   .error-detail {
     font-size: 0.85em;
-    color: #555;
+    color: var(--text-muted);
     line-height: 1.4;
   }
 
   .detail-comparison {
     margin-top: 8px;
     padding: 8px;
-    background: #f8f9fa;
+    background: var(--surface);
     border-radius: 3px;
     font-family: monospace;
     font-size: 0.8em;
+    color: var(--text);
   }
 
   .detail-comparison div {
@@ -440,50 +441,50 @@
   }
 
   :global(.dark) .error-details {
-    background: #2c3e50;
+    background: var(--surface-elevated);
   }
 
   :global(.dark) .detail-section {
-    background: #34495e;
-    border: 1px solid #555;
+    background: var(--surface);
+    border: 1px solid var(--border);
     border-radius: 4px;
     padding: 12px;
   }
 
   :global(.dark) .detail-section h5 {
-    color: #bdc3c7;
+    color: var(--text);
   }
 
   :global(.dark) .comp-item .label,
   :global(.dark) .comp-label,
   :global(.dark) .answer-label {
-    color: #a0a0a0;
+    color: var(--text-muted);
   }
 
   :global(.dark) .comp-item .value,
   :global(.dark) .comp-text,
   :global(.dark) .answer-text,
   :global(.dark) .error-type {
-    color: #ecf0f1;
+    color: var(--text);
   }
 
   :global(.dark) .comp-text,
   :global(.dark) .answer-text,
   :global(.dark) .text-comparison {
-    background: #1a252f;
+    background: var(--surface);
   }
 
   :global(.dark) .answer-item {
-    background: #34495e;
-    border-color: #555;
+    background: var(--surface);
+    border-color: var(--border);
   }
 
   :global(.dark) .error-section {
-    background: #34495e;
-    border-color: #555;
+    background: var(--surface);
+    border-color: var(--border);
   }
 
   :global(.dark) .error-item {
-    background: #1a252f;
+    background: var(--surface-elevated);
   }
 </style>

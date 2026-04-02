@@ -1,5 +1,14 @@
 ## Changelog
 
+### 1.5.0
+- Refactor : Audit functionality styling unified with app design system
+  - Migrated all hardcoded colors in audit components to CSS variables for consistency
+  - Added full dark mode support for audit interface (AuditTab, AuditConfig, AuditResults, ErrorDetails)
+  - Updated button and form element styling to match app design language
+  - Severity color indicators now use semantic CSS variables (--danger, --warning, --accent)
+- Feat : Audit components now automatically adapt to theme changes (light/dark mode)
+- Fix : Responsive audit panel adapts to sidebar width changes via CSS variable system
+
 ### 1.4.0
 - Fix : TypeScript type errors in XML parsing with proper type casting and error handling
 - Fix : Modal onMount callback async/await handling in ChangelogModal and DocumentationModal

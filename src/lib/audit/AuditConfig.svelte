@@ -244,7 +244,7 @@
         </div>
       {:else}
         <div class="input-group">
-          <div style="display: block; margin-bottom: 8px; font-weight: 500; color: #34495e; font-size: 0.95em;">Answer Columns:</div>
+          <div style="display: block; margin-bottom: 8px; font-weight: 500; color: var(--text); font-size: 0.95em;">Answer Columns:</div>
           <div class="answer-columns" role="group" aria-label="Answer column letters">
             {#each $auditConfig.columns.answers as answer, i}
               <input
@@ -310,16 +310,16 @@
 
 <style>
   .config-section {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 20px;
   }
 
   .config-section h3 {
     margin-top: 0;
     margin-bottom: 15px;
-    color: #34495e;
+    color: var(--text);
   }
 
   .presets {
@@ -330,7 +330,7 @@
     display: block;
     margin-bottom: 8px;
     font-weight: 500;
-    color: #2c3e50;
+    color: var(--text);
   }
 
   .preset-buttons {
@@ -341,22 +341,23 @@
 
   .preset-btn {
     padding: 6px 12px;
-    border: 2px solid #ddd;
-    background: white;
-    border-radius: 4px;
+    border: 2px solid var(--border);
+    background: var(--surface-elevated);
+    border-radius: var(--radius);
     cursor: pointer;
     transition: all 0.2s;
     font-size: 0.9em;
+    color: var(--text);
   }
 
   .preset-btn:hover {
-    border-color: #3498db;
+    border-color: var(--accent);
   }
 
   .preset-btn.active {
-    background: #3498db;
-    color: white;
-    border-color: #3498db;
+    background: var(--accent);
+    color: var(--accent-foreground);
+    border-color: var(--accent);
   }
 
   .settings-group {
@@ -374,41 +375,44 @@
 
   .input-group label {
     font-weight: 500;
-    color: #34495e;
+    color: var(--text);
     font-size: 0.95em;
   }
 
   .input-group input {
     padding: 8px;
-    border: 1px solid #bdc3c7;
-    border-radius: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     font-size: 1em;
+    background: var(--surface-elevated);
+    color: var(--text);
   }
 
   .input-group input:focus {
     outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
   }
 
   .input-group select {
     padding: 8px;
-    border: 1px solid #bdc3c7;
-    border-radius: 4px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     font-size: 1em;
-    background: white;
+    background: var(--surface-elevated);
+    color: var(--text);
     cursor: pointer;
   }
 
   .input-group select:focus {
     outline: none;
-    border-color: #3498db;
-    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.1);
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
   }
 
   .input-group small {
     font-size: 0.8em;
-    color: #7f8c8d;
+    color: var(--text-muted);
   }
 
   .checkbox-group {
@@ -424,6 +428,7 @@
     margin-bottom: 0;
     font-weight: 500;
     cursor: pointer;
+    color: var(--text);
   }
 
   .checkbox-group input[type='checkbox'] {
@@ -432,22 +437,24 @@
     cursor: pointer;
     margin: 0;
     padding: 0;
+    accent-color: var(--accent);
   }
 
   .checkbox-group span {
-    color: #34495e;
+    color: var(--text);
     font-size: 0.95em;
   }
 
   .checkbox-group small {
     flex: 1;
     margin-left: 26px;
+    color: var(--text-muted);
   }
 
   .toggle-btn {
     background: none;
     border: none;
-    color: #3498db;
+    color: var(--accent);
     font-weight: 500;
     cursor: pointer;
     padding: 0;
@@ -460,16 +467,16 @@
   }
 
   .advanced-settings {
-    background: white;
-    border: 1px solid #e0e0e0;
-    border-radius: 4px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
     padding: 15px;
     margin-top: 10px;
   }
 
   .help-text {
     font-size: 0.9em;
-    color: #7f8c8d;
+    color: var(--text-muted);
     margin-top: 0;
     margin-bottom: 15px;
     font-style: italic;
@@ -489,82 +496,81 @@
   .errors {
     margin-top: 15px;
     padding: 10px;
-    background: #f8d7da;
-    border: 1px solid #f5c6cb;
-    border-radius: 4px;
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid var(--danger);
+    border-radius: var(--radius);
   }
 
   .error-message {
-    color: #721c24;
+    color: var(--danger);
     font-size: 0.9em;
     margin: 5px 0;
   }
 
   :global(.dark) .config-section {
-    background: #34495e;
-    border-color: #2c3e50;
+    background: var(--surface);
+    border-color: var(--border);
   }
 
   :global(.dark) .config-section h3 {
-    color: #bdc3c7;
+    color: var(--text);
   }
 
   :global(.dark) .presets label,
   :global(.dark) .input-group label {
-    color: #ecf0f1;
+    color: var(--text);
   }
 
   :global(.dark) .preset-btn {
-    background: #2c3e50;
-    border-color: #555;
-    color: #ecf0f1;
+    background: var(--surface-elevated);
+    border-color: var(--border);
+    color: var(--text);
   }
 
   :global(.dark) .preset-btn:hover {
-    border-color: #3498db;
+    border-color: var(--accent);
   }
 
   :global(.dark) .preset-btn.active {
-    background: #3498db;
-    border-color: #3498db;
+    background: var(--accent);
+    border-color: var(--accent);
+    color: var(--accent-foreground);
   }
 
   :global(.dark) .input-group input {
-    background: #2c3e50;
-    border-color: #555;
-    color: #ecf0f1;
+    background: var(--surface-elevated);
+    border-color: var(--border);
+    color: var(--text);
   }
 
   :global(.dark) .input-group select {
-    background: #2c3e50;
-    border-color: #555;
-    color: #ecf0f1;
+    background: var(--surface-elevated);
+    border-color: var(--border);
+    color: var(--text);
   }
 
   :global(.dark) .toggle-btn {
-    color: #3498db;
+    color: var(--accent);
   }
 
   :global(.dark) .advanced-settings {
-    background: #2c3e50;
-    border-color: #555;
+    background: var(--surface-elevated);
+    border-color: var(--border);
   }
 
   :global(.dark) .checkbox-group label {
-    color: #ecf0f1;
+    color: var(--text);
   }
 
   :global(.dark) .checkbox-group span {
-    color: #ecf0f1;
+    color: var(--text);
   }
 
   :global(.dark) .checkbox-group input[type='checkbox'] {
-    accent-color: #3498db;
-    background: #555;
-    border-color: #666;
+    accent-color: var(--accent);
   }
 
   :global(.dark) .help-text {
-    color: #a0a0a0;
+    color: var(--text-muted);
   }
 </style>

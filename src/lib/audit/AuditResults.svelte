@@ -46,13 +46,16 @@
   </div>
 
   <!-- Status Banner -->
-  <div class="status-banner" class:fail={report.summary.bloquants > 0} class:warning={report.summary.majeurs > 0} class:pass={report.summary.bloquants === 0 && report.summary.majeurs === 0}>
+  <div class="status-banner" class:fail={report.summary.bloquants > 0} class:warning={report.summary.majeurs > 0 || report.summary.unmatched > 0} class:pass={report.summary.bloquants === 0 && report.summary.majeurs === 0 && report.summary.unmatched === 0}>
     {#if report.summary.bloquants > 0}
       <span class="status-icon">❌</span>
       <span class="status-text">CRITICAL ISSUES FOUND</span>
     {:else if report.summary.majeurs > 0}
       <span class="status-icon">⚠️</span>
       <span class="status-text">MAJOR ISSUES FOUND</span>
+     {:else if report.summary.unmatched > 0}
+      <span class="status-icon">⚠️</span>
+      <span class="status-text">UNMATCHED ITEMS FOUND</span>
     {:else}
       <span class="status-icon">✅</span>
       <span class="status-text">ALL CHECKS PASSED</span>
@@ -308,7 +311,6 @@
 <style>
   .results-container {
     max-width: 1200px;
-    margin: 0 auto;
     padding: 20px;
   }
 
@@ -318,18 +320,18 @@
 
   .results-header h2 {
     margin: 0 0 5px 0;
-    color: #2c3e50;
+    color: var(--text);
   }
 
   .timestamp {
     margin: 0;
-    color: #7f8c8d;
+    color: var(--text-muted);
     font-size: 0.9em;
   }
 
   .status-banner {
     padding: 16px 20px;
-    border-radius: 8px;
+    border-radius: var(--radius-lg);
     margin-bottom: 20px;
     display: flex;
     align-items: center;
@@ -339,21 +341,21 @@
   }
 
   .status-banner.fail {
-    background: #f8d7da;
-    border: 1px solid #f5c6cb;
-    color: #721c24;
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
   }
 
   .status-banner.warning {
-    background: #fff3cd;
-    border: 1px solid #ffc107;
-    color: #856404;
+    background: rgba(202, 138, 4, 0.1);
+    border: 1px solid var(--warning);
+    color: var(--warning);
   }
 
   .status-banner.pass {
-    background: #d4edda;
-    border: 1px solid #c3e6cb;
-    color: #155724;
+    background: rgba(22, 163, 74, 0.1);
+    border: 1px solid var(--success);
+    color: var(--success);
   }
 
   .status-icon {
@@ -361,9 +363,9 @@
   }
 
   .summary-box {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 20px;
     margin-bottom: 20px;
   }
@@ -371,7 +373,7 @@
   .summary-toggle {
     background: none;
     border: none;
-    color: #2c3e50;
+    color: var(--text);
     font-weight: 600;
     cursor: pointer;
     font-size: 1.05em;
@@ -391,57 +393,57 @@
   }
 
   .stat-card {
-    background: white;
+    background: var(--surface-elevated);
     padding: 15px;
-    border-radius: 6px;
-    border: 1px solid #ddd;
+    border-radius: var(--radius);
+    border: 1px solid var(--border);
     text-align: center;
   }
 
   .stat-label {
     font-size: 0.85em;
-    color: #7f8c8d;
+    color: var(--text-muted);
     margin-bottom: 8px;
   }
 
   .stat-value {
     font-size: 1.8em;
     font-weight: 700;
-    color: #2c3e50;
+    color: var(--text);
   }
 
   .stat-value.critical {
-    color: #e74c3c;
+    color: var(--danger);
   }
 
   .stat-value.warning {
-    color: #f39c12;
+    color: var(--warning);
   }
 
   .stat-value.info {
-    color: #3498db;
+    color: var(--accent);
   }
 
   .stat-value.error {
-    color: #e67e22;
+    color: var(--danger);
   }
 
   .top-errors {
     margin-top: 15px;
     padding-top: 15px;
-    border-top: 1px solid #ddd;
+    border-top: 1px solid var(--border);
   }
 
   .top-errors h4 {
     margin: 0 0 10px 0;
-    color: #34495e;
+    color: var(--text);
   }
 
   .error-type {
     display: flex;
     justify-content: space-between;
     padding: 8px 0;
-    border-bottom: 1px solid #ecf0f1;
+    border-bottom: 1px solid var(--border);
   }
 
   .error-type:last-child {
@@ -449,19 +451,19 @@
   }
 
   .type-name {
-    color: #34495e;
+    color: var(--text);
     font-size: 0.9em;
   }
 
   .type-count {
     font-weight: 600;
-    color: #3498db;
+    color: var(--accent);
   }
 
   .export-section {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 20px;
     margin-bottom: 20px;
   }
@@ -469,7 +471,7 @@
   .export-section h3 {
     margin-top: 0;
     margin-bottom: 15px;
-    color: #34495e;
+    color: var(--text);
   }
 
   .button-group {
@@ -481,25 +483,25 @@
   .btn {
     padding: 10px 16px;
     border: none;
-    border-radius: 4px;
+    border-radius: var(--radius);
     cursor: pointer;
     font-weight: 500;
     transition: all 0.2s;
   }
 
   .btn-export {
-    background: #3498db;
-    color: white;
+    background: var(--accent);
+    color: var(--accent-foreground);
   }
 
   .btn-export:hover {
-    background: #2980b9;
+    filter: brightness(0.9);
   }
 
   .results-section {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 20px;
     margin-bottom: 20px;
   }
@@ -512,7 +514,7 @@
     display: block;
     margin-bottom: 10px;
     font-weight: 500;
-    color: #34495e;
+    color: var(--text);
   }
 
   .filter-buttons {
@@ -523,22 +525,23 @@
 
   .filter-btn {
     padding: 8px 14px;
-    border: 2px solid #ddd;
-    background: white;
-    border-radius: 4px;
+    border: 2px solid var(--border);
+    background: var(--surface-elevated);
+    border-radius: var(--radius);
     cursor: pointer;
     transition: all 0.2s;
     font-size: 0.9em;
+    color: var(--text);
   }
 
   .filter-btn:hover {
-    border-color: #3498db;
+    border-color: var(--accent);
   }
 
   .filter-btn.active {
-    background: #3498db;
-    color: white;
-    border-color: #3498db;
+    background: var(--accent);
+    color: var(--accent-foreground);
+    border-color: var(--accent);
   }
 
   .results-table {
@@ -551,21 +554,21 @@
   }
 
   th {
-    background: white;
+    background: var(--surface-elevated);
     padding: 12px;
     text-align: left;
     font-weight: 600;
-    border-bottom: 2px solid #ddd;
-    color: #2c3e50;
+    border-bottom: 2px solid var(--border);
+    color: var(--text);
   }
 
   td {
     padding: 12px;
-    border-bottom: 1px solid #ecf0f1;
+    border-bottom: 1px solid var(--border);
   }
 
   .result-row:hover {
-    background: #f5f5f5;
+    background: var(--surface);
   }
 
   .expand-cell {
@@ -578,10 +581,11 @@
     cursor: pointer;
     font-size: 1em;
     padding: 4px 8px;
+    color: var(--text);
   }
 
   .expand-btn.expanded {
-    color: #3498db;
+    color: var(--accent);
   }
 
   .question-cell {
@@ -590,13 +594,13 @@
 
   .question-title {
     font-weight: 500;
-    color: #2c3e50;
+    color: var(--text);
     font-size: 0.95em;
   }
 
   .question-meta {
     font-size: 0.8em;
-    color: #7f8c8d;
+    color: var(--text-muted);
     margin-top: 4px;
   }
 
@@ -607,29 +611,29 @@
   .score-badge {
     display: inline-block;
     padding: 6px 12px;
-    border-radius: 4px;
+    border-radius: var(--radius);
     font-weight: 600;
     font-size: 0.9em;
   }
 
   .score-badge.excellent {
-    background: #d4edda;
-    color: #155724;
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--success);
   }
 
   .score-badge.good {
-    background: #d1ecf1;
-    color: #0c5460;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--text);
   }
 
   .score-badge.fair {
-    background: #fff3cd;
-    color: #856404;
+    background: rgba(202, 138, 4, 0.1);
+    color: var(--warning);
   }
 
   .score-badge.poor {
-    background: #f8d7da;
-    color: #721c24;
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--danger);
   }
 
   .issues-cell {
@@ -652,27 +656,27 @@
   }
 
   .badge-success {
-    background: #d4edda;
-    color: #155724;
+    background: rgba(22, 163, 74, 0.1);
+    color: var(--success);
   }
 
   .badge-critical {
-    background: #f8d7da;
-    color: #721c24;
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--danger);
   }
 
   .badge-warning {
-    background: #fff3cd;
-    color: #856404;
+    background: rgba(202, 138, 4, 0.1);
+    color: var(--warning);
   }
 
   .badge-info {
-    background: #d1ecf1;
-    color: #0c5460;
+    background: rgba(0, 0, 0, 0.05);
+    color: var(--accent);
   }
 
   .detail-row {
-    background: white;
+    background: var(--surface-elevated);
   }
 
   .detail-row td {
@@ -683,20 +687,20 @@
   .no-results {
     text-align: center;
     padding: 40px 20px;
-    color: #7f8c8d;
+    color: var(--text-muted);
   }
 
   .unmatched-section {
-    background: #f8f9fa;
-    border: 1px solid #e0e0e0;
-    border-radius: 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
     padding: 20px;
   }
 
   .section-toggle {
     background: none;
     border: none;
-    color: #2c3e50;
+    color: var(--text);
     font-weight: 600;
     cursor: pointer;
     font-size: 1em;
@@ -715,15 +719,15 @@
   }
 
   .unmatched-list {
-    background: white;
+    background: var(--surface-elevated);
     padding: 15px;
-    border-radius: 6px;
+    border-radius: var(--radius);
   }
 
   .unmatched-list h4 {
     margin-top: 0;
     margin-bottom: 10px;
-    color: #34495e;
+    color: var(--text);
   }
 
   .unmatched-list ul {
@@ -734,113 +738,113 @@
 
   .unmatched-list li {
     padding: 8px 0;
-    border-bottom: 1px solid #ecf0f1;
+    border-bottom: 1px solid var(--border);
     font-size: 0.9em;
-    color: #555;
+    color: var(--text);
   }
 
   .unmatched-list li.more {
-    color: #7f8c8d;
+    color: var(--text-muted);
     font-style: italic;
   }
 
   .unmatched-list.warn {
-    background: #fff9e6;
-    border: 2px solid #ffc107;
-    border-left: 4px solid #f39c12;
+    background: rgba(202, 138, 4, 0.1);
+    border: 2px solid var(--warning);
+    border-left: 4px solid var(--warning);
   }
 
   .unmatched-list.warn h4 {
-    color: #b8860b;
+    color: var(--warning);
     margin-bottom: 8px;
   }
 
   .help-text {
     font-size: 0.85em;
-    color: #766d05;
+    color: var(--warning);
     margin: 8px 0 12px 0;
     padding: 8px;
-    background: rgba(255, 193, 7, 0.1);
-    border-radius: 4px;
+    background: rgba(202, 138, 4, 0.05);
+    border-radius: var(--radius);
     font-style: italic;
   }
 
   .prompt-preview {
     display: block;
     font-size: 0.85em;
-    color: #666;
+    color: var(--text-muted);
     margin-top: 4px;
     font-style: italic;
   }
 
   .debug-hint {
     font-size: 0.85em;
-    color: #555;
+    color: var(--text);
     margin-top: 12px;
     padding: 8px;
-    background: #f0f8ff;
-    border-left: 3px solid #3498db;
+    background: rgba(0, 0, 0, 0.02);
+    border-left: 3px solid var(--accent);
     border-radius: 3px;
   }
   :global(.dark) .export-section,
   :global(.dark) .results-section,
   :global(.dark) .unmatched-section {
-    background: #34495e;
-    border-color: #2c3e50;
+    background: var(--surface);
+    border-color: var(--border);
   }
 
   :global(.dark) .stat-card {
-    background: #2c3e50;
-    border-color: #555;
+    background: var(--surface-elevated);
+    border-color: var(--border);
   }
 
   :global(.dark) .stat-label {
-    color: #a0a0a0;
+    color: var(--text-muted);
   }
 
   :global(.dark) .stat-value {
-    color: #ecf0f1;
+    color: var(--text);
   }
 
   :global(.dark) th {
-    background: #2c3e50;
-    color: #ecf0f1;
-    border-bottom-color: #555;
+    background: var(--surface-elevated);
+    color: var(--text);
+    border-bottom-color: var(--border);
   }
 
   :global(.dark) td {
-    border-bottom-color: #555;
+    border-bottom-color: var(--border);
   }
 
   :global(.dark) .result-row:hover {
-    background: #1a252f;
+    background: var(--surface);
   }
 
   :global(.dark) .question-title {
-    color: #ecf0f1;
+    color: var(--text);
   }
 
   :global(.dark) .unmatched-list.warn {
-    background: #3d3300;
-    border-color: #8b7500;
+    background: rgba(202, 138, 4, 0.1);
+    border-color: var(--warning);
   }
 
   :global(.dark) .unmatched-list.warn h4 {
-    color: #ffc107;
+    color: var(--warning);
   }
 
   :global(.dark) .help-text {
-    color: #ffcc99;
-    background: rgba(255, 193, 7, 0.1);
+    color: var(--warning);
+    background: rgba(202, 138, 4, 0.1);
   }
 
   :global(.dark) .prompt-preview {
-    color: #bdc3c7;
+    color: var(--text-muted);
   }
 
   :global(.dark) .debug-hint {
-    background: rgba(52, 152, 219, 0.1);
-    border-left-color: #3498db;
-    color: #bdc3c7;
+    background: rgba(0, 0, 0, 0.1);
+    border-left-color: var(--accent);
+    color: var(--text);
   }
 </style>
