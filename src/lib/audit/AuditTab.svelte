@@ -19,7 +19,7 @@
   let fileInputElement: HTMLInputElement;
   let availableSheets: string[] = [];
   let selectedSheet: string = '';
-  let matchingThreshold: number = 0.75;
+  let matchingThreshold: number = 0.95;
 
   // Convert loaded QTI questions to audit format
   // Filter out instructions since they are not actual questions
@@ -120,9 +120,6 @@
 
       if (result.success && result.report) {
         auditReport.set(result.report);
-        if (result.warnings) {
-          console.warn('Audit warnings:', result.warnings);
-        }
       } else {
         auditError.set(result.error || 'Unknown error during audit');
       }

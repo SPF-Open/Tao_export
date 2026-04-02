@@ -1,5 +1,8 @@
 ## Changelog
 
+### 1.5.2
+- Change : Default matching threshold increased to 0.95 for more accurate audit matching
+
 ### 1.5.1
 - Fix : Audit link color now properly displays when active
 
