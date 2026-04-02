@@ -1,6 +1,20 @@
 ## Changelog
 
-### 1.0.1
+### 1.3.0
+ - Feat : Audit based on original Excel file
+
+### 1.2.0
+- Refactor : remove unused transition import and adjust font size and padding in settings
+
+### 1.1.0
+- Feat : Changelog modal accessible from header
+- Feat : Documentation modal with 3 languages (FR/EN/NL)
+- Feat : Horizontal language selector for documentation
+- Feat : Documentation preloads all languages in background
+- Feat : Modal scroll locks body, only modal scrolls
+- Feat : Larger modals by default (900px/90vh)
+
+### 0.2.2
 - Refactor : Complete UI redesign with modern admin dashboard aesthetic
   - New design tokens (colors, shadows, radius, animations)
   - Inter font instead of Source Sans Pro
