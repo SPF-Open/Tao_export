@@ -1,28 +1,28 @@
 <script lang="ts">
-  import type { MatchedPair, ComparisonError } from '../audit/types';
-  import HighlightedText from './HighlightedText.svelte';
+  import type { MatchedPair, ComparisonError } from "../audit/types";
+  import HighlightedText from "./HighlightedText.svelte";
 
   export let pair: MatchedPair;
   export let errors: ComparisonError[];
 
   function formatValue(val: any): string {
-    if (val === null || val === undefined) return '(empty)';
-    if (typeof val === 'string') return val;
-    if (typeof val === 'number') return String(val);
-    if (Array.isArray(val)) return val.join(', ');
+    if (val === null || val === undefined) return "(empty)";
+    if (typeof val === "string") return val;
+    if (typeof val === "number") return String(val);
+    if (Array.isArray(val)) return val.join(", ");
     return JSON.stringify(val);
   }
 
   function getSeverityColor(severity: string): string {
     switch (severity) {
-      case 'BLOQUANT':
-        return 'var(--danger)';
-      case 'MAJEUR':
-        return 'var(--warning)';
-      case 'MINEUR':
-        return 'var(--accent)';
+      case "BLOQUANT":
+        return "var(--danger)";
+      case "MAJEUR":
+        return "var(--warning)";
+      case "MINEUR":
+        return "var(--accent)";
       default:
-        return 'var(--text-muted)';
+        return "var(--text-muted)";
     }
   }
 </script>
@@ -49,8 +49,8 @@
             class="match-score"
             class:excellent={pair.score >= 0.95}
             class:good={pair.score >= 0.85 && pair.score < 0.95}
-            class:fair={pair.score >= 0.70 && pair.score < 0.85}
-            class:poor={pair.score < 0.70}
+            class:fair={pair.score >= 0.7 && pair.score < 0.85}
+            class:poor={pair.score < 0.7}
           >
             {(pair.score * 100).toFixed(1)}%
           </span>
@@ -59,13 +59,16 @@
 
       <div class="comp-item">
         <div class="label">QTI Type:</div>
-        <div class="value">{pair.qti.type || 'Unknown'}</div>
+        <div class="value">{pair.qti.type || "Unknown"}</div>
       </div>
 
       <div class="comp-item">
         <div class="label">Answer Count:</div>
         <div class="value">
-          <span class:mismatch={pair.excel.answers.length !== pair.qti.answers.length}>
+          <span
+            class:mismatch={pair.excel.answers.length !==
+              pair.qti.answers.length}
+          >
             Excel: {pair.excel.answers.length}, QTI: {pair.qti.answers.length}
           </span>
         </div>
@@ -78,13 +81,13 @@
     <h5>Question Title</h5>
 
     {#if pair.excel.title || pair.qti.title}
-      {@const titleError = errors.find((e) => e.detail?.field === 'title')}
+      {@const titleError = errors.find((e) => e.detail?.field === "title")}
       <div class="text-comparison">
         <div class="comp-col">
           <div class="comp-label">Excel:</div>
           <div class="comp-text">
             <HighlightedText
-              text={pair.excel.title || '(not provided)'}
+              text={pair.excel.title || "(not provided)"}
               diffs={titleError?.detail?.excelDiff}
             />
           </div>
@@ -93,14 +96,16 @@
           <div class="comp-label">QTI:</div>
           <div class="comp-text">
             <HighlightedText
-              text={pair.qti.title || '(not provided)'}
+              text={pair.qti.title || "(not provided)"}
               diffs={titleError?.detail?.qtiDiff}
             />
           </div>
         </div>
       </div>
     {:else}
-      <p style="color: var(--text-muted); font-size: 0.9em;">No title information available</p>
+      <p style="color: var(--text-muted); font-size: 0.9em;">
+        No title information available
+      </p>
     {/if}
   </div>
 
@@ -109,7 +114,7 @@
     <h5>Question Prompt</h5>
 
     {#if pair.excel.prompt || pair.qti.prompt}
-      {@const promptError = errors.find((e) => e.detail?.field === 'prompt')}
+      {@const promptError = errors.find((e) => e.detail?.field === "prompt")}
       <div class="text-comparison">
         <div class="comp-col">
           <div class="comp-label">Excel:</div>
@@ -131,7 +136,9 @@
         </div>
       </div>
     {:else}
-      <p style="color: var(--text-muted); font-size: 0.9em;">No prompt information available</p>
+      <p style="color: var(--text-muted); font-size: 0.9em;">
+        No prompt information available
+      </p>
     {/if}
   </div>
 
@@ -141,7 +148,9 @@
 
     <div class="answers-grid">
       {#each Array(Math.max(pair.excel.answers.length, pair.qti.answers.length)) as _, i}
-        {@const answerError = errors.find((e) => e.detail?.field === 'answer' && e.detail?.index === i)}
+        {@const answerError = errors.find(
+          (e) => e.detail?.field === "answer" && e.detail?.index === i,
+        )}
         <div class="answer-item">
           <div class="answer-index">Option {i + 1}</div>
 
@@ -188,10 +197,16 @@
       <h5>Issues Found: {errors.length}</h5>
 
       <div class="errors-list">
-        {#each errors as error (error.type + (error.detail?.index || ''))}
-          <div class="error-item" style="border-left-color: {getSeverityColor(error.severity)}">
+        {#each errors as error (error.type + (error.detail?.index || ""))}
+          <div
+            class="error-item"
+            style="border-left-color: {getSeverityColor(error.severity)}"
+          >
             <div class="error-header">
-              <span class="severity-badge" style="background-color: {getSeverityColor(error.severity)}">
+              <span
+                class="severity-badge"
+                style="background-color: {getSeverityColor(error.severity)}"
+              >
                 {error.severity}
               </span>
               <span class="error-type">{error.type}</span>
@@ -199,15 +214,19 @@
 
             {#if error.detail}
               <div class="error-detail">
-                {#if error.detail.field === 'answer_count'}
-                  Expected {error.detail.excel} answers, but found {error.detail.qti} answers in QTI
-                {:else if error.detail.field === 'correct_answers'}
-                  Found {error.detail.qti} correct answer(s), but QCM should have exactly 1 correct answer
-                {:else if error.detail.field === 'correct_position'}
-                  Correct answer is at position {error.detail.qti}, but should be at position 0 (first)
-                {:else if error.detail.field === 'type'}
-                  Type mismatch: Excel type is "{error.detail.excel}", QTI type is "{error.detail.qti}"
-                {:else if error.detail.field === 'answer'}
+                {#if error.detail.field === "answer_count"}
+                  Expected {error.detail.excel} answers, but found {error.detail
+                    .qti} answers in QTI
+                {:else if error.detail.field === "correct_answers"}
+                  Found {error.detail.qti} correct answer(s), but QCM should have
+                  exactly 1 correct answer
+                {:else if error.detail.field === "correct_position"}
+                  Correct answer is at position {error.detail.qti}, but should
+                  be at position 0 (first)
+                {:else if error.detail.field === "type"}
+                  Type mismatch: Excel type is "{error.detail.excel}", QTI type
+                  is "{error.detail.qti}"
+                {:else if error.detail.field === "answer"}
                   Answer {(error.detail.index ?? 0) + 1}:
                   <div class="detail-comparison">
                     <div>
@@ -223,7 +242,7 @@
                       />
                     </div>
                   </div>
-                {:else if error.detail.field === 'prompt' || error.detail.field === 'title'}
+                {:else if error.detail.field === "prompt" || error.detail.field === "title"}
                   {error.detail.field} mismatch
                   <div class="detail-comparison">
                     <div>
@@ -239,7 +258,7 @@
                       />
                     </div>
                   </div>
-                {:else if error.detail.field === 'order'}
+                {:else if error.detail.field === "order"}
                   Question order mismatch at position {error.detail.index}
                 {:else}
                   {JSON.stringify(error.detail)}
@@ -553,6 +572,16 @@
   @media print {
     .error-item {
       page-break-inside: avoid;
+    }
+    .detail-header {
+      margin-bottom: 10px;
+      padding-bottom: 5px;
+    }
+    .detail-section {
+      margin-bottom: 10px;
+    }
+    .answer-item {
+      padding: 5px;
     }
   }
 </style>
