@@ -19,9 +19,21 @@
   import Button from "./ui/Button.svelte";
   import FileInput from "./ui/FileInput.svelte";
   import { get } from "svelte/store";
+  import { Printer, FileJson, ChevronDown } from 'lucide-svelte';
+
+  type Props = {
+    onExportPDF?: () => void;
+    onExportJSON?: () => void;
+  };
+
+  interface ComponentProps extends Props {}
+
+  let { onExportPDF, onExportJSON }: ComponentProps = $props();
 
   let assets: EntryObj[];
   let files = $state<File[]>([]);
+  let exportFormat = $state<'pdf' | 'json'>('pdf');
+  let dropdownOpen = $state(false);
 
   $effect(() => {
     const f = Array.from(files);
@@ -92,15 +104,73 @@
 </script>
 
 <div class="zip-input">
-  <FileInput bind:file={files} accept=".zip" multiple={$multiple} />
-  <Button onClick={() => window.print()} variant="primary">
-    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <polyline points="6 9 6 2 18 2 18 9"></polyline>
-      <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
-      <rect x="6" y="14" width="12" height="8"></rect>
-    </svg>
-    Get PDF
+  <Button 
+    onclick={() => {
+      if (exportFormat === 'pdf') {
+        onExportPDF?.();
+      } else {
+        onExportJSON?.();
+      }
+    }} 
+    onClick={() => {
+      if (exportFormat === 'pdf') {
+        onExportPDF?.();
+      } else {
+        onExportJSON?.();
+      }
+    }}
+    variant="primary"
+  >
+    {#if exportFormat === 'pdf'}
+      <Printer size={16} />
+      Get PDF
+    {:else}
+      <FileJson size={16} />
+      Get JSON
+    {/if}
   </Button>
+  
+  <div class="export-selector">
+    <button 
+      class="dropdown-toggle"
+      onclick={() => dropdownOpen = !dropdownOpen}
+      aria-label="Select export format"
+    >
+      <span class="selector-label">
+        {exportFormat === 'pdf' ? 'PDF' : 'JSON'}
+      </span>
+      <div class="chevron" class:rotated={dropdownOpen}>
+        <ChevronDown size={14} />
+      </div>
+    </button>
+    
+    {#if dropdownOpen}
+      <div class="dropdown-menu">
+        <button
+          class="dropdown-item"
+          class:active={exportFormat === 'pdf'}
+          onclick={() => {
+            exportFormat = 'pdf';
+            dropdownOpen = false;
+          }}
+        >
+          PDF
+        </button>
+        <button
+          class="dropdown-item"
+          class:active={exportFormat === 'json'}
+          onclick={() => {
+            exportFormat = 'json';
+            dropdownOpen = false;
+          }}
+        >
+          JSON
+        </button>
+      </div>
+    {/if}
+  </div>
+
+  <FileInput bind:file={files} accept=".zip" multiple={$multiple} />
 </div>
 
 <style>
@@ -108,5 +178,85 @@
     display: flex;
     flex-direction: column;
     gap: 12px;
+  }
+
+  .export-selector {
+    position: relative;
+  }
+
+  .dropdown-toggle {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    font-size: 12px;
+    transition: color 0.2s;
+  }
+
+  .dropdown-toggle:hover {
+    color: var(--text);
+  }
+
+  .selector-label {
+    font-weight: 500;
+    font-size: 12px;
+  }
+
+  .chevron {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+  }
+
+  .chevron.rotated {
+    transform: rotate(180deg);
+  }
+
+  .dropdown-menu {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    margin-top: 4px;
+    z-index: 10;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+
+  .dropdown-item {
+    width: 100%;
+    padding: 8px 12px;
+    background: transparent;
+    border: none;
+    text-align: left;
+    color: var(--text);
+    cursor: pointer;
+    font-size: 12px;
+    transition: background 0.2s;
+  }
+
+  .dropdown-item:hover {
+    background: var(--surface);
+  }
+
+  .dropdown-item.active {
+    color: var(--accent);
+    font-weight: 600;
+  }
+
+  .dropdown-item:first-child {
+    border-radius: var(--radius) var(--radius) 0 0;
+  }
+
+  .dropdown-item:last-child {
+    border-radius: 0 0 var(--radius) var(--radius);
   }
 </style>

@@ -74,10 +74,40 @@ export const showLetter = writable(false);
 export const inzage = writable(false);
 export const sort = writable(false);
 export const compareMode = writable(false);
+export const compareExamIndex1 = writable<number>(-1);
+export const compareExamIndex2 = writable<number>(-1);
 export const zoom = writable(1);
 export const multiple = writable(false)
 export const merge = writable(false)
 export const darkMode = writable(false)
+
+// ============================================================================
+// AUDIT STORES - Declared early because used in subscriber functions below
+// ============================================================================
+
+import type { AuditReport, ExcelConfig } from './lib/audit/types';
+import { DEFAULT_CONFIG } from './lib/audit/config';
+
+// Navigation
+export type PageType = 'questions' | 'audit' | 'compare';
+export const currentPage = writable<PageType>('questions');
+
+// Audit UI state (deprecated: use currentPage instead)
+export const auditTab = writable<boolean>(false);
+export const auditLoading = writable<boolean>(false);
+export const auditReport = writable<AuditReport | null>(null);
+export const auditConfig = writable<ExcelConfig>(DEFAULT_CONFIG);
+export const auditFilename = writable<string>('');
+export const auditError = writable<string | null>(null);
+
+// Reset audit state
+export const resetAudit = () => {
+  auditLoading.set(false);
+  auditReport.set(null);
+  auditFilename.set('');
+  auditError.set(null);
+  auditConfig.set(DEFAULT_CONFIG);
+};
 
 // Randomization
 export const randomizeAnswer = writable(false);
@@ -250,9 +280,30 @@ sort.subscribe((value) => {
   }
 });
 
+// Disable compareMode when not in multiple files mode
+multiple.subscribe((value) => {
+  if (!value) {
+    compareMode.set(false);
+    compareExamIndex1.set(-1);
+    compareExamIndex2.set(-1);
+    currentPage.set('questions');
+  }
+});
+
 compareMode.subscribe((value) => {
-  if (value) copyQuestion();
-  else questions.set(get(oldQuestions));
+  const isMultiple = get(multiple);
+  const examsArray = get(exams);
+  
+  if (value && isMultiple && examsArray.length > 1) {
+    // Initialize exam indices if not set
+    if (get(compareExamIndex1) === -1) compareExamIndex1.set(0);
+    if (get(compareExamIndex2) === -1) compareExamIndex2.set(examsArray.length > 1 ? 1 : 0);
+    currentPage.set('compare');
+  } else if (!value) {
+    compareExamIndex1.set(-1);
+    compareExamIndex2.set(-1);
+    currentPage.set('questions');
+  }
 });
 
 showInstruction.subscribe((showInstruction) => {
@@ -318,29 +369,7 @@ export const resetSettings = () => {
   sort.set(false);
 }
 
-// ============================================================================
-// AUDIT STORES
-// ============================================================================
 
-import type { AuditReport, ExcelConfig } from './lib/audit/types';
-import { DEFAULT_CONFIG } from './lib/audit/config';
-
-// Audit UI state
-export const auditTab = writable<boolean>(false);
-export const auditLoading = writable<boolean>(false);
-export const auditReport = writable<AuditReport | null>(null);
-export const auditConfig = writable<ExcelConfig>(DEFAULT_CONFIG);
-export const auditFilename = writable<string>('');
-export const auditError = writable<string | null>(null);
-
-// Reset audit state
-export const resetAudit = () => {
-  auditLoading.set(false);
-  auditReport.set(null);
-  auditFilename.set('');
-  auditError.set(null);
-  auditConfig.set(DEFAULT_CONFIG);
-};
 
 // Audit stats derived from report
 export const auditStats = derived([auditReport], ([$report]) => {

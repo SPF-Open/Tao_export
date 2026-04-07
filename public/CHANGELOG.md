@@ -1,5 +1,13 @@
 ## Changelog
 
+### 1.7.0
+- Feat : Export format selector in sidebar
+  - Added dropdown selector below "Get PDF" button to choose between PDF or JSON export
+  - Button dynamically updates icon and text based on selected format
+  - Minimal design: no border, subtle chevron arrow rotates to indicate open/closed state
+  - Smooth transitions and hover effects for better UX
+  - Active format highlighted with accent color in dropdown
+
 ### 1.6.3
 - Refactor : Remove @gzlab/uui dependency and replace with custom UI components
   - Created lightweight custom Svelte 5 components (Switch, TextInput, Button, FileInput)

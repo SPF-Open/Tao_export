@@ -1,5 +1,6 @@
 <script lang="ts">
   import { onMount } from "svelte";
+  import { ChevronDown, Upload, Settings, PlayCircle, CheckCircle, AlertCircle } from "lucide-svelte";
   import type { QTIQuestion } from "../audit/types";
   import { runAudit } from "../audit/index";
   import { getExcelSheets } from "../audit/excel-parser";
@@ -21,40 +22,37 @@
   let selectedSheet: string = "";
   let matchingThreshold: number = 0.95;
 
+  // UI state for progressive disclosure
+  let showConfigSection = $state(false);
+  let showSummarySection = $state(false);
+
   // Convert loaded QTI questions to audit format
-  // Filter out instructions since they are not actual questions
   function stripHtmlTags(htmlText: string): string {
-    // Remove all HTML/XML tags and normalize whitespace
     return htmlText
-      .replace(/<[^>]*>/g, "") // Remove all tags
-      .replace(/\s+/g, " ") // Collapse multiple spaces
+      .replace(/<[^>]*>/g, "")
+      .replace(/\s+/g, " ")
       .trim();
   }
 
   function convertQTIQuestions(qtiQuestions: any[]): QTIQuestion[] {
     return qtiQuestions
       .filter((q) => {
-        // Exclude instruction types
         if (q.type === "Instruction" || q.type === "Instruction QCM")
           return false;
         return true;
       })
       .map((q) => {
-        // Extract prompt text from various formats
         let promptText = "";
 
         if (q.prompt) {
           if (typeof q.prompt === "string") {
             promptText = stripHtmlTags(q.prompt);
           } else if (Array.isArray(q.prompt)) {
-            // Handle array of DOM elements or strings
             promptText = q.prompt
               .map((el: any) => {
                 if (el && typeof el === "object" && "textContent" in el) {
-                  // Use textContent to get plain text from DOM elements
                   return (el as Element).textContent || "";
                 } else if (el && typeof el === "object" && "outerHTML" in el) {
-                  // Fallback to outerHTML and strip tags
                   return stripHtmlTags((el as Element).outerHTML);
                 }
                 return String(el || "");
@@ -64,7 +62,6 @@
           }
         }
 
-        // Fallback to other fields
         if (!promptText) {
           promptText = stripHtmlTags(q.text || q.content || "");
         }
@@ -86,7 +83,7 @@
           },
         };
       })
-      .filter((q) => q.prompt && q.prompt.length > 0); // Final filter: only questions with actual content
+      .filter((q) => q.prompt && q.prompt.length > 0);
   }
 
   async function handleRunAudit() {
@@ -108,12 +105,9 @@
       const buffer = await excelFile.arrayBuffer();
       const qtiQs = convertQTIQuestions($questions);
 
-      console.log(
-        `[Audit] Loaded QTI questions: ${qtiQs.length} (filtered from ${$questions.length})`,
-      );
       if (qtiQs.length === 0) {
         auditError.set(
-          "No valid questions found after filtering instructions. Check the TAO export.",
+          "No valid questions found after filtering instructions.",
         );
         return;
       }
@@ -145,8 +139,8 @@
       excelFile = files[0];
       auditFilename.set(excelFile.name);
       auditError.set(null);
+      showConfigSection = true;
 
-      // Load available sheets
       excelFile.arrayBuffer().then((buffer) => {
         availableSheets = getExcelSheets(buffer);
         selectedSheet = availableSheets[0] || "";
@@ -160,6 +154,8 @@
     auditFilename.set("");
     availableSheets = [];
     selectedSheet = "";
+    showConfigSection = false;
+    showSummarySection = false;
     if (fileInputElement) {
       fileInputElement.value = "";
     }
@@ -179,125 +175,193 @@
 </script>
 
 <div class="audit-container">
-  <h2>📋 Audit TAO</h2>
+  <div class="audit-header">
+    <h2>📋 Audit & Compare</h2>
+    <p class="audit-subtitle">Validate and compare exam questions against Excel files</p>
+  </div>
 
   {#if !hasQuestions}
     <div class="alert alert-warning">
-      ⚠️ Load a TAO ZIP file first to proceed with audit
+      <AlertCircle size={18} />
+      <div>
+        <strong>Load a TAO ZIP file first</strong>
+        <p>You need to load exam questions before running an audit.</p>
+      </div>
     </div>
   {:else}
     <div class="audit-content">
       {#if !$auditReport}
-        <!-- Upload & Config Section -->
-        <div class="audit-section">
-          <h3>Step 1: Upload Excel File</h3>
+        <!-- Phase 1: Upload Excel File -->
+        <div class="phase-section">
+          <div class="phase-header">
+            <div class="phase-icon" style={$auditFilename ? 'background: var(--color-success);' : ''}>
+              <Upload size={20} />
+            </div>
+            <div class="phase-title">
+              <h3>Step 1: Upload Excel File</h3>
+              {#if $auditFilename}
+                <p class="phase-status">✓ Loaded: {$auditFilename}</p>
+              {:else}
+                <p class="phase-status">Select an Excel file to begin</p>
+              {/if}
+            </div>
+          </div>
 
-          <div class="file-input-wrapper">
+          <div class="phase-content">
             <input
               type="file"
               hidden
               bind:this={fileInputElement}
-              on:change={handleFileSelect}
+              onchange={handleFileSelect}
               accept=".xlsx,.xls"
               disabled={$auditLoading}
+              aria-label="Select Excel file"
             />
 
             <button
-              on:click={triggerFileInput}
-              class="btn btn-primary"
+              onclick={triggerFileInput}
               disabled={$auditLoading}
+              class="btn btn-primary"
             >
               📁 Choose Excel File
             </button>
 
-            {#if $auditFilename}
-              <span class="filename">{$auditFilename}</span>
+            {#if $auditError}
+              <div class="alert alert-error">
+                {$auditError}
+              </div>
             {/if}
           </div>
-
-          {#if $auditError}
-            <div class="alert alert-error">
-              {$auditError}
-            </div>
-          {/if}
-
-          {#if availableSheets.length > 0}
-            <div class="sheet-selector">
-              <label for="sheet-select">📄 Select Sheet:</label>
-              <select
-                id="sheet-select"
-                bind:value={selectedSheet}
-                disabled={$auditLoading}
-              >
-                {#each availableSheets as sheet}
-                  <option value={sheet}>{sheet}</option>
-                {/each}
-              </select>
-            </div>
-          {/if}
         </div>
 
-        <!-- Config Section -->
-        <AuditConfig />
-
-        <!-- Summary Section -->
-        <div class="audit-section">
-          <h3>Questions Summary</h3>
-          <div class="info-box">
-            <div class="info-item">
-              <span class="label">Excel Rows to Process:</span>
-              <span class="value">Row {$auditConfig.rowOffset + 1} onwards</span
-              >
-            </div>
-            <div class="info-item">
-              <span class="label">Loaded QTI Questions:</span>
-              <span class="value">{$questions.length}</span>
-            </div>
-            <div class="info-item">
-              <span class="label">⚙️ Matching Threshold (min 50%):</span>
-              <div class="threshold-control">
-                <input
-                  type="range"
-                  min="0.50"
-                  max="1.00"
-                  step="0.05"
-                  bind:value={matchingThreshold}
-                  disabled={$auditLoading}
-                  aria-label="Matching threshold slider"
-                />
-                <span class="threshold-value"
-                  >{(matchingThreshold * 100).toFixed(0)}%</span
-                >
+        <!-- Phase 2: Configure Settings (collapsible) -->
+        {#if $auditFilename}
+          <div class="phase-section">
+            <button
+              class="phase-header phase-header-collapsible"
+              onclick={() => showConfigSection = !showConfigSection}
+            >
+              <div class="phase-icon">
+                <Settings size={20} />
               </div>
-              <small style="margin-top: 6px; display: block;"
-                >Lower = more matches but less accurate. Higher = fewer but more
-                confident matches.</small
-              >
+              <div class="phase-title">
+                <h3>Step 2: Configure Matching</h3>
+                <p class="phase-status">Set column mappings and matching threshold</p>
+              </div>
+                <div class="chevron-toggle" class:rotated={showConfigSection}>
+                  <ChevronDown size={20} />
+                </div>
+            </button>
+
+            {#if showConfigSection}
+              <div class="phase-content">
+                <AuditConfig
+                  {availableSheets}
+                  {selectedSheet}
+                  onSheetChange={(sheet) => (selectedSheet = sheet)}
+                />
+
+                <div class="threshold-control-group">
+                  <label for="threshold">Matching Threshold (min 50%):</label>
+                  <div class="threshold-control">
+                    <input
+                      id="threshold"
+                      type="range"
+                      min="0.50"
+                      max="1.00"
+                      step="0.05"
+                      bind:value={matchingThreshold}
+                      disabled={$auditLoading}
+                      aria-label="Matching threshold slider"
+                    />
+                    <span class="threshold-value">{(matchingThreshold * 100).toFixed(0)}%</span>
+                  </div>
+                  <small>Lower = more matches but less accurate. Higher = fewer but more confident matches.</small>
+                </div>
+              </div>
+            {/if}
+          </div>
+        {/if}
+
+        <!-- Phase 3: Review Summary (collapsible) -->
+        {#if $auditFilename}
+          <div class="phase-section">
+            <button
+              class="phase-header phase-header-collapsible"
+              onclick={() => showSummarySection = !showSummarySection}
+            >
+              <div class="phase-icon">
+                <CheckCircle size={20} />
+              </div>
+              <div class="phase-title">
+                <h3>Step 3: Review Summary</h3>
+                <p class="phase-status">Verify settings before running audit</p>
+              </div>
+                <div class="chevron-toggle" class:rotated={showSummarySection}>
+                  <ChevronDown size={20} />
+                </div>
+            </button>
+
+            {#if showSummarySection}
+              <div class="phase-content">
+                <div class="summary-grid">
+                  <div class="summary-item">
+                    <span class="summary-label">QTI Questions:</span>
+                    <span class="summary-value">{$questions.length}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Excel Start Row:</span>
+                    <span class="summary-value">Row {$auditConfig.rowOffset + 1}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Title Column:</span>
+                    <span class="summary-value">{$auditConfig.titleCol}</span>
+                  </div>
+                  <div class="summary-item">
+                    <span class="summary-label">Matching Threshold:</span>
+                    <span class="summary-value">{(matchingThreshold * 100).toFixed(0)}%</span>
+                  </div>
+                </div>
+              </div>
+            {/if}
+          </div>
+        {/if}
+
+        <!-- Phase 4: Run Audit Button -->
+        {#if $auditFilename}
+          <div class="phase-section">
+            <div class="phase-actions">
+              {#if $auditLoading}
+                <button disabled class="btn btn-loading">
+                  ⏳ Processing audit...
+                </button>
+              {:else}
+                <button onclick={handleRunAudit} class="btn btn-success btn-large">
+                  <PlayCircle size={18} />
+                  Run Audit
+                </button>
+              {/if}
+            </div>
+          </div>
+        {/if}
+      {:else}
+        <!-- Results Section -->
+        <div class="phase-section">
+          <div class="phase-header">
+            <div class="phase-icon phase-icon-success">
+              <CheckCircle size={20} />
+            </div>
+            <div class="phase-title">
+              <h3>Audit Complete</h3>
+              <p class="phase-status">Results and details below</p>
             </div>
           </div>
         </div>
 
-        <!-- Run Audit Button -->
-        <div class="audit-section">
-          {#if excelFile && !$auditLoading}
-            <button on:click={handleRunAudit} class="btn btn-success btn-large">
-              ▶️ Run Audit
-            </button>
-          {:else if $auditLoading}
-            <button class="btn btn-loading" disabled> ⏳ Processing... </button>
-          {:else}
-            <button class="btn btn-primary" disabled>
-              Select Excel file to begin
-            </button>
-          {/if}
-        </div>
-      {:else}
-        <!-- Results Section -->
         <AuditResults report={$auditReport} />
 
-        <!-- Reset Button -->
-        <div class="audit-section">
-          <button on:click={handleReset} class="btn btn-secondary">
+        <div class="phase-section">
+          <button onclick={handleReset} class="btn btn-secondary btn-block">
             ↻ New Audit
           </button>
         </div>
@@ -313,60 +377,157 @@
     margin: 0 auto;
   }
 
-  .audit-container h2 {
-    margin-top: 0;
-    margin-bottom: 20px;
+  .audit-header {
+    margin-bottom: 24px;
+  }
+
+  .audit-header h2 {
+    margin: 0 0 8px 0;
     color: var(--text);
-    border-bottom: 3px solid var(--accent);
-    padding-bottom: 10px;
+    font-size: 28px;
+  }
+
+  .audit-subtitle {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 14px;
   }
 
   .audit-content {
     display: flex;
     flex-direction: column;
-    gap: 20px;
+    gap: 16px;
   }
 
-  .audit-section {
-    background: var(--surface);
+  .phase-section {
+    background: var(--surface-elevated);
     border: 1px solid var(--border);
     border-radius: var(--radius-lg);
-    padding: 20px;
+    overflow: hidden;
   }
 
-  .audit-section h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    color: var(--text);
-  }
-
-  .file-input-wrapper {
+  .phase-header {
     display: flex;
-    gap: 10px;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+    width: 100%;
+    text-align: left;
+  }
+
+  .phase-header:hover {
+    background: var(--surface);
+  }
+
+  .phase-header-collapsible {
+    justify-content: space-between;
+  }
+
+  .phase-icon {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 48px;
+    height: 48px;
+    background: var(--surface);
+    border-radius: var(--radius-lg);
+    color: var(--text-muted);
+    transition: all 0.2s;
+  }
+
+  .phase-icon-success {
+    background: var(--accent);
+    color: white;
+  }
+
+  .phase-title {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .phase-title h3 {
+    margin: 0 0 4px 0;
+    color: var(--text);
+    font-size: 16px;
+    font-weight: 600;
+  }
+
+  .phase-status {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: 13px;
+  }
+
+  .phase-header :global(svg) {
+    transition: transform 0.2s;
+  }
+
+  .phase-header :global(svg.rotated) {
+    transform: rotate(180deg);
+  }
+
+  .chevron-toggle {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: transform 0.2s;
+  }
+
+  .chevron-toggle.rotated {
+    transform: rotate(180deg);
+  }
+
+  .phase-content {
+    padding: 16px;
+    border-top: 1px solid var(--border);
+    background: var(--surface);
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .phase-actions {
+    display: flex;
+    gap: 12px;
+    padding: 16px;
+  }
+
+  .alert {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px 16px;
+    border-radius: var(--radius-lg);
+    font-size: 14px;
+    margin-bottom: 16px;
+  }
+
+  .alert.alert-warning {
+    background: rgba(202, 138, 4, 0.1);
+    border: 1px solid var(--warning);
+    color: var(--warning);
+  }
+
+  .alert.alert-error {
+    background: rgba(220, 38, 38, 0.1);
+    border: 1px solid var(--danger);
+    color: var(--danger);
+  }
+
+  .sheet-selector {
+    display: flex;
+    gap: 12px;
     align-items: center;
     flex-wrap: wrap;
   }
 
-  .filename {
-    padding: 8px 12px;
-    background: var(--surface-elevated);
-    color: var(--success);
-    border-radius: var(--radius);
-    font-size: 0.9em;
-  }
-
-  .sheet-selector {
-    margin-top: 15px;
-    padding: 12px;
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    display: flex;
-    gap: 10px;
-    align-items: center;
-  }
-
   .sheet-selector label {
+    font-size: 14px;
     font-weight: 500;
     color: var(--text);
   }
@@ -374,184 +535,53 @@
   .sheet-selector select {
     flex: 1;
     min-width: 150px;
-    padding: 8px;
+    padding: 8px 12px;
     border: 1px solid var(--border);
     border-radius: var(--radius);
-    font-size: 1em;
-    background: var(--surface-elevated);
+    font-size: 14px;
+    background: var(--surface);
     color: var(--text);
+    cursor: pointer;
   }
 
   .sheet-selector select:focus {
     outline: none;
     border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    box-shadow: 0 0 0 2px var(--accent);
+    opacity: 0.5;
   }
 
-  .info-box {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 15px;
-  }
-
-  .info-item {
+  .threshold-control-group {
     display: flex;
     flex-direction: column;
-    gap: 5px;
+    gap: 8px;
   }
 
-  .info-item .label {
-    font-size: 0.85em;
-    color: var(--text-muted);
+  .threshold-control-group label {
+    font-size: 14px;
     font-weight: 500;
-  }
-
-  .info-item .value {
-    font-size: 1.1em;
-    color: var(--text);
-    font-weight: 600;
-  }
-
-  .alert {
-    padding: 12px 16px;
-    border-radius: var(--radius);
-    margin: 10px 0;
-  }
-
-  .alert-warning {
-    background: rgba(202, 138, 4, 0.1);
-    border: 1px solid var(--warning);
-    color: var(--warning);
-  }
-
-  .alert-error {
-    background: rgba(220, 38, 38, 0.1);
-    border: 1px solid var(--danger);
-    color: var(--danger);
-  }
-
-  .btn {
-    padding: 10px 16px;
-    border: none;
-    border-radius: var(--radius);
-    font-size: 1em;
-    cursor: pointer;
-    transition: all 0.2s;
-    font-weight: 500;
-    background: var(--surface-elevated);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .btn:disabled {
-    opacity: 0.6;
-    cursor: not-allowed;
-  }
-
-  .btn-primary {
-    background: var(--accent);
-    color: var(--accent-foreground);
-    border: none;
-  }
-
-  .btn-primary:hover:not(:disabled) {
-    background: var(--text-muted);
-  }
-
-  .btn-success {
-    background: var(--success);
-    color: var(--success-foreground);
-    border: none;
-  }
-
-  .btn-success:hover:not(:disabled) {
-    filter: brightness(0.9);
-  }
-
-  .btn-secondary {
-    background: var(--text-muted);
-    color: var(--bg);
-    border: none;
-  }
-
-  .btn-secondary:hover:not(:disabled) {
-    background: var(--text);
-  }
-
-  .btn-large {
-    padding: 12px 24px;
-    font-size: 1.05em;
-  }
-
-  .btn-loading {
-    background: var(--warning);
-    color: var(--warning-foreground);
-    border: none;
-  }
-
-  :global(.dark) .audit-section {
-    background: var(--surface);
-    border-color: var(--border);
     color: var(--text);
   }
 
-  :global(.dark) .filename {
-    background: var(--surface-elevated);
-    color: var(--success);
-  }
-
-  :global(.dark) .sheet-selector {
-    background: var(--surface-elevated);
-    border-color: var(--border);
-  }
-
-  :global(.dark) .sheet-selector label {
-    color: var(--text);
-  }
-
-  :global(.dark) .sheet-selector select {
-    background: var(--surface-elevated);
-    border-color: var(--border);
-    color: var(--text);
-  }
-
-  :global(.dark) .sheet-selector select:focus {
-    border-color: var(--accent);
-  }
-
-  :global(.dark) .audit-container h2 {
-    color: var(--text);
-    border-bottom-color: var(--accent);
-  }
-
-  :global(.dark) .audit-section h3 {
-    color: var(--text);
-  }
-
-  :global(.dark) .info-item .label {
+  .threshold-control-group small {
     color: var(--text-muted);
-  }
-
-  :global(.dark) .info-item .value {
-    color: var(--text);
+    font-size: 12px;
   }
 
   .threshold-control {
     display: flex;
     align-items: center;
-    gap: 10px;
-    width: 100%;
+    gap: 12px;
   }
 
   .threshold-control input[type="range"] {
     flex: 1;
-    min-width: 100px;
     height: 6px;
-    border-radius: 3px;
-    background: var(--border);
-    outline: none;
-    appearance: none;
     -webkit-appearance: none;
+    appearance: none;
+    background: var(--border);
+    border-radius: 3px;
+    outline: none;
   }
 
   .threshold-control input[type="range"]::-webkit-slider-thumb {
@@ -559,44 +589,155 @@
     appearance: none;
     width: 18px;
     height: 18px;
-    border-radius: 50%;
     background: var(--accent);
+    border-radius: 50%;
     cursor: pointer;
-    transition: background 0.2s;
+    transition: all 0.2s;
+  }
+
+  .threshold-control input[type="range"]::-webkit-slider-thumb:hover {
+    box-shadow: 0 0 0 4px var(--accent);
+    opacity: 0.8;
   }
 
   .threshold-control input[type="range"]::-moz-range-thumb {
     width: 18px;
     height: 18px;
-    border-radius: 50%;
     background: var(--accent);
+    border-radius: 50%;
     cursor: pointer;
     border: none;
+    transition: all 0.2s;
   }
 
-  .threshold-control input[type="range"]::-moz-range-track {
-    background: var(--border);
-    border: none;
+  .threshold-control input[type="range"]::-moz-range-thumb:hover {
+    box-shadow: 0 0 0 4px var(--accent);
+    opacity: 0.8;
   }
 
   .threshold-value {
+    font-size: 14px;
     font-weight: 600;
     color: var(--text);
     min-width: 50px;
     text-align: right;
   }
 
-  :global(.dark) .threshold-control input[type="range"] {
-    background: var(--border);
+  .summary-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 12px;
   }
 
-  :global(.dark) .threshold-value {
+  .summary-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    padding: 12px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+  }
+
+  .summary-label {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--text-muted);
+    text-transform: uppercase;
+  }
+
+  .summary-value {
+    font-size: 18px;
+    font-weight: 600;
     color: var(--text);
   }
 
-  @media print {
-    .audit-section {
-      display: none !important;
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 10px 16px;
+    border: none;
+    border-radius: var(--radius);
+    font-size: 14px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+
+  .btn-primary {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-primary:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  .btn-success {
+    background: var(--accent);
+    color: white;
+  }
+
+  .btn-success:hover:not(:disabled) {
+    opacity: 0.9;
+  }
+
+  .btn-secondary {
+    background: var(--surface-elevated);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .btn-secondary:hover:not(:disabled) {
+    background: var(--surface);
+  }
+
+  .btn-loading {
+    opacity: 0.6;
+    cursor: not-allowed;
+  }
+
+  .btn-large {
+    padding: 12px 20px;
+    font-size: 16px;
+  }
+
+  .btn-block {
+    width: 100%;
+  }
+
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 900px) {
+    .audit-container {
+      padding: 16px;
+    }
+
+    .phase-header {
+      padding: 12px;
+      gap: 12px;
+    }
+
+    .phase-icon {
+      width: 40px;
+      height: 40px;
+    }
+
+    .phase-title h3 {
+      font-size: 15px;
+    }
+
+    .summary-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .phase-actions {
+      flex-direction: column;
     }
   }
 </style>

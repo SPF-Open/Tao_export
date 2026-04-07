@@ -4,11 +4,15 @@
   import ZipInput from "./lib/ZipInput.svelte";
   import Question from "./template/Question.svelte";
   import AuditTab from "./lib/audit/AuditTab.svelte";
+  import HeaderNav from "./lib/HeaderNav.svelte";
+  import TextInput from "./lib/ui/TextInput.svelte";
 
   import "./app.css";
 
   import {
     compareMode,
+    compareExamIndex1,
+    compareExamIndex2,
     showMenu,
     questions,
     oldQuestions,
@@ -25,35 +29,20 @@
     answerMapping,
     showLetter,
     darkMode,
-    auditTab,
+    currentPage,
   } from "./store";
   import Log from "./lib/Log.svelte";
   import ChangelogModal from "./lib/ChangelogModal.svelte";
   import DocumentationModal from "./lib/DocumentationModal.svelte";
 
   import { get } from "svelte/store";
-  import MaintenanceOverlay from "./lib/MaintenanceOverlay.svelte";
+  
   
   let titleHeader = $state("");
   let rrnHeader = $state("");
   let showDebug = $state(false);
   let showChangelog = $state(false);
   let showDocumentation = $state(false);
-
-  function moveIndex(n: number) {
-    const maxLength = get(exams).length - 1;
-    if (!maxLength) return;
-    examsIndex.update((i) => {
-      i += n;
-      if (i < 0) i = maxLength;
-      if (i > maxLength) i = 0;
-      return i;
-    });
-  }
-
-  function toggleDarkMode() {
-    darkMode.update((v: boolean) => !v);
-  }
 
   function exportToJson() {
     const data = {
@@ -106,6 +95,10 @@
     document.body.removeChild(a);
     URL.revokeObjectURL(url);
   }
+
+  function exportToPdf() {
+    window.print();
+  }
 </script>
 
 <svelte:head>
@@ -113,173 +106,85 @@
 </svelte:head>
 
 <main>
-  <header class="header">
-    <div class="header-left">
-      <button class="menu-toggle" onclick={() => showMenu.update((v: boolean) => !v)} aria-label="Toggle menu">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="3" y1="12" x2="21" y2="12"></line>
-          <line x1="3" y1="6" x2="21" y2="6"></line>
-          <line x1="3" y1="18" x2="21" y2="18"></line>
-        </svg>
-      </button>
-      <span class="app-title">TAO Export</span>
-    </div>
-    
-    <div class="header-center">
-      {#if $multiple && !$merge}
-        <div class="exam-nav">
-          <button class="nav-btn" onclick={() => moveIndex(-1)} aria-label="Previous exam">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="15 18 9 12 15 6"></polyline>
-            </svg>
-          </button>
-          <span class="exam-index">{$examsIndex + 1} / {get(exams).length}</span>
-          <button class="nav-btn" onclick={() => moveIndex(+1)} aria-label="Next exam">
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="9 18 15 12 9 6"></polyline>
-            </svg>
-          </button>
-        </div>
-      {/if}
-    </div>
-    
-    <div class="header-right">
-      {#if $questions.length > 0}
-        <button class="icon-btn" onclick={exportToJson} aria-label="Export to JSON">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-        </button>
-      {/if}
-      <button class="icon-btn" onclick={toggleDarkMode} aria-label="Toggle dark mode">
-        {#if $darkMode}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="5"></circle>
-            <line x1="12" y1="1" x2="12" y2="3"></line>
-            <line x1="12" y1="21" x2="12" y2="23"></line>
-            <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
-            <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
-            <line x1="1" y1="12" x2="3" y2="12"></line>
-            <line x1="21" y1="12" x2="23" y2="12"></line>
-            <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
-            <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
-          </svg>
-        {:else}
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-          </svg>
-        {/if}
-      </button>
-      {#if $questions.length > 0}
-        <button 
-          class="header-link" 
-          class:active={$auditTab}
-          onclick={() => auditTab.update(v => !v)} 
-          aria-label="Audit TAO"
-          title="Compare Excel with loaded questions"
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polyline points="22 12 18 12 15 20 9 4 6 12 2 12"></polyline>
-          </svg>
-          <span>Audit</span>
-        </button>
-      {/if}
-      <button class="header-link" onclick={() => showDocumentation = true} aria-label="Documentation">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-          <polyline points="10 9 9 9 8 9"></polyline>
-        </svg>
-        <span>Docs</span>
-      </button>
-      <button class="header-link" onclick={() => showChangelog = true} aria-label="Changelog">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="16" y1="13" x2="8" y2="13"></line>
-          <line x1="16" y1="17" x2="8" y2="17"></line>
-          <polyline points="10 9 9 9 8 9"></polyline>
-        </svg>
-        <span>Changelog</span>
-      </button>
-      <div class="debug-container">
-        <button class="icon-btn" onclick={() => showDebug = !showDebug} aria-label="Debug info">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"></circle>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-          </svg>
-        </button>
-        {#if showDebug}
-          <div class="debug-menu">
-            <div class="debug-item">
-              <span class="debug-label">Version</span>
-              <span class="debug-value">{PKG.version}</span>
-            </div>
-            <div class="debug-item">
-              <span class="debug-label">Build</span>
-              <span class="debug-value">{BUILD_DATE}</span>
-            </div>
-          </div>
-        {/if}
-      </div>
-    </div>
-  </header>
+  <HeaderNav 
+    onDebugToggle={(show) => showDebug = show}
+    onShowDocs={() => showDocumentation = true}
+    onShowChangelog={() => showChangelog = true}
+    onExportPDF={exportToPdf}
+    onExportJSON={exportToJson}
+  />
 
   <Log />
+  
   
   <div class="content" class:sidebar-open={$showMenu}>
     {#if $showMenu}
       <aside class="sidebar" >
         <div class="sidebar-content">
           <Settings />
-          <ZipInput />
-          <Tables />
+          <ZipInput onExportPDF={exportToPdf} onExportJSON={exportToJson} />
         </div>
       </aside>
     {/if}
     
     <div class="main-area">
-      {#if $auditTab}
+      {#if $currentPage === 'audit'}
         <!-- Audit View -->
         <AuditTab />
-      {:else if $oldQuestions.length > 0 && $compareMode}
+      {:else if $currentPage === 'compare' && $multiple && $exams.length > 1 && $compareExamIndex1 >= 0 && $compareExamIndex2 >= 0}
         <div class="compare-wrapper">
+          <!-- Exam Selector -->
+          <div class="compare-selector hide-print">
+            <div class="selector-group">
+              <label for="exam-select-1">Test A:</label>
+              <select id="exam-select-1" bind:value={$compareExamIndex1} class="exam-select">
+                {#each $exams as exam, i}
+                  <option value={i}>{exam.name || `Exam ${i + 1}`}</option>
+                {/each}
+              </select>
+            </div>
+            <div class="selector-group">
+              <label for="exam-select-2">Test B:</label>
+              <select id="exam-select-2" bind:value={$compareExamIndex2} class="exam-select">
+                {#each $exams as exam, i}
+                  <option value={i}>{exam.name || `Exam ${i + 1}`}</option>
+                {/each}
+              </select>
+            </div>
+          </div>
+          
           <div class="compare-column">
-            <div class="compare-label">Test A</div>
+            <div class="compare-label">{$exams[$compareExamIndex1]?.name || `Test A`}</div>
             <div class="questions-container" style="zoom:{$zoom};">
               {#if $inzage}
                 <div class="inzage-header hide-print">
                   <div class="inzage-field">
-                    <Text bind:value={titleHeader} placeholder="Test name" />
+                    <TextInput bind:value={titleHeader} placeholder="Test name" />
                   </div>
                   <div class="inzage-field">
-                    <Text bind:value={rrnHeader} placeholder="RRN" />
+                    <TextInput bind:value={rrnHeader} placeholder="RRN" />
                   </div>
                 </div>
               {/if}
-              {#each $questions as question}
+              {#each $exams[$compareExamIndex1]?.questions || [] as question}
                 <Question {question} />
               {/each}
             </div>
           </div>
           <div class="compare-column">
-            <div class="compare-label">Test B</div>
+            <div class="compare-label">{$exams[$compareExamIndex2]?.name || `Test B`}</div>
             <div class="questions-container" style="zoom:{$zoom};">
               {#if $inzage}
                 <div class="inzage-header hide-print">
                   <div class="inzage-field">
-                    <Text bind:value={titleHeader} placeholder="Test name" />
+                    <TextInput bind:value={titleHeader} placeholder="Test name" />
                   </div>
                   <div class="inzage-field">
-                    <Text bind:value={rrnHeader} placeholder="RRN" />
+                    <TextInput bind:value={rrnHeader} placeholder="RRN" />
                   </div>
                 </div>
               {/if}
-              {#each $oldQuestions as question}
+              {#each $exams[$compareExamIndex2]?.questions || [] as question}
                 <Question {question} />
               {/each}
             </div>
@@ -290,10 +195,10 @@
           {#if $inzage}
             <div class="inzage-header hide-print">
               <div class="inzage-field">
-                <Text bind:value={titleHeader} placeholder="Test name" />
+                <TextInput bind:value={titleHeader} placeholder="Test name" />
               </div>
               <div class="inzage-field">
-                <Text bind:value={rrnHeader} placeholder="RRN" />
+                <TextInput bind:value={rrnHeader} placeholder="RRN" />
               </div>
             </div>
             <div class="inzage-header inzage-header-print">
@@ -369,180 +274,6 @@
 </main>
 
 <style>
-  .header {
-    position: sticky;
-    top: 0;
-    z-index: 100;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    height: var(--header-height);
-    padding: 0 16px;
-    background: var(--surface-elevated);
-    border-bottom: 1px solid var(--border);
-    gap: 16px;
-  }
-
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .menu-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    border-radius: var(--radius);
-    transition: background 0.2s;
-  }
-
-  .menu-toggle:hover {
-    background: var(--surface);
-  }
-
-  .app-title {
-    font-weight: 600;
-    font-size: 16px;
-    color: var(--text);
-  }
-
-  .header-center {
-    flex: 1;
-    display: flex;
-    justify-content: center;
-  }
-
-  .exam-nav {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 4px 12px;
-    background: var(--surface);
-    border-radius: var(--radius);
-    border: 1px solid var(--border);
-  }
-
-  .nav-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 24px;
-    height: 24px;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    border-radius: var(--radius);
-    transition: background 0.2s;
-  }
-
-  .nav-btn:hover {
-    background: var(--border);
-  }
-
-  .exam-index {
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--text-muted);
-    min-width: 50px;
-    text-align: center;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .icon-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    border-radius: var(--radius);
-    transition: background 0.2s;
-  }
-
-  .icon-btn:hover {
-    background: var(--surface);
-  }
-
-  .debug-container {
-    position: relative;
-  }
-
-  .debug-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 8px;
-    padding: 12px 16px;
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    min-width: 160px;
-    z-index: 200;
-    animation: fadeIn 0.15s ease;
-  }
-
-  .debug-item {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 6px 0;
-  }
-
-  .debug-item:not(:last-child) {
-    border-bottom: 1px solid var(--border);
-  }
-
-  .debug-label {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-
-  .debug-value {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  .header-link {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--accent);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    border-radius: var(--radius);
-    transition: all 0.2s;
-    text-decoration: none;
-  }
-
-  .header-link:hover {
-    background: var(--surface);
-    text-decoration: underline;
-  }
-
-  .header-link.active {
-    color: var(--color-success);
-    background: var(--surface);
-  }
-
   .content {
     display: flex;
     flex: 1;
@@ -559,6 +290,7 @@
     box-shadow: var(--shadow-lg);
     z-index: 50;
     overflow-y: auto;
+    scrollbar-gutter: stable;
   }
 
   .sidebar-content {
@@ -712,7 +444,7 @@
   }
 
   @media print {
-    .header, .sidebar {
+    .sidebar {
       display: none !important;
     }
     
@@ -723,5 +455,48 @@
     .questions-container {
       max-width: none;
     }
+  }
+
+  .compare-selector {
+    margin-bottom: 16px;
+    padding: 12px 16px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    display: flex;
+    gap: 24px;
+    align-items: center;
+  }
+
+  .selector-group {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .selector-group label {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .exam-select {
+    padding: 6px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  .exam-select:hover {
+    border-color: var(--border-strong);
+  }
+
+  .exam-select:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px var(--accent-alpha);
   }
 </style>

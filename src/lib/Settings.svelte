@@ -1,5 +1,6 @@
 <script lang="ts">
   import Switch from "./ui/Switch.svelte";
+  import TextInput from "./ui/TextInput.svelte";
   import {
     compareMode,
     inzage,
@@ -13,177 +14,168 @@
     randomizeAnswer,
     randomizeQuestion,
     darkMode,
+    questions,
   } from "../store";
   import { slide } from "svelte/transition";
+  import type { QuestionType } from "./helper";
+  import {
+    Eye,
+    EyeOff,
+    Settings,
+    HelpCircle,
+    FileText,
+    Layout,
+    List,
+    Type,
+    Folder,
+    Grid,
+    GripVertical,
+    Shuffle,
+    ChevronDown,
+  } from "lucide-svelte";
+    import Tables from "./Tables.svelte";
 
-  let state = $state({ main: true, extra: false, paperTest: false, file: false });
+  // Load section state from localStorage
+  function loadSectionState() {
+    const stored = localStorage.getItem("settings-panels");
+    if (stored) {
+      try {
+        const parsed = JSON.parse(stored);
+        // Migrate old 5-section structure to new structure
+        if ('display' in parsed || 'manipulation' in parsed) {
+          return {
+            general: parsed.display ?? false,
+            filtering: parsed.filtering ?? false,
+            paperTest: parsed.manipulation ?? false,
+            advanced: parsed.export ?? parsed.advanced ?? false,
+          };
+        }
+        return parsed;
+      } catch {
+        return {
+          general: true,
+          filtering: false,
+          paperTest: false,
+          advanced: false,
+        };
+      }
+    }
+    return {
+      general: false,
+      filtering: false,
+      paperTest: false,
+      advanced: false,
+    };
+  }
+
+  let state = $state(loadSectionState());
+
+  // Save section state to localStorage
+  $effect(() => {
+    localStorage.setItem("settings-panels", JSON.stringify(state));
+  });
+
+  // Question list state
+  let questionListChecked = $state(true);
+  let questionListText = $state("");
+  let questionListContainer: HTMLUListElement | null = $state(null);
+  let itemDraggingIndex = $state(-1);
+  let itemHoveredIndex = $state(-1);
+  let itemDragged: QuestionType | null = $state(null);
+  let mouseYCoordinate = $state(-1);
+  let distanceTopGrabbedVsPointer = $state(-1);
+
+  $effect.pre(() => {
+    if (questionListText) {
+      const qn = questionListText.split(",").map((n: string) => n.trim());
+      questions.update((o) =>
+        o.map((q) => ({
+          ...q,
+          show: qn.includes(q.title.split(" ")[1]),
+        })),
+      );
+    }
+  });
+
+  function changeQuestionSelection() {
+    questions.update((o) =>
+      o.map((q) => ({ ...q, show: questionListChecked })),
+    );
+  }
+
+  function onDragStart(
+    e: DragEvent & { currentTarget: EventTarget & HTMLDivElement },
+    i: number,
+    question: QuestionType,
+  ) {
+    mouseYCoordinate = e.clientY;
+    itemDragged = question;
+    itemDraggingIndex = i;
+    distanceTopGrabbedVsPointer =
+      e.currentTarget.getBoundingClientRect().y - e.clientY;
+  }
+
+  $effect.pre(() => {
+    if (
+      itemDraggingIndex != -1 &&
+      itemHoveredIndex != -1 &&
+      itemDraggingIndex != itemHoveredIndex
+    ) {
+      questions.update((list) => {
+        [list[itemDraggingIndex], list[itemHoveredIndex]] = [
+          list[itemHoveredIndex],
+          list[itemDraggingIndex],
+        ];
+        return list;
+      });
+      itemDraggingIndex = itemHoveredIndex;
+    }
+  });
 </script>
 
 <div class="settings-panel">
+  <Tables />
+  <!-- General Section -->
   <div class="settings-section">
-    <button class="section-header" onclick={() => state.main = !state.main}>
+    <button
+      class="section-header"
+      onclick={() => (state.general = !state.general)}
+    >
       <div class="section-title">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="3"></circle>
-          <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
-        </svg>
-        <span>Main</span>
+        <Settings size={16} />
+        <span>General</span>
       </div>
-      <div class="section-toggle" class:open={state.main}>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
+      <div class="section-toggle" class:open={state.general}>
+        <ChevronDown size={12} />
       </div>
     </button>
-    {#if state.main}
+    {#if state.general}
       <div class="section-content" transition:slide={{ duration: 200 }}>
         <div class="setting-row">
           <span class="setting-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-            <span>Show Answer</span>
-          </span>
-          <Switch bind:checked={$showAnswer} />
-        </div>
-        <div class="setting-row">
-          <span class="setting-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M17.94 17.94A10.07 10.07 0 0 1 12 20c-7 0-11-8-11-8a18.45 18.45 0 0 1 5.06-5.94M9.9 4.24A9.12 9.12 0 0 1 12 4c7 0 11 8 11 8a18.5 18.5 0 0 1-2.16 3.19m-6.72-1.07a3 3 0 1 1-4.24-4.24"></path>
-              <line x1="1" y1="1" x2="23" y2="23"></line>
-            </svg>
-            <span>Show Instruction</span>
+            <Eye size={14} />
+            <span>Show Instructions</span>
           </span>
           <Switch bind:checked={$showInstruction} />
         </div>
-      </div>
-    {/if}
-  </div>
-
-    <div class="settings-section">
-    <button class="section-header" onclick={() => state.paperTest = !state.paperTest}>
-      <div class="section-title">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
-          <polyline points="14 2 14 8 20 8"></polyline>
-          <line x1="12" y1="13" x2="16" y2="13"></line>
-          <line x1="12" y1="17" x2="16" y2="17"></line>
-          <polyline points="9 13 8 12 7 13"></polyline>
-          <polyline points="9 17 8 16 7 17"></polyline>
-        </svg>
-        <span>Paper Test</span>
-      </div>
-      <div class="section-toggle" class:open={state.paperTest}>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </div>
-    </button>
-    {#if state.paperTest}
-      <div class="section-content" transition:slide={{ duration: 200 }}>
         <div class="setting-row">
           <span class="setting-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="4 7 4 4 20 4 20 7"></polyline>
-              <line x1="9" y1="20" x2="15" y2="20"></line>
-              <line x1="12" y1="4" x2="12" y2="20"></line>
-            </svg>
-            <span>with Letter (A,B,C)</span>
-          </span>
-          <Switch bind:checked={$showLetter} />
-        </div>
-        <div class="setting-row">
-          <span class="setting-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="16 3 21 3 21 8"></polyline>
-              <line x1="4" y1="20" x2="21" y2="3"></line>
-              <polyline points="21 16 21 21 16 21"></polyline>
-              <line x1="15" y1="15" x2="21" y2="21"></line>
-              <line x1="4" y1="4" x2="9" y2="9"></line>
-            </svg>
-            <span>Randomize Answer</span>
-          </span>
-          <Switch bind:checked={$randomizeAnswer} />
-        </div>
-        <div class="setting-row">
-          <span class="setting-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <polyline points="16 3 21 3 21 8"></polyline>
-              <line x1="4" y1="20" x2="21" y2="3"></line>
-              <polyline points="21 16 21 21 16 21"></polyline>
-              <line x1="15" y1="15" x2="21" y2="21"></line>
-              <line x1="4" y1="4" x2="9" y2="9"></line>
-            </svg>
-            <span>Randomize Question</span>
-          </span>
-          <Switch bind:checked={$randomizeQuestion} />
-        </div>
-      </div>
-    {/if}
-  </div>
-
-  <div class="settings-section">
-    <button class="section-header" onclick={() => state.extra = !state.extra}>
-      <div class="section-title">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M12 16v-4"></path>
-          <path d="M12 8h.01"></path>
-        </svg>
-        <span>Extra</span>
-      </div>
-      <div class="section-toggle" class:open={state.extra}>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
-      </div>
-    </button>
-    {#if state.extra}
-      <div class="section-content" transition:slide={{ duration: 200 }}>
-        <div class="setting-row">
-          <span class="setting-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect>
-              <line x1="12" y1="3" x2="12" y2="21"></line>
-            </svg>
-            <span>Compare Test</span>
-          </span>
-          <Switch bind:checked={$compareMode} />
-        </div>
-        <div class="setting-row">
-          <span class="setting-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"></path>
-              <circle cx="12" cy="12" r="3"></circle>
-            </svg>
-            <span>Inzage Mode</span>
-          </span>
-          <Switch bind:checked={$inzage} />
-        </div>
-        <div class="setting-row">
-          <span class="setting-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <line x1="4" y1="9" x2="20" y2="9"></line>
-              <line x1="4" y1="15" x2="20" y2="15"></line>
-              <line x1="10" y1="3" x2="8" y2="21"></line>
-              <line x1="16" y1="3" x2="14" y2="21"></line>
-            </svg>
-            <span>Sort Question</span>
+            <List size={14} />
+            <span>Sort Questions</span>
           </span>
           <Switch bind:checked={$sort} />
         </div>
         <div class="setting-row">
           <span class="setting-label">
-            <span>Font Size</span>
+            <span>Zoom Level</span>
           </span>
           <div class="zoom-control">
-            <input 
-              type="range" 
-              min="0.8" 
-              max="1.5" 
-              step="0.1" 
-              bind:value={$zoom} 
+            <input
+              type="range"
+              min="0.8"
+              max="1.5"
+              step="0.1"
+              bind:value={$zoom}
               class="zoom-slider"
             />
             <span class="zoom-value">{Math.round($zoom * 100)}%</span>
@@ -193,27 +185,80 @@
     {/if}
   </div>
 
+  <!-- Paper Test Section -->
   <div class="settings-section">
-    <button class="section-header" onclick={() => state.file = !state.file}>
+    <button
+      class="section-header"
+      onclick={() => (state.paperTest = !state.paperTest)}
+    >
       <div class="section-title">
-        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-        </svg>
-        <span>Files</span>
+        <Shuffle size={16} />
+        <span>Paper Test</span>
       </div>
-      <div class="section-toggle" class:open={state.file}>
-        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <polyline points="6 9 12 15 18 9"></polyline>
-        </svg>
+      <div class="section-toggle" class:open={state.paperTest}>
+        <ChevronDown size={12} />
       </div>
     </button>
-    {#if state.file}
+    {#if state.paperTest}
       <div class="section-content" transition:slide={{ duration: 200 }}>
         <div class="setting-row">
           <span class="setting-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-            </svg>
+            <Shuffle size={14} />
+            <span>Randomize Answers</span>
+          </span>
+          <Switch bind:checked={$randomizeAnswer} />
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">
+            <Shuffle size={14} />
+            <span>Randomize Questions</span>
+          </span>
+          <Switch bind:checked={$randomizeQuestion} />
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">
+            <Type size={14} />
+            <span>Show Letter (A, B, C)</span>
+          </span>
+          <Switch bind:checked={$showLetter} />
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">
+            <Eye size={14} />
+            <span>Show Answers</span>
+          </span>
+          <Switch bind:checked={$showAnswer} />
+        </div>
+      </div>
+    {/if}
+  </div>
+
+  <!-- Advanced Section -->
+  <div class="settings-section">
+    <button
+      class="section-header"
+      onclick={() => (state.advanced = !state.advanced)}
+    >
+      <div class="section-title">
+        <Settings size={16} />
+        <span>Advanced</span>
+      </div>
+      <div class="section-toggle" class:open={state.advanced}>
+        <ChevronDown size={12} />
+      </div>
+    </button>
+    {#if state.advanced}
+      <div class="section-content" transition:slide={{ duration: 200 }}>
+        <div class="setting-row">
+          <span class="setting-label">
+            <FileText size={14} />
+            <span>Inzage Mode</span>
+          </span>
+          <Switch bind:checked={$inzage} />
+        </div>
+        <div class="setting-row">
+          <span class="setting-label">
+            <Folder size={14} />
             <span>Multiple Files</span>
           </span>
           <Switch bind:checked={$multiple} />
@@ -221,12 +266,14 @@
         {#if $multiple}
           <div class="setting-row sub-setting">
             <span class="setting-label">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-                <rect x="3" y="3" width="7" height="7"></rect>
-                <rect x="14" y="3" width="7" height="7"></rect>
-                <rect x="14" y="14" width="7" height="7"></rect>
-                <rect x="3" y="14" width="7" height="7"></rect>
-              </svg>
+              <Layout size={14} />
+              <span>Compare Test</span>
+            </span>
+            <Switch bind:checked={$compareMode} />
+          </div>
+          <div class="setting-row sub-setting">
+            <span class="setting-label">
+              <Grid size={14} />
               <span>Merge Files</span>
             </span>
             <Switch bind:checked={$merge} />
@@ -235,6 +282,74 @@
       </div>
     {/if}
   </div>
+
+    <!-- Question Filtering Section -->
+  {#if $questions && $questions.length}
+    <div class="settings-section">
+      <button
+        class="section-header"
+        onclick={() => (state.filtering = !state.filtering)}
+      >
+        <div class="section-title">
+          <List size={16} />
+          <span>Question Filtering</span>
+        </div>
+        <div class="section-toggle" class:open={state.filtering}>
+          <ChevronDown size={12} />
+        </div>
+      </button>
+      {#if state.filtering}
+        <div
+          class="section-content question-list-section"
+          transition:slide={{ duration: 200 }}
+        >
+          <TextInput
+            placeholder="Filter (ex: 12,13,15)"
+            bind:value={questionListText}
+          />
+
+          <div class="question-list-header">
+            <label class="checkbox-label">
+              <input
+                type="checkbox"
+                id="show-all-q"
+                bind:checked={questionListChecked}
+                onchange={changeQuestionSelection}
+              />
+              <span>All Questions</span>
+            </label>
+          </div>
+
+          <ul class="question-list-items" bind:this={questionListContainer}>
+            {#each $questions as question, i (question.title + i)}
+              <li ondragover={(e) => e.preventDefault()}>
+                <label class="checkbox-label">
+                  <input
+                    type="checkbox"
+                    id="{question.title}-{i}"
+                    bind:checked={question.show}
+                  />
+                </label>
+                <div
+                  class="drag-handle"
+                  role="button"
+                  tabindex="0"
+                  draggable="true"
+                  ondragstart={(e) => onDragStart(e, i, question)}
+                  ondragover={() => (itemHoveredIndex = i)}
+                >
+                  <GripVertical size={16} />
+                </div>
+                <label for="{question.title}-{i}" class="question-title"
+                  >{question.title}</label
+                >
+              </li>
+            {/each}
+          </ul>
+        </div>
+      {/if}
+    </div>
+  {/if}
 </div>
 
 <style>
@@ -365,5 +480,160 @@
     color: var(--text-muted);
     min-width: 40px;
     text-align: right;
+  }
+
+  .question-list-section {
+    flex-direction: column;
+    gap: 8px;
+    display: flex;
+    min-height: 0;
+  }
+
+  .question-stats {
+    display: flex;
+    gap: 10px;
+    padding: 8px;
+    background: var(--surface);
+    border-radius: var(--radius);
+    flex-shrink: 0;
+  }
+
+  .stat {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: var(--text-muted);
+    flex: 1;
+  }
+
+  .stat-value {
+    font-weight: 600;
+    color: var(--text);
+    font-size: 12px;
+  }
+
+  .stat-label {
+    font-weight: 500;
+    font-size: 10px;
+  }
+
+  .stat.qo :global(svg) {
+    color: #8b5cf6;
+  }
+
+  .stat.qcm :global(svg) {
+    color: #10b981;
+  }
+
+  .question-list-header {
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  .question-list-items {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    font-size: 13px;
+    min-height: 0;
+  }
+
+  .question-list-items li {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 6px 0;
+    border-bottom: 1px solid var(--border-strong);
+  }
+
+  .question-list-items li:last-child {
+    border-bottom: none;
+  }
+
+  .drag-handle {
+    width: 16px;
+    height: 16px;
+    cursor: move;
+    opacity: 0.5;
+    transition: opacity 0.15s;
+  }
+
+  .drag-handle:hover {
+    opacity: 1;
+  }
+
+  .question-title {
+    flex: 1;
+    color: var(--text);
+    font-size: 13px;
+    cursor: pointer;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .checkbox-label {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+
+  .checkbox-label input[type="checkbox"] {
+    width: 16px;
+    height: 16px;
+    cursor: pointer;
+    accent-color: var(--primary);
+  }
+
+  .checkbox-label span {
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .export-format {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+  }
+
+  .format-option {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    color: var(--text);
+  }
+
+  .format-option input[type="radio"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
+    accent-color: var(--accent);
+  }
+
+  .export-button {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    padding: 10px;
+    background: var(--accent);
+    color: var(--accent-text, white);
+    border: none;
+    border-radius: var(--radius);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: opacity 0.2s;
+    margin-top: 8px;
+  }
+
+  .export-button:hover {
+    opacity: 0.9;
   }
 </style>

@@ -3,6 +3,10 @@
   import { PRESET_CONFIGS, validateConfig } from '../audit/config';
   import type { ExcelConfig } from '../audit/types';
 
+  export let availableSheets: string[] = [];
+  export let selectedSheet: string = '';
+  export let onSheetChange: (sheet: string) => void = () => {};
+
   let showAdvanced = false;
   let configErrors: string[] = [];
 
@@ -116,6 +120,25 @@
       {/each}
     </div>
   </div>
+
+  <!-- Sheet Selection -->
+  {#if availableSheets.length > 0}
+    <div class="settings-group">
+      <div class="input-group">
+        <label for="sheet-select">Excel Sheet:</label>
+        <select
+          id="sheet-select"
+          value={selectedSheet}
+          on:change={(e) => onSheetChange(e.currentTarget.value)}
+        >
+          {#each availableSheets as sheet}
+            <option value={sheet}>{sheet}</option>
+          {/each}
+        </select>
+        <small>Select which sheet contains the questions</small>
+      </div>
+    </div>
+  {/if}
 
   <!-- Basic Settings -->
   <div class="settings-group">

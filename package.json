@@ -1,7 +1,7 @@
 {
   "name": "tao_export",
   "private": true,
-  "version": "1.6.3",
+  "version": "1.7.0",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -20,6 +20,7 @@
   "dependencies": {
     "@lv00/toolkit": "^1.2.10",
     "@zip.js/zip.js": "^2.8.23",
+    "lucide-svelte": "^1.0.1",
     "marked": "^17.0.5",
     "talisman": "^1.1.4",
     "xlsx": "^0.18.5"
