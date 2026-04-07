@@ -31,8 +31,6 @@
   import ChangelogModal from "./lib/ChangelogModal.svelte";
   import DocumentationModal from "./lib/DocumentationModal.svelte";
 
-  import "@gzlab/uui/main.css";
-  import { Switch, Text } from "@gzlab/uui";
   import { get } from "svelte/store";
   import MaintenanceOverlay from "./lib/MaintenanceOverlay.svelte";
   

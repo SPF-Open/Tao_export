@@ -1,7 +1,7 @@
 {
   "name": "tao_export",
   "private": true,
-  "version": "1.6.2",
+  "version": "1.6.3",
   "type": "module",
   "scripts": {
     "dev": "vite",
@@ -18,7 +18,6 @@
     "vite": "^6.4.1"
   },
   "dependencies": {
-    "@gzlab/uui": "^0.1.14",
     "@lv00/toolkit": "^1.2.10",
     "@zip.js/zip.js": "^2.8.23",
     "marked": "^17.0.5",

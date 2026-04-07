@@ -10,6 +10,8 @@
   --text-muted: #6b7280;
   --accent: #000000;
   --accent-foreground: #ffffff;
+  --primary: #1d4ed8;
+  --primary-foreground: #ffffff;
   --danger: #dc2626;
   --danger-foreground: #ffffff;
   --success: #16a34a;
@@ -44,6 +46,8 @@
   --text-muted: #a1a1aa;
   --accent: #ffffff;
   --accent-foreground: #000000;
+  --primary: #2563eb;
+  --primary-foreground: #ffffff;
   --danger: #ef4444;
   --danger-foreground: #000000;
   --success: #22c55e;

@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Text } from "@gzlab/uui";
+  import TextInput from "./ui/TextInput.svelte";
   import { questions } from "../store";
   import type { QuestionType } from "./helper";
   let checked = true;
@@ -81,7 +81,7 @@
       </span>
     </div>
     
-    <Text id="SelectQuestion" placeholder="Filter (ex: 12,13,15)" bind:value={text} />
+    <TextInput id="SelectQuestion" placeholder="Filter (ex: 12,13,15)" bind:value={text} />
     
     <div class="question-list">
       <div class="list-header">

@@ -1,5 +1,24 @@
 ## Changelog
 
+### 1.6.3
+- Refactor : Remove @gzlab/uui dependency and replace with custom UI components
+  - Created lightweight custom Svelte 5 components (Switch, TextInput, Button, FileInput)
+  - Custom components integrate seamlessly with existing CSS variable design system
+  - Reduced bundle size by eliminating external UI library dependency
+  - Full dark mode support maintained across all custom components
+  - Accessibility first: ARIA labels, keyboard navigation, focus states (WCAG 2.1 AA)
+- Feat : Add new "Paper Test" settings category
+  - Organized paper test-specific options: Letter display (A,B,C), Randomize Answer, Randomize Question
+  - Improved settings organization with dedicated collapsible sections
+- Feat : Enhanced button styling
+  - Get PDF button now uses darker blue (#1d4ed8 light / #2563eb dark) for better visual prominence
+  - Updated primary color throughout the application for consistency
+- Improve : Component sizing and spacing refinements
+  - Switch component reduced by 20% (more compact)
+  - File input area reduced padding for slimmer appearance
+  - Optimized icon sizes and spacing for better visual hierarchy
+- Fix : File input no longer transitions background color on hover (border only)
+
 ### 1.6.2
 - Feat : Enhanced audit report generation and styling
   - Improved markdown and HTML report with extended summary metrics (match rate, duplicate titles, potential copy-paste errors)

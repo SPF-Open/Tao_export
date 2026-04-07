@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { Switch } from "@gzlab/uui";
+  import Switch from "./ui/Switch.svelte";
   import {
     compareMode,
     inzage,
@@ -16,7 +16,7 @@
   } from "../store";
   import { slide } from "svelte/transition";
 
-  let state = $state({ main: true, extra: false, file: false });
+  let state = $state({ main: true, extra: false, paperTest: false, file: false });
 </script>
 
 <div class="settings-panel">
@@ -57,36 +57,30 @@
           </span>
           <Switch bind:checked={$showInstruction} />
         </div>
-        <div class="setting-row">
-          <span class="setting-label">
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-              <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
-            </svg>
-            <span>Dark Mode</span>
-          </span>
-          <Switch bind:checked={$darkMode} />
-        </div>
       </div>
     {/if}
   </div>
 
-  <div class="settings-section">
-    <button class="section-header" onclick={() => state.extra = !state.extra}>
+    <div class="settings-section">
+    <button class="section-header" onclick={() => state.paperTest = !state.paperTest}>
       <div class="section-title">
         <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <circle cx="12" cy="12" r="10"></circle>
-          <path d="M12 16v-4"></path>
-          <path d="M12 8h.01"></path>
+          <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+          <polyline points="14 2 14 8 20 8"></polyline>
+          <line x1="12" y1="13" x2="16" y2="13"></line>
+          <line x1="12" y1="17" x2="16" y2="17"></line>
+          <polyline points="9 13 8 12 7 13"></polyline>
+          <polyline points="9 17 8 16 7 17"></polyline>
         </svg>
-        <span>Extra</span>
+        <span>Paper Test</span>
       </div>
-      <div class="section-toggle" class:open={state.extra}>
+      <div class="section-toggle" class:open={state.paperTest}>
         <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
           <polyline points="6 9 12 15 18 9"></polyline>
         </svg>
       </div>
     </button>
-    {#if state.extra}
+    {#if state.paperTest}
       <div class="section-content" transition:slide={{ duration: 200 }}>
         <div class="setting-row">
           <span class="setting-label">
@@ -95,7 +89,7 @@
               <line x1="9" y1="20" x2="15" y2="20"></line>
               <line x1="12" y1="4" x2="12" y2="20"></line>
             </svg>
-            <span>Letter (A,B,C)</span>
+            <span>with Letter (A,B,C)</span>
           </span>
           <Switch bind:checked={$showLetter} />
         </div>
@@ -125,7 +119,28 @@
           </span>
           <Switch bind:checked={$randomizeQuestion} />
         </div>
-        
+      </div>
+    {/if}
+  </div>
+
+  <div class="settings-section">
+    <button class="section-header" onclick={() => state.extra = !state.extra}>
+      <div class="section-title">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <circle cx="12" cy="12" r="10"></circle>
+          <path d="M12 16v-4"></path>
+          <path d="M12 8h.01"></path>
+        </svg>
+        <span>Extra</span>
+      </div>
+      <div class="section-toggle" class:open={state.extra}>
+        <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <polyline points="6 9 12 15 18 9"></polyline>
+        </svg>
+      </div>
+    </button>
+    {#if state.extra}
+      <div class="section-content" transition:slide={{ duration: 200 }}>
         <div class="setting-row">
           <span class="setting-label">
             <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">

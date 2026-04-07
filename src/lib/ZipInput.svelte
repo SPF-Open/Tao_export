@@ -16,7 +16,8 @@
     resetSettings,
     windowName,
   } from "../store";
-  import { Button, Files } from "@gzlab/uui";
+  import Button from "./ui/Button.svelte";
+  import FileInput from "./ui/FileInput.svelte";
   import { get } from "svelte/store";
 
   let assets: EntryObj[];
@@ -91,8 +92,8 @@
 </script>
 
 <div class="zip-input">
-  <Files bind:file={files} accept=".zip" size="md" multiple={$multiple} />
-  <Button onClick={() => window.print()} type="info">
+  <FileInput bind:file={files} accept=".zip" multiple={$multiple} />
+  <Button onClick={() => window.print()} variant="primary">
     <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
       <polyline points="6 9 6 2 18 2 18 9"></polyline>
       <path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"></path>
