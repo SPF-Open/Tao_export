@@ -48,6 +48,19 @@ export async function runAudit(
     }
 
     console.log(`[Audit] Found ${excelQuestions.length} questions in Excel`);
+    
+    // Debug: Log first question details
+    if (excelQuestions.length > 0) {
+      const first = excelQuestions[0];
+      console.log('[Audit] First Excel question:', {
+        rowIndex: first.rowIndex,
+        excelRow: first.metadata.excelRow,
+        title: first.title?.substring(0, 50),
+        prompt: first.prompt.substring(0, 80),
+        answers: first.answers.length,
+        correctAnswerIndex: first.correctAnswerIndex,
+      });
+    }
 
     // Step 2: Match questions
     console.log('[Audit] Step 2: Matching Excel questions to QTI...');

@@ -1,5 +1,6 @@
 <script lang="ts">
   import type { MatchedPair, ComparisonError } from '../audit/types';
+  import HighlightedText from './HighlightedText.svelte';
 
   export let pair: MatchedPair;
   export let errors: ComparisonError[];
@@ -76,32 +77,62 @@
   <div class="detail-section">
     <h5>Question Title</h5>
 
-    <div class="text-comparison">
-      <div class="comp-col">
-        <div class="comp-label">Excel:</div>
-        <div class="comp-text">{pair.excel.title || '(not provided)'}</div>
+    {#if pair.excel.title || pair.qti.title}
+      {@const titleError = errors.find((e) => e.detail?.field === 'title')}
+      <div class="text-comparison">
+        <div class="comp-col">
+          <div class="comp-label">Excel:</div>
+          <div class="comp-text">
+            <HighlightedText
+              text={pair.excel.title || '(not provided)'}
+              diffs={titleError?.detail?.excelDiff}
+            />
+          </div>
+        </div>
+        <div class="comp-col">
+          <div class="comp-label">QTI:</div>
+          <div class="comp-text">
+            <HighlightedText
+              text={pair.qti.title || '(not provided)'}
+              diffs={titleError?.detail?.qtiDiff}
+            />
+          </div>
+        </div>
       </div>
-      <div class="comp-col">
-        <div class="comp-label">QTI:</div>
-        <div class="comp-text">{pair.qti.title || '(not provided)'}</div>
-      </div>
-    </div>
+    {:else}
+      <p style="color: var(--text-muted); font-size: 0.9em;">No title information available</p>
+    {/if}
   </div>
 
   <!-- Prompt Comparison -->
   <div class="detail-section">
     <h5>Question Prompt</h5>
 
-    <div class="text-comparison">
-      <div class="comp-col">
-        <div class="comp-label">Excel:</div>
-        <div class="comp-text">{pair.excel.prompt}</div>
+    {#if pair.excel.prompt || pair.qti.prompt}
+      {@const promptError = errors.find((e) => e.detail?.field === 'prompt')}
+      <div class="text-comparison">
+        <div class="comp-col">
+          <div class="comp-label">Excel:</div>
+          <div class="comp-text">
+            <HighlightedText
+              text={pair.excel.prompt}
+              diffs={promptError?.detail?.excelDiff}
+            />
+          </div>
+        </div>
+        <div class="comp-col">
+          <div class="comp-label">QTI:</div>
+          <div class="comp-text">
+            <HighlightedText
+              text={pair.qti.prompt}
+              diffs={promptError?.detail?.qtiDiff}
+            />
+          </div>
+        </div>
       </div>
-      <div class="comp-col">
-        <div class="comp-label">QTI:</div>
-        <div class="comp-text">{pair.qti.prompt}</div>
-      </div>
-    </div>
+    {:else}
+      <p style="color: var(--text-muted); font-size: 0.9em;">No prompt information available</p>
+    {/if}
   </div>
 
   <!-- Answers Comparison -->
@@ -110,6 +141,7 @@
 
     <div class="answers-grid">
       {#each Array(Math.max(pair.excel.answers.length, pair.qti.answers.length)) as _, i}
+        {@const answerError = errors.find((e) => e.detail?.field === 'answer' && e.detail?.index === i)}
         <div class="answer-item">
           <div class="answer-index">Option {i + 1}</div>
 
@@ -118,7 +150,10 @@
               <div class="answer-label">Excel:</div>
               <div class="answer-text">
                 {#if i < pair.excel.answers.length}
-                  {pair.excel.answers[i]}
+                  <HighlightedText
+                    text={pair.excel.answers[i]}
+                    diffs={answerError?.detail?.excelDiff}
+                  />
                 {:else}
                   <span class="missing">(no answer)</span>
                 {/if}
@@ -129,7 +164,10 @@
               <div class="answer-label">QTI:</div>
               <div class="answer-text">
                 {#if i < pair.qti.answers.length}
-                  {pair.qti.answers[i].text}
+                  <HighlightedText
+                    text={pair.qti.answers[i].text}
+                    diffs={answerError?.detail?.qtiDiff}
+                  />
                   {#if pair.qti.answers[i].correct}
                     <span class="correct-marker">✓ Correct</span>
                   {/if}
@@ -170,12 +208,36 @@
                 {:else if error.detail.field === 'type'}
                   Type mismatch: Excel type is "{error.detail.excel}", QTI type is "{error.detail.qti}"
                 {:else if error.detail.field === 'answer'}
-                  Answer {(error.detail.index ?? 0) + 1}: "{error.detail.excel}" ≠ "{error.detail.qti}"
+                  Answer {(error.detail.index ?? 0) + 1}:
+                  <div class="detail-comparison">
+                    <div>
+                      Excel: <HighlightedText
+                        text={String(error.detail.excel)}
+                        diffs={error.detail.excelDiff}
+                      />
+                    </div>
+                    <div>
+                      QTI: <HighlightedText
+                        text={String(error.detail.qti)}
+                        diffs={error.detail.qtiDiff}
+                      />
+                    </div>
+                  </div>
                 {:else if error.detail.field === 'prompt' || error.detail.field === 'title'}
                   {error.detail.field} mismatch
                   <div class="detail-comparison">
-                    <div>Excel: "{error.detail.excel}"</div>
-                    <div>QTI: "{error.detail.qti}"</div>
+                    <div>
+                      Excel: <HighlightedText
+                        text={String(error.detail.excel)}
+                        diffs={error.detail.excelDiff}
+                      />
+                    </div>
+                    <div>
+                      QTI: <HighlightedText
+                        text={String(error.detail.qti)}
+                        diffs={error.detail.qtiDiff}
+                      />
+                    </div>
                   </div>
                 {:else if error.detail.field === 'order'}
                   Question order mismatch at position {error.detail.index}
@@ -486,5 +548,11 @@
 
   :global(.dark) .error-item {
     background: var(--surface-elevated);
+  }
+
+  @media print {
+    .error-item {
+      page-break-inside: avoid;
+    }
   }
 </style>

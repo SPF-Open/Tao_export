@@ -1,4 +1,4 @@
-import type { NormalizationOptions } from './types';
+import type { NormalizationOptions, DiffChunk } from './types';
 
 const DEFAULT_OPTIONS: NormalizationOptions = {
   normalize_html: true,
@@ -211,4 +211,93 @@ export function findSubstringMatch(
     startIndex: bestStart,
     endIndex: bestStart + pl,
   };
+}
+
+/**
+ * Generate character-level diff chunks between two strings
+ * Compares strings character-by-character and groups changes by words
+ * Returns array of chunks with type (equal, added, removed) and text
+ */
+export function generateDiff(original: string, modified: string): DiffChunk[] {
+  if (!original && !modified) return [];
+  if (!original) return [{ type: 'added', text: modified }];
+  if (!modified) return [{ type: 'removed', text: original }];
+
+  // Use Myers diff algorithm (simplified version for character-level matching)
+  const chunks = myersDiff(original, modified);
+  return chunks;
+}
+
+/**
+ * Simplified Myers diff algorithm for character-level comparison
+ * Returns array of diff chunks (equal, added, removed)
+ */
+function myersDiff(original: string, modified: string): DiffChunk[] {
+  const result: DiffChunk[] = [];
+
+  // Build a map of character positions in both strings
+  const originalLen = original.length;
+  const modifiedLen = modified.length;
+
+  // Create a matrix for longest common subsequence
+  const matrix: number[][] = Array(originalLen + 1)
+    .fill(null)
+    .map(() => Array(modifiedLen + 1).fill(0));
+
+  // Fill the matrix
+  for (let i = 1; i <= originalLen; i++) {
+    for (let j = 1; j <= modifiedLen; j++) {
+      if (original[i - 1] === modified[j - 1]) {
+        matrix[i][j] = matrix[i - 1][j - 1] + 1;
+      } else {
+        matrix[i][j] = Math.max(matrix[i - 1][j], matrix[i][j - 1]);
+      }
+    }
+  }
+
+  // Backtrack to build the diff
+  let i = originalLen;
+  let j = modifiedLen;
+
+  const diffSteps: Array<{ type: 'equal' | 'added' | 'removed'; char: string }> = [];
+
+  while (i > 0 || j > 0) {
+    if (i > 0 && j > 0 && original[i - 1] === modified[j - 1]) {
+      // Character matches
+      diffSteps.unshift({ type: 'equal', char: original[i - 1] });
+      i--;
+      j--;
+    } else if (j > 0 && (i === 0 || matrix[i][j - 1] >= matrix[i - 1][j])) {
+      // Character added
+      diffSteps.unshift({ type: 'added', char: modified[j - 1] });
+      j--;
+    } else {
+      // Character removed
+      diffSteps.unshift({ type: 'removed', char: original[i - 1] });
+      i--;
+    }
+  }
+
+  // Group consecutive characters of the same type into chunks
+  let currentType: 'equal' | 'added' | 'removed' | null = null;
+  let currentText = '';
+
+  for (const step of diffSteps) {
+    if (step.type === currentType) {
+      currentText += step.char;
+    } else {
+      if (currentType !== null && currentText) {
+        result.push({ type: currentType, text: currentText });
+      }
+      currentType = step.type;
+      currentText = step.char;
+    }
+  }
+
+  // Add final chunk
+  if (currentType !== null && currentText) {
+    result.push({ type: currentType, text: currentText });
+  }
+
+  return result;
 }

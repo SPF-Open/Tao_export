@@ -68,12 +68,33 @@ Cette application est destinée à l'équipe testing du SPF Finances. Aucune mod
 | **Zoom** | Changer la taille des éléments affichés |
 | **Multiple Files** | Charger plusieurs fichiers |
 | **Merge Files** | Fusionner plusieurs exams |
+| **Audit** | Mode audit pour valider les correspondances entre l'Excel et le QTI |
 | **Get PDF** | Ouvre la fenêtre d'impression |
 | **Show/Hide** | Cacher individuellement des questions ou changer leur ordre |
 
 ![Placeholder: Screenshot of Export-TAO interface with all options - TODO: Add image here]
 
-### Étape 2 : Création du PDF
+### Étape 2a : Mode Audit (Optionnel)
+
+Le **Mode Audit** vous permet de valider la qualité de la correspondance entre votre fichier Excel et le fichier QTI exporté de TAO. Pour utiliser ce mode :
+
+1. Cliquez sur l'onglet **Audit** en haut du formulaire
+2. Téléchargez votre fichier Excel contenant les questions de référence
+3. L'application va :
+   - Comparer automatiquement les questions Excel avec les questions QTI
+   - Afficher un score de correspondance pour chaque question
+   - Identifier les discrepances (titres, énoncés, réponses)
+   - Détecter les potentielles erreurs de copier-coller
+   - Générer un rapport détaillé avec les erreurs critiques, majeurs et mineurs
+4. Vous pouvez exporter le rapport en JSON, Markdown, HTML ou CSV
+5. L'impression du rapport est également disponible avec toutes les détailles (une question par page)
+
+**Types d'erreurs détectées :**
+- **Critique (Bloquant)** : Différences majeures dans les données
+- **Majeur** : Discrepances significatives
+- **Mineur** : Petites différences de formatting ou de présentation
+
+### Étape 2b : Création du PDF
 
 Finalisez la configuration, puis cliquez sur **Get PDF**. Ce bouton ouvrira une fenêtre d'impression. À partir de ce menu, vous devrez choisir soit d'imprimer, soit d'exporter au format PDF selon vos besoins.
 

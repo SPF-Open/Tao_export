@@ -1,7 +1,7 @@
 import type { ExcelConfig } from './types';
 
 export const DEFAULT_CONFIG: ExcelConfig = {
-  rowOffset: 17,
+  rowOffset: 12,
   alternativeCount: 4,
   skipRows: 1,
   answerLayout: 'same_column',
@@ -20,7 +20,7 @@ export const DEFAULT_CONFIG: ExcelConfig = {
 export const PRESET_CONFIGS: Record<string, ExcelConfig> = {
   default: DEFAULT_CONFIG,
   spl_2024_new: {
-    rowOffset: 17,
+    rowOffset: 12,
     alternativeCount: 4,
     skipRows: 1,
     answerLayout: 'same_column',
@@ -36,7 +36,7 @@ export const PRESET_CONFIGS: Record<string, ExcelConfig> = {
     },
   },
   spl_2024_old: {
-    rowOffset: 17,
+    rowOffset: 12,
     alternativeCount: 4,
     skipRows: 1,
     answerLayout: 'same_column',

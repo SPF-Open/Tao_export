@@ -1,5 +1,5 @@
-import { normalize, jaroWinkler } from './normalize';
-import type { ExcelQuestion, QTIQuestion, MatchedPair, NormalizationOptions } from './types';
+import { normalize, jaroWinkler, generateDiff } from './normalize';
+import type { ExcelQuestion, QTIQuestion, MatchedPair, NormalizationOptions, CloseMatch, UnmatchedItem, ScoringDetails } from './types';
 
 interface MatchScore {
   excelIdx: number;
@@ -21,7 +21,7 @@ interface MatchScore {
  * @param threshold - Similarity threshold (0-1, default 0.85)
  * @param normOptions - Text normalization options
  * @param options - Matching options (ignoreTitleMismatch)
- * @returns Matched pairs and unmatched items
+ * @returns Matched pairs and unmatched items with close matches
  */
 export function matchQuestions(
   excelQs: ExcelQuestion[],
@@ -31,8 +31,8 @@ export function matchQuestions(
   options?: { ignoreTitleMismatch?: boolean }
 ): {
   pairs: MatchedPair[];
-  unmatchedExcel: ExcelQuestion[];
-  unmatchedQTI: QTIQuestion[];
+  unmatchedExcel: UnmatchedItem[];
+  unmatchedQTI: UnmatchedItem[];
 } {
   const pairs: MatchedPair[] = [];
   const matchedQTIIndices = new Set<number>();
@@ -43,13 +43,13 @@ export function matchQuestions(
 
   for (let ei = 0; ei < excelQs.length; ei++) {
     for (let qi = 0; qi < qtiQs.length; qi++) {
-      const score = calculateSimilarity(excelQs[ei], qtiQs[qi], normOptions, options?.ignoreTitleMismatch);
+      const similarity = calculateSimilarity(excelQs[ei], qtiQs[qi], normOptions, options?.ignoreTitleMismatch);
 
       scores.push({
         excelIdx: ei,
         qtiIdx: qi,
-        score: score.total,
-        details: score.details,
+        score: similarity.total,
+        details: similarity.details,
       });
     }
   }
@@ -74,9 +74,94 @@ export function matchQuestions(
     }
   }
 
-  // Collect unmatched
-  const unmatchedExcel = excelQs.filter((_, i) => !matchedExcelIndices.has(i));
-  const unmatchedQTI = qtiQs.filter((_, i) => !matchedQTIIndices.has(i));
+  // Collect unmatched and find close matches
+  const unmatchedExcelIndices = excelQs
+    .map((_, i) => i)
+    .filter((i) => !matchedExcelIndices.has(i));
+  const unmatchedQTIIndices = qtiQs
+    .map((_, i) => i)
+    .filter((i) => !matchedQTIIndices.has(i));
+
+  // Debug: Log first question matching scores
+  if (excelQs.length > 0) {
+    console.log('[Matcher] First Excel question matching scores:');
+    const firstExcel = excelQs[0];
+    const topScores = qtiQs.map((qtiQ, idx) => {
+      const sim = calculateSimilarity(firstExcel, qtiQ, normOptions, options?.ignoreTitleMismatch);
+      return { qtiIdx: idx, score: sim.total, details: sim.details };
+    }).sort((a, b) => b.score - a.score).slice(0, 3);
+    
+    topScores.forEach((s, i) => {
+      console.log(`  ${i + 1}. QTI question ${s.qtiIdx}: ${(s.score * 100).toFixed(1)}% (Prompt: ${(s.details.promptScore * 100).toFixed(0)}%, Answers: ${(s.details.answerScore * 100).toFixed(0)}%)`);
+    });
+  }
+
+  // Find close matches for unmatched Excel questions
+  const unmatchedExcel: UnmatchedItem[] = unmatchedExcelIndices.map((excelIdx) => {
+    const excelQ = excelQs[excelIdx];
+    
+    // Find all QTI scores for this Excel question to get top 3
+    const closeMatches = unmatchedQTIIndices
+      .map((qtiIdx) => {
+        const qtiQ = qtiQs[qtiIdx];
+        const similarity = calculateSimilarity(excelQ, qtiQ, normOptions, options?.ignoreTitleMismatch);
+        return {
+          qtiIdx,
+          qtiQ,
+          ...similarity,
+        };
+      })
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 3)
+      .map((match) => {
+        const isCopyPaste = detectCopyPasteError(match.details);
+        return {
+          question: match.qtiQ,
+          score: match.total,
+          scoring: match.details,
+          isCopyPasteError: isCopyPaste.detected,
+          copyPasteReason: isCopyPaste.reason,
+        } as CloseMatch;
+      });
+
+    return {
+      question: excelQ,
+      closeMatches,
+    } as UnmatchedItem;
+  });
+
+  // Find close matches for unmatched QTI questions
+  const unmatchedQTI: UnmatchedItem[] = unmatchedQTIIndices.map((qtiIdx) => {
+    const qtiQ = qtiQs[qtiIdx];
+    
+    const closeMatches = unmatchedExcelIndices
+      .map((excelIdx) => {
+        const excelQ = excelQs[excelIdx];
+        const similarity = calculateSimilarity(excelQ, qtiQ, normOptions, options?.ignoreTitleMismatch);
+        return {
+          excelIdx,
+          excelQ,
+          ...similarity,
+        };
+      })
+      .sort((a, b) => b.total - a.total)
+      .slice(0, 3)
+      .map((match) => {
+        const isCopyPaste = detectCopyPasteError(match.details);
+        return {
+          question: match.excelQ,
+          score: match.total,
+          scoring: match.details,
+          isCopyPasteError: isCopyPaste.detected,
+          copyPasteReason: isCopyPaste.reason,
+        } as CloseMatch;
+      });
+
+    return {
+      question: qtiQ,
+      closeMatches,
+    } as UnmatchedItem;
+  });
 
   return { pairs, unmatchedExcel, unmatchedQTI };
 }
@@ -84,6 +169,7 @@ export function matchQuestions(
 /**
  * Calculate similarity between Excel and QTI question
  * Returns weighted score and component scores
+ * NEW WEIGHTING: Title is ignored (0%), Prompt 60%, Answers 40%
  */
 function calculateSimilarity(
   excelQ: ExcelQuestion,
@@ -92,32 +178,20 @@ function calculateSimilarity(
   ignoreTitleMismatch?: boolean
 ): {
   total: number;
-  details: {
-    titleScore: number;
-    promptScore: number;
-    answerScore: number;
-  };
+  details: ScoringDetails;
 } {
-  // If title mismatch is ignored, use neutral score for title (1.0)
-  let titleScore = 1.0;
-  if (!ignoreTitleMismatch && excelQ.title && qtiQ.title) {
-    titleScore = scoreField(excelQ.title, qtiQ.title, normOptions);
-  }
-
+  // Calculate component scores
+  const titleScore = excelQ.title && qtiQ.title ? scoreField(excelQ.title, qtiQ.title, normOptions) : 1.0;
   const promptScore = scoreField(excelQ.prompt, qtiQ.prompt, normOptions);
-
   const answerScore = scoreAnswers(excelQ.answers, qtiQ.answers, normOptions);
 
-  // Adjust weighting: when title is ignored, shift its weight to prompt importance
-  // Normal weights: prompt 50%, answer 30%, title 20%
-  // With title ignored: prompt 70%, answer 30%, title 0%
-  const total = ignoreTitleMismatch
-    ? promptScore * 0.7 + answerScore * 0.3
-    : promptScore * 0.5 + answerScore * 0.3 + titleScore * 0.2;
+  // NEW WEIGHTING: Title is no longer used for matching (0%)
+  // Prompt 60%, Answers 40%
+  const total = promptScore * 0.6 + answerScore * 0.4;
 
   return {
     total,
-    details: { titleScore, promptScore, answerScore },
+    details: { titleScore, promptScore, answerScore, totalScore: total },
   };
 }
 
@@ -241,4 +315,108 @@ export function analyzeMismatches(
   const orphanedQTI = qtiQs.filter((q) => !matchedQTIIds.has(q.id || q.prompt));
 
   return { closeMatches, noMatch, orphanedQTI };
+}
+
+/**
+ * Detect potential copy-paste errors by analyzing score patterns
+ * Copy-paste errors typically have:
+ * - One strong component (e.g., prompt > 0.9)
+ * - One weak component (e.g., title < 0.4)
+ */
+function detectCopyPasteError(scoring: ScoringDetails): { detected: boolean; reason?: string } {
+  const { promptScore, answerScore, titleScore } = scoring;
+
+  // Strong prompt, weak title → likely copied content with new title
+  if (promptScore > 0.88 && titleScore < 0.4) {
+    return {
+      detected: true,
+      reason: `Prompt matches well (${(promptScore * 100).toFixed(0)}%) but title differs significantly (${(titleScore * 100).toFixed(0)}%) - possible content copy with new title`,
+    };
+  }
+
+  // Strong answers, weak prompt → questions might be reordered or re-explained
+  if (answerScore > 0.88 && promptScore < 0.6) {
+    return {
+      detected: true,
+      reason: `Answers match very well (${(answerScore * 100).toFixed(0)}%) but prompt differs (${(promptScore * 100).toFixed(0)}%) - possible reordering or re-explanation`,
+    };
+  }
+
+  // Strong answers and title, weak prompt → another reordering pattern
+  if (answerScore > 0.88 && titleScore > 0.85 && promptScore < 0.5) {
+    return {
+      detected: true,
+      reason: `Answers (${(answerScore * 100).toFixed(0)}%) and Title (${(titleScore * 100).toFixed(0)}%) match but prompt differs - possible question reordering`,
+    };
+  }
+
+  return { detected: false };
+}
+
+/**
+ * Diagnostic tool: Analyze why a specific Excel question doesn't match
+ * Returns detailed scoring breakdown for debugging
+ */
+export function analyzeQuestionMatching(
+  excelQ: ExcelQuestion,
+  qtiQs: QTIQuestion[],
+  threshold: number = 0.85,
+  normOptions?: Partial<NormalizationOptions>
+): {
+  excelRowIndex: number;
+  excelTitle?: string;
+  excelPrompt: string;
+  topMatchesBelowThreshold: Array<{
+    qtiIndex: number;
+    qtiTitle?: string;
+    totalScore: number;
+    promptScore: number;
+    answerScore: number;
+    titleScore: number;
+    whyBelow: string;
+  }>;
+  topMatchesAboveThreshold?: Array<{
+    qtiIndex: number;
+    qtiTitle?: string;
+    totalScore: number;
+  }>;
+} {
+  const scores = qtiQs.map((qtiQ, idx) => {
+    const sim = calculateSimilarity(excelQ, qtiQ, normOptions);
+    return { idx, qtiQ, ...sim };
+  }).sort((a, b) => b.total - a.total);
+
+  const belowThreshold = scores.filter((s) => s.total < threshold).slice(0, 5);
+  const aboveThreshold = scores.filter((s) => s.total >= threshold).slice(0, 3);
+
+  return {
+    excelRowIndex: excelQ.rowIndex,
+    excelTitle: excelQ.title,
+    excelPrompt: excelQ.prompt.substring(0, 150),
+    topMatchesBelowThreshold: belowThreshold.map((s) => {
+      const gap = threshold - s.total;
+      let reason = '';
+      if (s.details.promptScore < 0.6) {
+        reason = `Prompt too low: ${(s.details.promptScore * 100).toFixed(0)}%`;
+      } else if (s.details.answerScore < 0.4) {
+        reason = `Answers too low: ${(s.details.answerScore * 100).toFixed(0)}%`;
+      } else {
+        reason = `Combined score ${(s.total * 100).toFixed(1)}% (gap: ${(gap * 100).toFixed(1)}%)`;
+      }
+      return {
+        qtiIndex: s.idx,
+        qtiTitle: s.qtiQ.title,
+        totalScore: s.total,
+        promptScore: s.details.promptScore,
+        answerScore: s.details.answerScore,
+        titleScore: s.details.titleScore,
+        whyBelow: reason,
+      };
+    }),
+    topMatchesAboveThreshold: aboveThreshold.map((s) => ({
+      qtiIndex: s.idx,
+      qtiTitle: s.qtiQ.title,
+      totalScore: s.total,
+    })),
+  };
 }

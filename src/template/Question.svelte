@@ -123,6 +123,10 @@
       break-inside: avoid;
     }
 
+    .question-hidden{
+      display: none;
+    }
+
     .question {
       box-shadow: none;
       border: 1px solid #000;

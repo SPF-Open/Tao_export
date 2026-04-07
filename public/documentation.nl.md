@@ -68,12 +68,33 @@ Deze applicatie is bestemd voor het testteam van SPF Finances. Er worden geen wi
 | **Zoom** | Weergavegrootte wijzigen |
 | **Multiple Files** | Meerdere bestanden laden |
 | **Merge Files** | Meerdere examens samenvoegen |
+| **Audit** | Audit-modus voor validatie van overeenkomsten tussen Excel- en QTI-bestanden |
 | **Get PDF** | Opent afdrukvenster |
 | **Show/Hide** | Vragen individueel verbergen of volgorde wijzigen |
 
 ![Placeholder: Screenshot of Export-TAO interface with all options - TODO: Add image here]
 
-### Stap 2: PDF maken
+### Stap 2a: Audit-modus (Optioneel)
+
+De **Audit-modus** stelt u in staat de kwaliteit van de overeenstemming tussen uw Excel-bestand en het QTI-bestand dat uit TAO is geëxporteerd, te valideren. Ga als volgt te werk om deze modus te gebruiken:
+
+1. Klik op het **Audit**-tabblad bovenaan het formulier
+2. Upload uw Excel-bestand met referentievragen
+3. De applicatie zal:
+   - Excel-vragen automatisch vergelijken met QTI-vragen
+   - Een overeenkomstenscore voor elke vraag weergeven
+   - Discrepanties identificeren (titels, vragen, antwoorden)
+   - Mogelijke copy-paste-fouten detecteren
+   - Een gedetailleerd rapport genereren met kritieke, grote en kleine fouten
+4. U kunt het rapport in JSON-, Markdown-, HTML- of CSV-indeling exporteren
+5. Afdrukken van het rapport is ook beschikbaar met alle details (één vraag per pagina)
+
+**Soorten gedetecteerde fouten:**
+- **Kritiek (Blokkering)**: Grote gegevensverschillen
+- **Groot**: Significante discrepanties
+- **Klein**: Kleine format- of presentatieverschillen
+
+### Stap 2b: PDF maken
 
 Finaliseer de configuratie en klik vervolgens op **Get PDF**. Deze knop opent een afdrukvenster. Vanuit dit menu moet u kiezen of u wilt afdrukken of exporteren als PDF, afhankelijk van uw behoeften.
 

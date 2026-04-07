@@ -1,24 +1,24 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import type { QTIQuestion } from '../audit/types';
-  import { runAudit } from '../audit/index';
-  import { getExcelSheets } from '../audit/excel-parser';
-  import AuditConfig from './AuditConfig.svelte';
-  import AuditResults from './AuditResults.svelte';
-  import { 
-    questions, 
-    auditReport, 
-    auditLoading, 
-    auditError, 
+  import { onMount } from "svelte";
+  import type { QTIQuestion } from "../audit/types";
+  import { runAudit } from "../audit/index";
+  import { getExcelSheets } from "../audit/excel-parser";
+  import AuditConfig from "./AuditConfig.svelte";
+  import AuditResults from "./AuditResults.svelte";
+  import {
+    questions,
+    auditReport,
+    auditLoading,
+    auditError,
     auditConfig,
     auditFilename,
-    resetAudit 
-  } from '../../store';
+    resetAudit,
+  } from "../../store";
 
   let excelFile: File | null = null;
   let fileInputElement: HTMLInputElement;
   let availableSheets: string[] = [];
-  let selectedSheet: string = '';
+  let selectedSheet: string = "";
   let matchingThreshold: number = 0.95;
 
   // Convert loaded QTI questions to audit format
@@ -26,55 +26,56 @@
   function stripHtmlTags(htmlText: string): string {
     // Remove all HTML/XML tags and normalize whitespace
     return htmlText
-      .replace(/<[^>]*>/g, '') // Remove all tags
-      .replace(/\s+/g, ' ')    // Collapse multiple spaces
+      .replace(/<[^>]*>/g, "") // Remove all tags
+      .replace(/\s+/g, " ") // Collapse multiple spaces
       .trim();
   }
 
   function convertQTIQuestions(qtiQuestions: any[]): QTIQuestion[] {
     return qtiQuestions
-      .filter(q => {
+      .filter((q) => {
         // Exclude instruction types
-        if (q.type === 'Instruction' || q.type === 'Instruction QCM') return false;
+        if (q.type === "Instruction" || q.type === "Instruction QCM")
+          return false;
         return true;
       })
       .map((q) => {
         // Extract prompt text from various formats
-        let promptText = '';
-        
+        let promptText = "";
+
         if (q.prompt) {
-          if (typeof q.prompt === 'string') {
+          if (typeof q.prompt === "string") {
             promptText = stripHtmlTags(q.prompt);
           } else if (Array.isArray(q.prompt)) {
             // Handle array of DOM elements or strings
             promptText = q.prompt
               .map((el: any) => {
-                if (el && typeof el === 'object' && 'textContent' in el) {
+                if (el && typeof el === "object" && "textContent" in el) {
                   // Use textContent to get plain text from DOM elements
-                  return (el as Element).textContent || '';
-                } else if (el && typeof el === 'object' && 'outerHTML' in el) {
+                  return (el as Element).textContent || "";
+                } else if (el && typeof el === "object" && "outerHTML" in el) {
                   // Fallback to outerHTML and strip tags
                   return stripHtmlTags((el as Element).outerHTML);
                 }
-                return String(el || '');
+                return String(el || "");
               })
-              .join(' ')
+              .join(" ")
               .trim();
           }
         }
-        
+
         // Fallback to other fields
         if (!promptText) {
-          promptText = stripHtmlTags(q.text || q.content || '');
+          promptText = stripHtmlTags(q.text || q.content || "");
         }
 
         return {
-          id: q.id || q.title || '',
+          id: q.id || q.title || "",
           title: q.title,
           prompt: promptText,
           answers: (q.answers || []).map((a: any) => ({
-            text: stripHtmlTags(a.text || a.txt || a.content || ''),
-            correct: a.correct === true || a.correct === 'true',
+            text: stripHtmlTags(a.text || a.txt || a.content || ""),
+            correct: a.correct === true || a.correct === "true",
             id: a.id,
           })),
           type: q.type,
@@ -85,17 +86,17 @@
           },
         };
       })
-      .filter(q => q.prompt && q.prompt.length > 0); // Final filter: only questions with actual content
+      .filter((q) => q.prompt && q.prompt.length > 0); // Final filter: only questions with actual content
   }
 
   async function handleRunAudit() {
     if (!excelFile) {
-      auditError.set('Please select an Excel file');
+      auditError.set("Please select an Excel file");
       return;
     }
 
     if (!selectedSheet) {
-      auditError.set('Please select a sheet');
+      auditError.set("Please select a sheet");
       return;
     }
 
@@ -107,9 +108,13 @@
       const buffer = await excelFile.arrayBuffer();
       const qtiQs = convertQTIQuestions($questions);
 
-      console.log(`[Audit] Loaded QTI questions: ${qtiQs.length} (filtered from ${$questions.length})`);
+      console.log(
+        `[Audit] Loaded QTI questions: ${qtiQs.length} (filtered from ${$questions.length})`,
+      );
       if (qtiQs.length === 0) {
-        auditError.set('No valid questions found after filtering instructions. Check the TAO export.');
+        auditError.set(
+          "No valid questions found after filtering instructions. Check the TAO export.",
+        );
         return;
       }
 
@@ -121,10 +126,12 @@
       if (result.success && result.report) {
         auditReport.set(result.report);
       } else {
-        auditError.set(result.error || 'Unknown error during audit');
+        auditError.set(result.error || "Unknown error during audit");
       }
     } catch (error) {
-      auditError.set(`Error: ${error instanceof Error ? error.message : 'Unknown error'}`);
+      auditError.set(
+        `Error: ${error instanceof Error ? error.message : "Unknown error"}`,
+      );
     } finally {
       auditLoading.set(false);
     }
@@ -142,7 +149,7 @@
       // Load available sheets
       excelFile.arrayBuffer().then((buffer) => {
         availableSheets = getExcelSheets(buffer);
-        selectedSheet = availableSheets[0] || '';
+        selectedSheet = availableSheets[0] || "";
       });
     }
   }
@@ -150,11 +157,11 @@
   function handleReset() {
     resetAudit();
     excelFile = null;
-    auditFilename.set('');
+    auditFilename.set("");
     availableSheets = [];
-    selectedSheet = '';
+    selectedSheet = "";
     if (fileInputElement) {
-      fileInputElement.value = '';
+      fileInputElement.value = "";
     }
   }
 
@@ -239,7 +246,8 @@
           <div class="info-box">
             <div class="info-item">
               <span class="label">Excel Rows to Process:</span>
-              <span class="value">Row {$auditConfig.rowOffset + 1} onwards</span>
+              <span class="value">Row {$auditConfig.rowOffset + 1} onwards</span
+              >
             </div>
             <div class="info-item">
               <span class="label">Loaded QTI Questions:</span>
@@ -257,9 +265,14 @@
                   disabled={$auditLoading}
                   aria-label="Matching threshold slider"
                 />
-                <span class="threshold-value">{(matchingThreshold * 100).toFixed(0)}%</span>
+                <span class="threshold-value"
+                  >{(matchingThreshold * 100).toFixed(0)}%</span
+                >
               </div>
-              <small style="margin-top: 6px; display: block;">Lower = more matches but less accurate. Higher = fewer but more confident matches.</small>
+              <small style="margin-top: 6px; display: block;"
+                >Lower = more matches but less accurate. Higher = fewer but more
+                confident matches.</small
+              >
             </div>
           </div>
         </div>
@@ -267,16 +280,11 @@
         <!-- Run Audit Button -->
         <div class="audit-section">
           {#if excelFile && !$auditLoading}
-            <button
-              on:click={handleRunAudit}
-              class="btn btn-success btn-large"
-            >
+            <button on:click={handleRunAudit} class="btn btn-success btn-large">
               ▶️ Run Audit
             </button>
           {:else if $auditLoading}
-            <button class="btn btn-loading" disabled>
-              ⏳ Processing...
-            </button>
+            <button class="btn btn-loading" disabled> ⏳ Processing... </button>
           {:else}
             <button class="btn btn-primary" disabled>
               Select Excel file to begin
@@ -535,7 +543,7 @@
     width: 100%;
   }
 
-  .threshold-control input[type='range'] {
+  .threshold-control input[type="range"] {
     flex: 1;
     min-width: 100px;
     height: 6px;
@@ -546,7 +554,7 @@
     -webkit-appearance: none;
   }
 
-  .threshold-control input[type='range']::-webkit-slider-thumb {
+  .threshold-control input[type="range"]::-webkit-slider-thumb {
     -webkit-appearance: none;
     appearance: none;
     width: 18px;
@@ -557,7 +565,7 @@
     transition: background 0.2s;
   }
 
-  .threshold-control input[type='range']::-moz-range-thumb {
+  .threshold-control input[type="range"]::-moz-range-thumb {
     width: 18px;
     height: 18px;
     border-radius: 50%;
@@ -566,7 +574,7 @@
     border: none;
   }
 
-  .threshold-control input[type='range']::-moz-range-track {
+  .threshold-control input[type="range"]::-moz-range-track {
     background: var(--border);
     border: none;
   }
@@ -578,11 +586,17 @@
     text-align: right;
   }
 
-  :global(.dark) .threshold-control input[type='range'] {
+  :global(.dark) .threshold-control input[type="range"] {
     background: var(--border);
   }
 
   :global(.dark) .threshold-value {
     color: var(--text);
+  }
+
+  @media print {
+    .audit-section {
+      display: none !important;
+    }
   }
 </style>

@@ -1,5 +1,18 @@
 ## Changelog
 
+### 1.6.0
+- Feat : Enhance error comparison and diff highlighting
+  - Introduced HighlightedText component for displaying differences in titles, prompts, and answers between Excel and QTI questions
+  - Updated ErrorDetails component to utilize HighlightedText for better visual representation of discrepancies
+  - Implemented character-level diff generation in normalize.ts to support detailed comparison
+  - Enhanced matcher and comparator logic to include diff information in error reporting
+  - Added functionality to detect potential copy-paste errors based on scoring patterns
+  - Adjusted scoring weights for question matching, focusing on prompt and answer accuracy
+  - Updated audit report structure to include counts for duplicate titles and potential copy-paste errors
+  - Modified default configuration for row offset in audit settings
+  - Added test script for validating diff generation functionality
+- Fix : Print table header no longer breaks across multiple lines
+
 ### 1.5.2
 - Change : Default matching threshold increased to 0.95 for more accurate audit matching
 

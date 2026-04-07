@@ -198,6 +198,33 @@ ul {
   margin: 5px 0;
 }
 
+/* Diff highlighting styles for audit mode */
+.diff-added {
+  background-color: #fee2e2;
+  color: #991b1b;
+  font-weight: 600;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.diff-removed {
+  background-color: #fee2e2;
+  color: #991b1b;
+  text-decoration: line-through;
+  padding: 0 2px;
+  border-radius: 2px;
+}
+
+.dark .diff-added {
+  background-color: #7f1d1d;
+  color: #fecaca;
+}
+
+.dark .diff-removed {
+  background-color: #7f1d1d;
+  color: #fecaca;
+}
+
 p {
   margin: 0 0;
 }

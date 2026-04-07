@@ -71,6 +71,8 @@ export interface ComparisonError {
     excel?: string | number;
     qti?: string | number;
     index?: number;
+    excelDiff?: DiffChunk[];
+    qtiDiff?: DiffChunk[];
   };
 }
 
@@ -88,11 +90,13 @@ export interface AuditReport {
     bloquants: number;
     majeurs: number;
     mineurs: number;
+    duplicateTitles: number;
+    potentialCopyPasteErrors: number;
   };
   results: AuditResult[];
   unmatched: {
-    excel: ExcelQuestion[];
-    qti: QTIQuestion[];
+    excel: UnmatchedItem[];
+    qti: UnmatchedItem[];
   };
   timestamp: string;
 }
@@ -103,4 +107,46 @@ export interface NormalizationOptions {
   ignore_punctuation: boolean;
   trim: boolean;
   ignoreTitleMismatch?: boolean;
+}
+
+/**
+ * Represents a chunk of text in a diff
+ * - type: 'equal' for unchanged text, 'added' for new text, 'removed' for deleted text
+ * - text: the actual text content
+ */
+export interface DiffChunk {
+  type: 'equal' | 'added' | 'removed';
+  text: string;
+}
+
+/**
+ * Scoring breakdown for a match attempt
+ */
+export interface ScoringDetails {
+  titleScore: number;
+  promptScore: number;
+  answerScore: number;
+  totalScore: number;
+}
+
+/**
+ * Close match for an unmatched question (below threshold)
+ * Shows why it didn't match and helps detect copy-paste errors
+ */
+export interface CloseMatch {
+  question: QTIQuestion | ExcelQuestion;
+  score: number;
+  scoring: ScoringDetails;
+  isCopyPasteError?: boolean;
+  copyPasteReason?: string;
+}
+
+/**
+ * Enhanced unmatched item with close matches and quality indicators
+ */
+export interface UnmatchedItem {
+  question: ExcelQuestion | QTIQuestion;
+  closeMatches: CloseMatch[];
+  isDuplicate?: boolean;
+  duplicateOf?: string | number;
 }

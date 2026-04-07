@@ -1,4 +1,4 @@
-import { normalize } from './normalize';
+import { normalize, generateDiff } from './normalize';
 import type { MatchedPair, ComparisonError, NormalizationOptions } from './types';
 
 const DEFAULT_NORM_OPTIONS: NormalizationOptions = {
@@ -32,6 +32,8 @@ export function compare(
           field: 'title',
           excel: excelTitle,
           qti: qtiTitle,
+          excelDiff: generateDiff(excelTitle, qtiTitle),
+          qtiDiff: generateDiff(qtiTitle, excelTitle),
         },
       });
     }
@@ -49,6 +51,8 @@ export function compare(
         field: 'prompt',
         excel: excelPrompt,
         qti: qtiPrompt,
+        excelDiff: generateDiff(excelPrompt, qtiPrompt),
+        qtiDiff: generateDiff(qtiPrompt, excelPrompt),
       },
     });
   }
@@ -131,6 +135,8 @@ function compareAnswers(pair: MatchedPair, options: NormalizationOptions): Compa
           index: i,
           excel: excelText,
           qti: qtiText,
+          excelDiff: generateDiff(excelText, qtiText),
+          qtiDiff: generateDiff(qtiText, excelText),
         },
       });
     }

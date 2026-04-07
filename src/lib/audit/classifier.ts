@@ -1,4 +1,4 @@
-import type { ComparisonError, AuditResult, AuditReport, MatchedPair, ExcelQuestion, QTIQuestion } from './types';
+import type { ComparisonError, AuditResult, AuditReport, MatchedPair, UnmatchedItem, ExcelQuestion, QTIQuestion } from './types';
 
 /**
  * Classify an individual error by severity
@@ -15,8 +15,8 @@ export function classifyError(error: ComparisonError): 'BLOQUANT' | 'MAJEUR' | '
 export function buildReport(
   pairs: MatchedPair[],
   results: Array<{ pair: MatchedPair; errors: ComparisonError[] }>,
-  unmatchedExcel: ExcelQuestion[],
-  unmatchedQTI: QTIQuestion[]
+  unmatchedExcel: UnmatchedItem[],
+  unmatchedQTI: UnmatchedItem[]
 ): AuditReport {
   const errorCounts = {
     BLOQUANT: 0,
@@ -37,6 +37,22 @@ export function buildReport(
     };
   });
 
+  // Count data quality issues
+  const copyPasteErrors = [...unmatchedExcel, ...unmatchedQTI].filter(
+    (item) => item.closeMatches.some((m) => m.isCopyPasteError)
+  ).length;
+
+  // Count duplicate titles
+  const allItems = [...unmatchedExcel, ...unmatchedQTI];
+  const titleCounts: Record<string, number> = {};
+  allItems.forEach((item) => {
+    const title = (item.question as any).title || '';
+    if (title) {
+      titleCounts[title] = (titleCounts[title] || 0) + 1;
+    }
+  });
+  const duplicateTitles = Object.values(titleCounts).filter((count) => count > 1).length;
+
   return {
     summary: {
       total: pairs.length,
@@ -45,6 +61,8 @@ export function buildReport(
       bloquants: errorCounts.BLOQUANT,
       majeurs: errorCounts.MAJEUR,
       mineurs: errorCounts.MINEUR,
+      duplicateTitles,
+      potentialCopyPasteErrors: copyPasteErrors,
     },
     results: auditResults,
     unmatched: {

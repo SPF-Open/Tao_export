@@ -37,6 +37,19 @@
   function exportAsHTML() {
     downloadReport(report, 'html');
   }
+
+  function printReport() {
+    // Expand all rows before printing
+    const originalIndex = expandedRowIndex;
+    expandedRowIndex = -1; // Signal to expand all
+    
+    // Give DOM time to render all expanded rows
+    setTimeout(() => {
+      window.print();
+      // Restore original state after print dialog closes
+      expandedRowIndex = originalIndex;
+    }, 100);
+  }
 </script>
 
 <div class="results-container">
@@ -137,6 +150,7 @@
       <button class="btn btn-export" on:click={exportAsMarkdown}>📝 Markdown</button>
       <button class="btn btn-export" on:click={exportAsHTML}>🌐 HTML</button>
       <button class="btn btn-export" on:click={exportAsCSV}>📊 CSV</button>
+      <button class="btn btn-print" on:click={printReport}>🖨️ Print (All Expanded)</button>
     </div>
   </div>
 
@@ -240,7 +254,7 @@
             </tr>
 
             <!-- Expanded Detail Row -->
-            {#if expandedRowIndex === idx}
+            {#if expandedRowIndex === idx || expandedRowIndex === -1}
               <tr class="detail-row">
                 <td colspan="4">
                   <ErrorDetails pair={result.pair} errors={result.errors} />
@@ -264,42 +278,151 @@
     <div class="unmatched-section">
       <button class="section-toggle" on:click={() => (showUnmatched = !showUnmatched)}>
         {showUnmatched ? '▼' : '▶'} Unmatched Items ({report.unmatched.excel.length + report.unmatched.qti.length})
+        {#if report.summary.potentialCopyPasteErrors > 0}
+          <span class="warning-badge">⚠️ {report.summary.potentialCopyPasteErrors} potential copy-paste errors</span>
+        {/if}
+        {#if report.summary.duplicateTitles > 0}
+          <span class="warning-badge">🔄 {report.summary.duplicateTitles} duplicate titles</span>
+        {/if}
       </button>
 
       {#if showUnmatched}
         <div class="unmatched-content">
           {#if report.unmatched.excel.length > 0}
             <div class="unmatched-list">
-              <h4>Excel Questions Not Matched ({report.unmatched.excel.length})</h4>
-              <ul>
-                {#each report.unmatched.excel.slice(0, 10) as q}
-                  <li>Row {q.metadata.excelRow}: "{q.prompt.substring(0, 100)}..."</li>
+              <h4>📊 Excel Questions Not Matched ({report.unmatched.excel.length})</h4>
+              <p class="help-text">These Excel questions did not match any QTI question. Check the close matches below:</p>
+              <div class="unmatched-items">
+                {#each report.unmatched.excel.slice(0, 10) as item}
+                  <div class="unmatched-item">
+                    <div class="item-header">
+                      <span class="item-title">Row {item.question.metadata.excelRow}: "{item.question.prompt.substring(0, 80)}..."</span>
+                    </div>
+
+                    {#if item.closeMatches.length > 0}
+                      <div class="close-matches">
+                        <div class="close-matches-label">Closest matches:</div>
+                        {#each item.closeMatches as match, idx}
+                          <div class="close-match" class:copy-paste-error={match.isCopyPasteError}>
+                            <div class="match-score-row">
+                              <span class="match-index">{idx + 1}.</span>
+                              <span class="match-score">{(match.score * 100).toFixed(1)}%</span>
+                              {#if match.isCopyPasteError}
+                                <span class="copy-paste-badge">⚠️ Possible copy-paste</span>
+                              {/if}
+                            </div>
+                            <div class="match-content">
+                              <div class="prompt-preview">"{match.question.prompt.substring(0, 120)}..."</div>
+                            </div>
+                            <div class="scoring-breakdown">
+                              <div class="score-component">
+                                <span class="score-label">Prompt:</span>
+                                <div class="score-bar">
+                                  <div class="score-fill" style="width: {match.scoring.promptScore * 100}%"></div>
+                                </div>
+                                <span class="score-value">{(match.scoring.promptScore * 100).toFixed(0)}%</span>
+                              </div>
+                              <div class="score-component">
+                                <span class="score-label">Answers:</span>
+                                <div class="score-bar">
+                                  <div class="score-fill" style="width: {match.scoring.answerScore * 100}%"></div>
+                                </div>
+                                <span class="score-value">{(match.scoring.answerScore * 100).toFixed(0)}%</span>
+                              </div>
+                              <div class="score-component">
+                                <span class="score-label">Title:</span>
+                                <div class="score-bar">
+                                  <div class="score-fill" style="width: {match.scoring.titleScore * 100}%"></div>
+                                </div>
+                                <span class="score-value">{(match.scoring.titleScore * 100).toFixed(0)}%</span>
+                              </div>
+                            </div>
+                            {#if match.copyPasteReason}
+                              <div class="copy-paste-hint">
+                                💡 {match.copyPasteReason}
+                              </div>
+                            {/if}
+                          </div>
+                        {/each}
+                      </div>
+                    {:else}
+                      <div class="no-close-matches">No close matches found</div>
+                    {/if}
+                  </div>
                 {/each}
-                {#if report.unmatched.excel.length > 10}
-                  <li class="more">... and {report.unmatched.excel.length - 10} more</li>
-                {/if}
-              </ul>
+              </div>
+              {#if report.unmatched.excel.length > 10}
+                <p class="more-items">... and {report.unmatched.excel.length - 10} more Excel questions not shown</p>
+              {/if}
             </div>
           {/if}
 
           {#if report.unmatched.qti.length > 0}
             <div class="unmatched-list warn">
-              <h4>⚠️ QTI Questions Not Matched ({report.unmatched.qti.length})</h4>
-              <p class="help-text">
-                These questions were below the matching threshold. Check if corresponding Excel rows exist:
-              </p>
-              <ul>
-                {#each report.unmatched.qti.slice(0, 10) as q}
-                  <li>
-                    <strong>{q.title}</strong><br/>
-                    <span class="prompt-preview">"{q.prompt.substring(0, 80)}..."</span>
-                  </li>
+              <h4>📊 QTI Questions Not Matched ({report.unmatched.qti.length})</h4>
+              <p class="help-text">These QTI questions did not match any Excel question. Check the close matches below:</p>
+              <div class="unmatched-items">
+                {#each report.unmatched.qti.slice(0, 10) as item}
+                  <div class="unmatched-item">
+                    <div class="item-header">
+                      <span class="item-title">{item.question.title || 'Untitled'}: "{item.question.prompt.substring(0, 80)}..."</span>
+                    </div>
+
+                    {#if item.closeMatches.length > 0}
+                      <div class="close-matches">
+                        <div class="close-matches-label">Closest matches:</div>
+                        {#each item.closeMatches as match, idx}
+                          <div class="close-match" class:copy-paste-error={match.isCopyPasteError}>
+                            <div class="match-score-row">
+                              <span class="match-index">{idx + 1}.</span>
+                              <span class="match-score">{(match.score * 100).toFixed(1)}%</span>
+                              {#if match.isCopyPasteError}
+                                <span class="copy-paste-badge">⚠️ Possible copy-paste</span>
+                              {/if}
+                            </div>
+                            <div class="match-content">
+                              <div class="prompt-preview">Row {match.question.metadata.excelRow}: "{match.question.prompt.substring(0, 120)}..."</div>
+                            </div>
+                            <div class="scoring-breakdown">
+                              <div class="score-component">
+                                <span class="score-label">Prompt:</span>
+                                <div class="score-bar">
+                                  <div class="score-fill" style="width: {match.scoring.promptScore * 100}%"></div>
+                                </div>
+                                <span class="score-value">{(match.scoring.promptScore * 100).toFixed(0)}%</span>
+                              </div>
+                              <div class="score-component">
+                                <span class="score-label">Answers:</span>
+                                <div class="score-bar">
+                                  <div class="score-fill" style="width: {match.scoring.answerScore * 100}%"></div>
+                                </div>
+                                <span class="score-value">{(match.scoring.answerScore * 100).toFixed(0)}%</span>
+                              </div>
+                              <div class="score-component">
+                                <span class="score-label">Title:</span>
+                                <div class="score-bar">
+                                  <div class="score-fill" style="width: {match.scoring.titleScore * 100}%"></div>
+                                </div>
+                                <span class="score-value">{(match.scoring.titleScore * 100).toFixed(0)}%</span>
+                              </div>
+                            </div>
+                            {#if match.copyPasteReason}
+                              <div class="copy-paste-hint">
+                                💡 {match.copyPasteReason}
+                              </div>
+                            {/if}
+                          </div>
+                        {/each}
+                      </div>
+                    {:else}
+                      <div class="no-close-matches">No close matches found</div>
+                    {/if}
+                  </div>
                 {/each}
-                {#if report.unmatched.qti.length > 10}
-                  <li class="more">... and {report.unmatched.qti.length - 10} more</li>
-                {/if}
-              </ul>
-              <p class="debug-hint">💡 <strong>Tip:</strong> Lower the threshold slider and re-run to see if these match at a lower similarity level. If still unmatched, check if the Excel file has corresponding questions.</p>
+              </div>
+              {#if report.unmatched.qti.length > 10}
+                <p class="more-items">... and {report.unmatched.qti.length - 10} more QTI questions not shown</p>
+              {/if}
             </div>
           {/if}
         </div>
@@ -786,6 +909,178 @@
     border-left: 3px solid var(--accent);
     border-radius: 3px;
   }
+
+  /* New close matches styles */
+  .warning-badge {
+    display: inline-block;
+    margin-left: 12px;
+    padding: 4px 10px;
+    background: rgba(220, 38, 38, 0.1);
+    color: var(--danger);
+    border-radius: 3px;
+    font-size: 0.85em;
+    font-weight: 600;
+  }
+
+  .unmatched-items {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+  }
+
+  .unmatched-item {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    padding: 12px;
+  }
+
+  .item-header {
+    font-size: 0.9em;
+    color: var(--text);
+    margin-bottom: 12px;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .item-title {
+    font-weight: 600;
+    word-break: break-word;
+  }
+
+  .close-matches {
+    margin-top: 12px;
+  }
+
+  .close-matches-label {
+    font-size: 0.8em;
+    color: var(--text-muted);
+    font-weight: 600;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+
+  .close-match {
+    background: var(--surface-elevated);
+    border-left: 3px solid var(--accent);
+    padding: 10px;
+    margin-bottom: 8px;
+    border-radius: 3px;
+    font-size: 0.85em;
+  }
+
+  .close-match.copy-paste-error {
+    border-left-color: var(--warning);
+    background: rgba(202, 138, 4, 0.05);
+  }
+
+  .match-score-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin-bottom: 6px;
+  }
+
+  .match-index {
+    font-weight: 600;
+    color: var(--text-muted);
+    min-width: 20px;
+  }
+
+  .match-score {
+    font-weight: 700;
+    color: var(--accent);
+    min-width: 50px;
+  }
+
+  .copy-paste-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    background: var(--warning);
+    color: var(--warning-foreground);
+    border-radius: 2px;
+    font-size: 0.75em;
+    font-weight: 600;
+  }
+
+  .match-content {
+    margin: 6px 0 10px 20px;
+  }
+
+  .prompt-preview {
+    font-size: 0.85em;
+    color: var(--text);
+    word-break: break-word;
+    font-style: italic;
+  }
+
+  .scoring-breakdown {
+    margin: 10px 20px 0 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .score-component {
+    display: grid;
+    grid-template-columns: 60px 1fr 40px;
+    gap: 8px;
+    align-items: center;
+    font-size: 0.85em;
+  }
+
+  .score-label {
+    color: var(--text-muted);
+    font-weight: 500;
+  }
+
+  .score-bar {
+    height: 16px;
+    background: var(--border);
+    border-radius: 2px;
+    overflow: hidden;
+  }
+
+  .score-fill {
+    height: 100%;
+    background: linear-gradient(90deg, var(--success), var(--warning));
+    transition: width 0.3s ease;
+  }
+
+  .score-value {
+    text-align: right;
+    font-weight: 600;
+    color: var(--text);
+    min-width: 30px;
+  }
+
+  .copy-paste-hint {
+    margin-top: 8px;
+    padding: 6px 8px;
+    background: rgba(202, 138, 4, 0.1);
+    border-left: 2px solid var(--warning);
+    border-radius: 2px;
+    font-size: 0.8em;
+    color: var(--text);
+    margin-left: 20px;
+  }
+
+  .no-close-matches {
+    padding: 10px;
+    color: var(--text-muted);
+    font-size: 0.85em;
+    font-style: italic;
+    margin-left: 20px;
+  }
+
+  .more-items {
+    padding: 10px 0 0 0;
+    color: var(--text-muted);
+    font-size: 0.85em;
+    font-style: italic;
+    margin: 0;
+  }
+
   :global(.dark) .export-section,
   :global(.dark) .results-section,
   :global(.dark) .unmatched-section {
@@ -846,5 +1141,85 @@
     background: rgba(0, 0, 0, 0.1);
     border-left-color: var(--accent);
     color: var(--text);
+  }
+
+  /* Print Styles */
+  @media print {
+    thead {
+      display: none !important;
+    }
+
+    tbody tr:first-child {
+      page-break-before: avoid;
+      border-top: 2px solid black;
+    }
+
+    .results-table {
+      width: 100%;
+      overflow: visible !important;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      page-break-inside: avoid;
+    }
+
+    td {
+      page-break-inside: avoid;
+      white-space: normal;
+      padding: 8px;
+    }
+
+    .result-row {
+      page-break-inside: avoid;
+    }
+
+    .filter-bar {
+      display: none !important;
+    }
+
+    .button-group {
+      display: none !important;
+    }
+
+    .export-section {
+      display: none !important;
+    }
+
+    .results-section {
+      page-break-before: always;
+      width: 100%;
+      padding: 0;
+      background-color: none;
+      font-size: 0.9rem;
+    }
+
+    .result-row {
+      page-break-before: always;
+      page-break-inside: avoid;
+    }
+
+    /* Force page break before each detail row (one question per page) */
+    .detail-row {
+      page-break-inside: avoid;
+      display: table-row !important;
+    }
+
+    .results-table tbody tr.detail-row:first-of-type {
+      page-break-before: avoid;
+    }
+
+    .results-table tbody tr {
+      page-break-inside: avoid;
+    }
+
+    h1, h2, h3 {
+      page-break-after: avoid;
+    }
+
+    .no-results {
+      display: none !important;
+    }
   }
 </style>
