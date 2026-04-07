@@ -16,15 +16,22 @@
     resetAudit,
   } from "../../store";
 
-  let excelFile: File | null = null;
+  let excelFile = $state<File | null>(null);
   let fileInputElement: HTMLInputElement;
-  let availableSheets: string[] = [];
-  let selectedSheet: string = "";
-  let matchingThreshold: number = 0.95;
+  let availableSheets = $state<string[]>([]);
+  let selectedSheet = $state("");
+  let matchingThreshold = $state(0.95);
 
   // UI state for progressive disclosure
   let showConfigSection = $state(false);
   let showSummarySection = $state(false);
+
+  // Ensure selectedSheet is set when availableSheets changes
+  $effect(() => {
+    if (availableSheets.length > 0 && !selectedSheet) {
+      selectedSheet = availableSheets[0];
+    }
+  });
 
   // Convert loaded QTI questions to audit format
   function stripHtmlTags(htmlText: string): string {
@@ -258,7 +265,9 @@
                 <AuditConfig
                   {availableSheets}
                   {selectedSheet}
-                  onSheetChange={(sheet) => (selectedSheet = sheet)}
+                  onSheetChange={(sheet) => {
+                    selectedSheet = sheet;
+                  }}
                 />
 
                 <div class="threshold-control-group">

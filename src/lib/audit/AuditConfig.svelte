@@ -3,12 +3,16 @@
   import { PRESET_CONFIGS, validateConfig } from '../audit/config';
   import type { ExcelConfig } from '../audit/types';
 
-  export let availableSheets: string[] = [];
-  export let selectedSheet: string = '';
-  export let onSheetChange: (sheet: string) => void = () => {};
+  type Props = {
+    availableSheets?: string[];
+    selectedSheet?: string;
+    onSheetChange?: (sheet: string) => void;
+  };
 
-  let showAdvanced = false;
-  let configErrors: string[] = [];
+  let { availableSheets = [], selectedSheet = '', onSheetChange = () => {} }: Props = $props();
+
+  let showAdvanced = $state(false);
+  let configErrors = $state<string[]>([]);
 
   function updateConfig(updates: Partial<ExcelConfig>) {
     const updated = { ...$auditConfig, ...updates };
@@ -113,7 +117,7 @@
         <button
           class="preset-btn"
           class:active={JSON.stringify($auditConfig) === JSON.stringify(PRESET_CONFIGS[preset])}
-          on:click={() => applyPreset(preset)}
+          onclick={() => applyPreset(preset)}
         >
           {preset}
         </button>
@@ -129,7 +133,7 @@
         <select
           id="sheet-select"
           value={selectedSheet}
-          on:change={(e) => onSheetChange(e.currentTarget.value)}
+          onchange={(e) => onSheetChange((e.target as HTMLSelectElement).value)}
         >
           {#each availableSheets as sheet}
             <option value={sheet}>{sheet}</option>
@@ -150,7 +154,7 @@
         min="0"
         max="100"
         value={$auditConfig.rowOffset}
-        on:change={(e) => updateConfig({ rowOffset: parseInt(e.currentTarget.value) })}
+        onchange={(e) => updateConfig({ rowOffset: parseInt((e.target as HTMLInputElement).value) })}
       />
       <small>Excel row {$auditConfig.rowOffset + 1} is the first question</small>
     </div>
@@ -163,7 +167,7 @@
         min="0"
         max="10"
         value={$auditConfig.skipRows}
-        on:change={(e) => updateConfig({ skipRows: parseInt(e.currentTarget.value) })}
+        onchange={(e) => updateConfig({ skipRows: parseInt((e.target as HTMLInputElement).value) })}
       />
       <small>Number of blank/separator rows between questions (e.g., 1 for alternating blank rows)</small>
     </div>
@@ -176,7 +180,7 @@
         min="1"
         max="10"
         value={$auditConfig.alternativeCount}
-        on:change={(e) => updateConfig({ alternativeCount: parseInt(e.currentTarget.value) })}
+        onchange={(e) => updateConfig({ alternativeCount: parseInt((e.target as HTMLInputElement).value) })}
       />
       <small>Typical value: 4</small>
     </div>
@@ -187,7 +191,7 @@
           id="ignoreTitleMismatch"
           type="checkbox"
           checked={$auditConfig.ignoreTitleMismatch !== false}
-          on:change={(e) => updateConfig({ ignoreTitleMismatch: e.currentTarget.checked })}
+          onchange={(e) => updateConfig({ ignoreTitleMismatch: (e.target as HTMLInputElement).checked })}
         />
         <span>Ignore Title Mismatches</span>
       </label>
@@ -196,7 +200,7 @@
   </div>
 
   <!-- Advanced: Column Mapping -->
-  <button class="toggle-btn" on:click={() => (showAdvanced = !showAdvanced)}>
+  <button class="toggle-btn" onclick={() => (showAdvanced = !showAdvanced)}>
     {showAdvanced ? '▼' : '▶'} Column Mapping (Advanced)
   </button>
 
@@ -208,7 +212,7 @@
 
       <div class="input-group">
         <label for="answerLayout">Answer Layout:</label>
-        <select id="answerLayout" value={$auditConfig.answerLayout} on:change={(e) => updateAnswerLayout(e.currentTarget.value as 'same_column' | 'spread_columns')}>
+        <select id="answerLayout" value={$auditConfig.answerLayout} onchange={(e) => updateAnswerLayout((e.target as HTMLSelectElement).value as 'same_column' | 'spread_columns')}>
           <option value="same_column">Same Column (Q & A stacked vertically)</option>
           <option value="spread_columns">Spread Columns (Q on one row, A across columns)</option>
         </select>
@@ -222,7 +226,7 @@
           type="text"
           maxlength="2"
           value={$auditConfig.columns.title || ''}
-          on:change={(e) => updateColumn('title', e.currentTarget.value)}
+          onchange={(e) => updateColumn('title', (e.target as HTMLInputElement).value)}
           placeholder="e.g., E"
         />
       </div>
@@ -234,7 +238,7 @@
           type="text"
           maxlength="2"
           value={$auditConfig.columns.prompt}
-          on:change={(e) => updateColumn('prompt', e.currentTarget.value)}
+          onchange={(e) => updateColumn('prompt', (e.target as HTMLInputElement).value)}
           placeholder="e.g., F"
         />
       </div>
@@ -247,7 +251,7 @@
             type="text"
             maxlength="2"
             value={typeof $auditConfig.columns.answers === 'string' ? $auditConfig.columns.answers : 'F'}
-            on:change={(e) => updateSingleAnswerColumn(e.currentTarget.value)}
+            onchange={(e) => updateSingleAnswerColumn((e.target as HTMLInputElement).value)}
             placeholder="e.g., F"
           />
           <small>Column containing question and answer text (stacked vertically)</small>
@@ -260,7 +264,7 @@
             type="text"
             maxlength="2"
             value={$auditConfig.columns.answerMarker || 'G'}
-            on:change={(e) => updateAnswerMarker(e.currentTarget.value)}
+            onchange={(e) => updateAnswerMarker((e.target as HTMLInputElement).value)}
             placeholder="e.g., G"
           />
           <small>Column with X or x to mark the correct answer (e.g., old templates). If empty, first answer is assumed correct.</small>
@@ -274,7 +278,7 @@
                 type="text"
                 maxlength="2"
                 value={answer}
-                on:change={(e) => updateAnswerColumn(i, e.currentTarget.value)}
+                onchange={(e) => updateAnswerColumn(i, (e.target as HTMLInputElement).value)}
                 placeholder={`Answer ${i + 1}`}
               />
             {/each}
@@ -290,7 +294,7 @@
           type="text"
           maxlength="2"
           value={$auditConfig.columns.competency || ''}
-          on:change={(e) => updateColumn('competency', e.currentTarget.value)}
+          onchange={(e) => updateColumn('competency', (e.target as HTMLInputElement).value)}
           placeholder="e.g., A"
         />
       </div>
@@ -302,7 +306,7 @@
           type="text"
           maxlength="2"
           value={$auditConfig.columns.dimension || ''}
-          on:change={(e) => updateColumn('dimension', e.currentTarget.value)}
+          onchange={(e) => updateColumn('dimension', (e.target as HTMLInputElement).value)}
           placeholder="e.g., B"
         />
       </div>
@@ -314,7 +318,7 @@
           type="text"
           maxlength="2"
           value={$auditConfig.columns.indicator || ''}
-          on:change={(e) => updateColumn('indicator', e.currentTarget.value)}
+          onchange={(e) => updateColumn('indicator', (e.target as HTMLInputElement).value)}
           placeholder="e.g., C"
         />
       </div>

@@ -1,5 +1,11 @@
 ## Changelog
 
+### 1.7.1
+- Fix : Excel sheet selection dropdown now works properly
+  - Fixed reactive state binding for availableSheets and selectedSheet in AuditTab
+  - Sheet selector now properly displays and updates when different sheets are selected
+  - Converted variables to Svelte 5 reactive state for proper change detection
+
 ### 1.7.0
 - Feat : Export format selector in sidebar
   - Added dropdown selector below "Get PDF" button to choose between PDF or JSON export
