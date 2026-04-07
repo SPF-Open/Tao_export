@@ -1,5 +1,16 @@
 ## Changelog
 
+### 1.6.2
+- Feat : Enhanced audit report generation and styling
+  - Improved markdown and HTML report with extended summary metrics (match rate, duplicate titles, potential copy-paste errors)
+  - Added dedicated Minor Issues section to audit reports showing up to 15 minor issues
+  - Enhanced unmatched items display with code blocks showing full question text and close match scores
+  - Improved HTML rendering with proper markdown-to-HTML conversion (tables, lists, code blocks)
+  - Refined HTML report styling for professional print and screen display
+  - Updated color palette and typography for consistent, readable output
+  - Added blue accent borders and improved spacing for better visual hierarchy
+- Fix : HTML report generation no longer includes commas between paragraphs
+
 ### 1.6.1
 - Refactor : Audit error display and configuration improvements
   - Standardized string formatting and improved layout in ErrorDetails component
