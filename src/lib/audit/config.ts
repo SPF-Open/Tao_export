@@ -18,50 +18,10 @@ export const DEFAULT_CONFIG: ExcelConfig = {
 };
 
 export const PRESET_CONFIGS: Record<string, ExcelConfig> = {
-  default: DEFAULT_CONFIG,
-  spl_2024_new: {
-    rowOffset: 12,
-    alternativeCount: 4,
-    skipRows: 1,
-    answerLayout: 'same_column',
-    ignoreTitleMismatch: true,
-    columns: {
-      title: 'E',
-      prompt: 'F',
-      answers: 'F',
-      answerMarker: 'G',
-      competency: 'A',
-      dimension: 'B',
-      indicator: 'C',
-    },
-  },
-  spl_2024_old: {
-    rowOffset: 12,
-    alternativeCount: 4,
-    skipRows: 1,
-    answerLayout: 'same_column',
-    ignoreTitleMismatch: true,
-    columns: {
-      title: 'E',
-      prompt: 'F',
-      answers: 'F',
-      answerMarker: 'G',
-      competency: 'A',
-      dimension: 'B',
-      indicator: 'C',
-    },
-  },
-  standard_columns: {
-    rowOffset: 0,
-    alternativeCount: 4,
+  Bosa: DEFAULT_CONFIG,
+  OLD_Fin: {
+    ...DEFAULT_CONFIG,
     skipRows: 0,
-    answerLayout: 'spread_columns',
-    ignoreTitleMismatch: true,
-    columns: {
-      title: 'A',
-      prompt: 'B',
-      answers: ['C', 'D', 'E', 'F'],
-    },
   },
 };
 
