@@ -1,5 +1,10 @@
 ## Changelog
 
+### 1.6.1
+- Refactor : Audit error display and configuration improvements
+  - Standardized string formatting and improved layout in ErrorDetails component
+  - Streamlined preset configurations by consolidating to DEFAULT_CONFIG
+
 ### 1.6.0
 - Feat : Enhance error comparison and diff highlighting
   - Introduced HighlightedText component for displaying differences in titles, prompts, and answers between Excel and QTI questions
