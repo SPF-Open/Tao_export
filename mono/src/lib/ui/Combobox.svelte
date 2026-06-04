@@ -9,16 +9,17 @@
     legend?: string;
     choices?: Choice[];
     value?: string | boolean | number;
+    disabled?: boolean;
   }
 
-  let { legend = "", choices = [], value = $bindable() }: Props = $props();
+  let { legend = "", choices = [], value = $bindable(), disabled = false }: Props = $props();
 </script>
 
 <fieldset class="combobox">
   {#if legend}
     <legend class="combobox-legend">{legend}</legend>
   {/if}
-  <select class="combobox-select" bind:value>
+  <select class="combobox-select" bind:value {disabled}>
     {#each choices as choice}
       <option value={choice.value} disabled={choice.disabled}>{choice.label}</option>
     {/each}

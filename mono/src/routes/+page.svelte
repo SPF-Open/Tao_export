@@ -106,7 +106,7 @@
       title: 'IAT',
       description: 'Interactive Assessment Tool — run and manage interactive exam sessions.',
       icon: '📝',
-      available: false,
+      available: true,
     },
   ];
 </script>

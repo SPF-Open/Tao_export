@@ -1,6 +1,6 @@
 <script lang="ts">
   interface Props {
-    variant?: "primary" | "secondary" | "ghost";
+    variant?: "primary" | "secondary" | "ghost" | "success" | "danger" | "info";
     disabled?: boolean;
     onclick?: (e: MouseEvent) => void;
     onClick?: (e: MouseEvent) => void;
@@ -80,6 +80,40 @@
   :global(.btn.variant-ghost:hover:not(:disabled)) {
     background-color: var(--surface);
     border-color: var(--border);
+  }
+
+  :global(.btn.variant-success) {
+    background-color: var(--success);
+    color: var(--success-foreground);
+    border: 1px solid var(--success);
+  }
+
+  :global(.btn.variant-success:hover:not(:disabled)) {
+    opacity: 0.9;
+    box-shadow: var(--shadow-sm);
+  }
+
+  :global(.btn.variant-danger) {
+    background-color: var(--danger);
+    color: var(--danger-foreground);
+    border: 1px solid var(--danger);
+  }
+
+  :global(.btn.variant-danger:hover:not(:disabled)) {
+    opacity: 0.9;
+    box-shadow: var(--shadow-sm);
+  }
+
+  :global(.btn.variant-info) {
+    background-color: var(--surface);
+    color: var(--primary);
+    border: 1px solid var(--primary);
+  }
+
+  :global(.btn.variant-info:hover:not(:disabled)) {
+    background-color: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: var(--shadow-sm);
   }
 
   .btn:disabled {
