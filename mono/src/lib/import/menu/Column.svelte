@@ -21,54 +21,43 @@
   });
 </script>
 
-<Fieldset title="Column">
-  <div class="columnPicker">
-    <div class="sub">
-      <label for="">Title</label>
-      <Char bind:value={$titleColumn} {disabled} />
-      <label for="">Prompt</label>
-      <Char bind:value={$promptColumn} {disabled} />
-      <label for="">Answer</label>
-      <Char bind:value={$correctColumn} {disabled} />
-    </div>
-    <div class="line"></div>
-    <div class="sub">
-      <div>
-        <label for="">Competency</label>
-        <OptionnalLetterPicker bind:value={$competencyColumn} />
-      </div>
-      <div>
-        <label for="">Dimension</label>
-        <OptionnalLetterPicker bind:value={$dimensionColumn} />
-      </div>
-      <div>
-        <label for="">Indicator</label>
-        <OptionnalLetterPicker bind:value={$indicatorColumn} />
-      </div>
-    </div>
+<Fieldset title="Columns">
+  <div class="grid">
+    <span class="lbl">Title</span>
+    <Char bind:value={$titleColumn} {disabled} />
+    <span class="lbl">Prompt</span>
+    <Char bind:value={$promptColumn} {disabled} />
+    <span class="lbl">Answer</span>
+    <Char bind:value={$correctColumn} {disabled} />
+
+    <div class="divider"></div>
+
+    <span class="lbl">Competency</span>
+    <OptionnalLetterPicker bind:value={$competencyColumn} />
+    <span class="lbl">Dimension</span>
+    <OptionnalLetterPicker bind:value={$dimensionColumn} />
+    <span class="lbl">Indicator</span>
+    <OptionnalLetterPicker bind:value={$indicatorColumn} />
   </div>
 </Fieldset>
 
 <style>
-  .columnPicker {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: space-around;
-    flex: 1;
-  }
-  .columnPicker > div {
-    display: flex;
-    flex-direction: column;
-    flex-wrap: wrap;
+  .grid {
+    display: grid;
+    grid-template-columns: 1fr auto;
     align-items: center;
+    gap: 6px 12px;
+    width: 100%;
   }
-  .line {
-    background-color: var(--border);
-    width: 1px;
+
+  .lbl {
+    font-size: var(--font-size-base);
+    color: var(--text-muted);
   }
-  .columnPicker .sub {
-    flex-direction: column;
-    flex: 1;
-    justify-content: space-evenly;
+
+  .divider {
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--border);
+    margin: 2px 0;
   }
 </style>

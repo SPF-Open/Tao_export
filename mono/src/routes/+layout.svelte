@@ -1,8 +1,14 @@
+<script module lang="ts">
+	declare const PKG: { version: string };
+	declare const BUILD_DATE: string;
+</script>
+
 <script lang="ts">
 	import "./layout.css";
 	import { page } from "$app/stores";
-	import { Sun, Moon, Menu } from "lucide-svelte";
+	import { Sun, Moon, Menu, Info, FileText } from "lucide-svelte";
 	import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
+	import { showDocsStore, showChangelogStore } from "$lib/about";
 
 	let { children } = $props();
 
@@ -11,6 +17,7 @@
 			? localStorage.getItem("darkMode") === "true"
 			: false,
 	);
+	let showAbout = $state(false);
 
 	$effect(() => {
 		if (darkMode) {
@@ -60,18 +67,63 @@
 			{/if}
 		</nav>
 	</div>
-	<button
-		class="dark-toggle"
-		onclick={() => (darkMode = !darkMode)}
-		aria-label="Toggle dark mode"
-		title="Toggle dark mode"
-	>
-		{#if darkMode}
-			<Sun size={15} />
-		{:else}
-			<Moon size={15} />
-		{/if}
-	</button>
+	<div class="header-right">
+		<div class="about-container">
+			<button
+				class="icon-btn"
+				onclick={() => (showAbout = !showAbout)}
+				aria-label="About"
+				title="About"
+			>
+				<Info size={15} />
+			</button>
+			{#if showAbout}
+				<div class="about-menu" role="menu">
+					{#if appName === 'export'}
+						<button
+							class="about-menu-item"
+							role="menuitem"
+							onclick={() => { showDocsStore.set(true); showAbout = false; }}
+						>
+							<FileText size={13} />
+							<span>Documentation</span>
+						</button>
+						<button
+							class="about-menu-item"
+							role="menuitem"
+							onclick={() => { showChangelogStore.set(true); showAbout = false; }}
+						>
+							<FileText size={13} />
+							<span>Changelog</span>
+						</button>
+						<div class="about-menu-divider"></div>
+					{/if}
+					<div class="about-menu-info">
+						<div class="info-row">
+							<span class="info-label">Version</span>
+							<span class="info-value">{PKG.version}</span>
+						</div>
+						<div class="info-row">
+							<span class="info-label">Build</span>
+							<span class="info-value">{BUILD_DATE}</span>
+						</div>
+					</div>
+				</div>
+			{/if}
+		</div>
+		<button
+			class="icon-btn"
+			onclick={() => (darkMode = !darkMode)}
+			aria-label="Toggle dark mode"
+			title="Toggle dark mode"
+		>
+			{#if darkMode}
+				<Sun size={15} />
+			{:else}
+				<Moon size={15} />
+			{/if}
+		</button>
+	</div>
 </header>
 
 {@render children()}
@@ -146,7 +198,17 @@
 		font-weight: 600;
 	}
 
-	.dark-toggle {
+	.header-right {
+		display: flex;
+		align-items: center;
+		gap: 4px;
+	}
+
+	.about-container {
+		position: relative;
+	}
+
+	.icon-btn {
 		display: flex;
 		align-items: center;
 		justify-content: center;
@@ -157,14 +219,86 @@
 		color: var(--text-muted);
 		border-radius: var(--radius);
 		cursor: pointer;
-		transition:
-			background 0.2s,
-			color 0.2s;
+		transition: background 0.15s, color 0.15s;
 	}
 
-	.dark-toggle:hover {
+	.icon-btn:hover {
 		background: var(--surface);
 		color: var(--text);
+	}
+
+	.about-menu {
+		position: absolute;
+		top: calc(100% + 6px);
+		right: 0;
+		padding: 6px;
+		background: var(--surface-elevated);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-lg);
+		min-width: 170px;
+		z-index: 300;
+		display: flex;
+		flex-direction: column;
+		gap: 2px;
+		animation: fadeIn 0.12s ease;
+	}
+
+	.about-menu-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 7px 10px;
+		background: transparent;
+		border: none;
+		border-radius: var(--radius);
+		color: var(--text);
+		font-size: 13px;
+		cursor: pointer;
+		transition: background 0.15s;
+		text-align: left;
+		width: 100%;
+	}
+
+	.about-menu-item:hover {
+		background: var(--surface);
+	}
+
+	.about-menu-divider {
+		height: 1px;
+		background: var(--border);
+		margin: 3px 0;
+	}
+
+	.about-menu-info {
+		display: flex;
+		flex-direction: column;
+		gap: 5px;
+		padding: 7px 10px;
+	}
+
+	.info-row {
+		display: flex;
+		justify-content: space-between;
+		gap: 12px;
+	}
+
+	.info-label {
+		font-size: 11px;
+		color: var(--text-muted);
+		font-weight: 500;
+	}
+
+	.info-value {
+		font-size: 11px;
+		font-weight: 600;
+		color: var(--text);
+		font-family: monospace;
+	}
+
+	@keyframes fadeIn {
+		from { opacity: 0; transform: translateY(-3px); }
+		to   { opacity: 1; transform: translateY(0); }
 	}
 
 	@media print {

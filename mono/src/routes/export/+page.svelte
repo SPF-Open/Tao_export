@@ -6,6 +6,7 @@
   import HeaderNav from "$lib/export/HeaderNav.svelte";
   import TextInput from "$lib/ui/TextInput.svelte";
   import { sidebarEnabled } from "$lib/sidebar";
+  import { showDocsStore, showChangelogStore } from "$lib/about";
 
   import {
     compareExamIndex1,
@@ -36,6 +37,13 @@
   let showDebug = $state(false);
   let showChangelog = $state(false);
   let showDocumentation = $state(false);
+
+  $effect(() => {
+    if ($showDocsStore) { showDocumentation = true; showDocsStore.set(false); }
+  });
+  $effect(() => {
+    if ($showChangelogStore) { showChangelog = true; showChangelogStore.set(false); }
+  });
 
   function exportToJson() {
     const data = {
@@ -104,10 +112,7 @@
 </svelte:head>
 
 <main>
-  <HeaderNav 
-    onDebugToggle={(show) => showDebug = show}
-    onShowDocs={() => showDocumentation = true}
-    onShowChangelog={() => showChangelog = true}
+  <HeaderNav
     onExportPDF={exportToPdf}
     onExportJSON={exportToJson}
   />

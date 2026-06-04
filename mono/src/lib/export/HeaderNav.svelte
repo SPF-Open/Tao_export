@@ -2,8 +2,6 @@
   import {
     ChevronLeft,
     ChevronRight,
-    Info,
-    FileText,
   } from 'lucide-svelte';
   
   import {
@@ -17,23 +15,10 @@
   } from './store';
   import { get } from 'svelte/store';
 
-  interface Props {
-    onDebugToggle?: (show: boolean) => void;
-    onShowDocs?: () => void;
-    onShowChangelog?: () => void;
+  const { onExportPDF, onExportJSON } = $props<{
     onExportPDF?: () => void;
     onExportJSON?: () => void;
-  }
-
-  const { onShowDocs, onShowChangelog, onExportPDF, onExportJSON } = $props<Props>();
-
-  let showAbout = $state(false);
-  let showExportMenu = $state(false);
-  let exportFormat = $state('pdf');
-
-  // PKG and BUILD_DATE are defined globally in vite.config.ts
-  declare const PKG: { version: string; };
-  declare const BUILD_DATE: string;
+  }>();
 
   function moveIndex(n: number) {
     const maxLength = get(exams).length - 1;
@@ -126,56 +111,6 @@
       {/if}
     {/if}
   </div>
-
-  <div class="header-right">
-    <div class="about-container">
-      <button
-        class="icon-btn"
-        onclick={() => {
-          showAbout = !showAbout;
-        }}
-        aria-label="About"
-        title="About"
-      >
-        <Info size={18} />
-      </button>
-      {#if showAbout}
-        <div class="about-menu">
-          <button
-            class="about-menu-item"
-            onclick={() => {
-              onShowDocs?.();
-              showAbout = false;
-            }}
-          >
-            <FileText size={14} />
-            <span>Documentation</span>
-          </button>
-          <button
-            class="about-menu-item"
-            onclick={() => {
-              onShowChangelog?.();
-              showAbout = false;
-            }}
-          >
-            <FileText size={14} />
-            <span>Changelog</span>
-          </button>
-          <div class="about-menu-divider"></div>
-          <div class="about-menu-info">
-            <div class="info-row">
-              <span class="info-label">Version</span>
-              <span class="info-value">{PKG.version}</span>
-            </div>
-            <div class="info-row">
-              <span class="info-label">Build</span>
-              <span class="info-value">{BUILD_DATE}</span>
-            </div>
-          </div>
-        </div>
-      {/if}
-    </div>
-  </div>
 </header>
 
 <style>
@@ -193,13 +128,6 @@
     gap: 16px;
   }
 
-
-  .app-title {
-    font-weight: 600;
-    font-size: 16px;
-    color: var(--text);
-    white-space: nowrap;
-  }
 
   .header-center {
     flex: 1;
@@ -278,246 +206,6 @@
     color: var(--text-muted);
     min-width: 50px;
     text-align: center;
-  }
-
-  .header-right {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    min-width: fit-content;
-  }
-
-  .icon-btn {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .icon-btn:hover {
-    background: var(--surface);
-  }
-
-  .header-link {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 6px 12px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--accent);
-    background: transparent;
-    border: none;
-    cursor: pointer;
-    border-radius: var(--radius);
-    transition: all 0.2s;
-    white-space: nowrap;
-  }
-
-  .header-link:hover {
-    background: var(--surface);
-    text-decoration: underline;
-  }
-
-  .export-container {
-    position: relative;
-  }
-
-  .btn-get-pdf {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 6px;
-    padding: 8px 12px;
-    background: var(--accent);
-    color: white;
-    border: none;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    white-space: nowrap;
-  }
-
-  .btn-get-pdf:hover {
-    opacity: 0.9;
-  }
-
-  .export-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 8px;
-    padding: 8px;
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    min-width: 140px;
-    z-index: 200;
-    animation: fadeIn 0.15s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .export-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    background: transparent;
-    border: none;
-    border-radius: var(--radius);
-    color: var(--text);
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.2s;
-    text-align: left;
-  }
-
-  .export-menu-item:hover {
-    background: var(--surface);
-  }
-
-  .export-menu-item.active {
-    background: var(--accent);
-    background-opacity: 0.1;
-    color: var(--accent);
-  }
-
-  .debug-container {
-    position: relative;
-  }
-
-  .debug-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 8px;
-    padding: 12px 16px;
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    min-width: 160px;
-    z-index: 200;
-    animation: fadeIn 0.15s ease;
-  }
-
-  .debug-item {
-    display: flex;
-    justify-content: space-between;
-    gap: 16px;
-    padding: 6px 0;
-  }
-
-  .debug-item:not(:last-child) {
-    border-bottom: 1px solid var(--border);
-  }
-
-  .debug-label {
-    font-size: 12px;
-    color: var(--text-muted);
-  }
-
-  .debug-value {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  .about-container {
-    position: relative;
-  }
-
-  .about-menu {
-    position: absolute;
-    top: 100%;
-    right: 0;
-    margin-top: 8px;
-    padding: 8px;
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    box-shadow: var(--shadow-lg);
-    min-width: 180px;
-    z-index: 200;
-    animation: fadeIn 0.15s ease;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-
-  .about-menu-item {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 8px 12px;
-    background: transparent;
-    border: none;
-    border-radius: var(--radius);
-    color: var(--text);
-    font-size: 13px;
-    cursor: pointer;
-    transition: background 0.2s;
-    text-align: left;
-  }
-
-  .about-menu-item:hover {
-    background: var(--surface);
-  }
-
-  .about-menu-divider {
-    height: 1px;
-    background: var(--border);
-    margin: 4px 0;
-  }
-
-  .about-menu-info {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    padding: 8px 12px;
-    border-top: 1px solid var(--border);
-  }
-
-  .info-row {
-    display: flex;
-    justify-content: space-between;
-    gap: 12px;
-  }
-
-  .info-label {
-    font-size: 12px;
-    color: var(--text-muted);
-    font-weight: 500;
-  }
-
-  .info-value {
-    font-size: 12px;
-    font-weight: 600;
-    color: var(--text);
-    font-family: monospace;
-  }
-
-  @keyframes fadeIn {
-    from {
-      opacity: 0;
-      transform: translateY(-4px);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0);
-    }
   }
 
   @media (max-width: 900px) {

@@ -1,5 +1,10 @@
 <script lang="ts">
   import { onMount } from 'svelte';
+  import { slide } from 'svelte/transition';
+  import { Bug, ChevronDown } from 'lucide-svelte';
+  import DebugPanel from '$lib/general/DebugPanel.svelte';
+
+  let debugOpen = $state(false);
 
   let canvas: HTMLCanvasElement;
 
@@ -17,13 +22,17 @@
 
     function draw() {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const isDark = document.documentElement.classList.contains('dark');
+      // light: soft indigo  |  dark: emerald green
+      const [cr, cg, cb] = isDark ? [52, 211, 153] : [99, 102, 241];
+
       const cols = Math.ceil(canvas.width / GAP) + 1;
       const rows = Math.ceil(canvas.height / GAP) + 1;
 
-      for (let r = 0; r < rows; r++) {
-        for (let c = 0; c < cols; c++) {
-          const x = c * GAP;
-          const y = r * GAP;
+      for (let row = 0; row < rows; row++) {
+        for (let col = 0; col < cols; col++) {
+          const x = col * GAP;
+          const y = row * GAP;
           const dx = x - mouse.x;
           const dy = y - mouse.y;
           const dist = Math.sqrt(dx * dx + dy * dy);
@@ -33,7 +42,7 @@
 
           ctx.beginPath();
           ctx.arc(x, y, r2, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(128,128,128,${alpha})`;
+          ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
           ctx.fill();
         }
       }
@@ -103,6 +112,7 @@
 </script>
 
 <canvas bind:this={canvas} class="dot-bg" aria-hidden="true"></canvas>
+
 <main>
   <p class="subtitle">Select a module to get started</p>
 
@@ -126,6 +136,24 @@
       </a>
     {/each}
   </nav>
+
+  <div class="debug-section">
+    <button
+      class="debug-trigger"
+      onclick={() => (debugOpen = !debugOpen)}
+      aria-expanded={debugOpen}
+    >
+      <Bug size={12} />
+      <span>Debug</span>
+      <ChevronDown size={12} class={debugOpen ? 'flip' : ''} />
+    </button>
+
+    {#if debugOpen}
+      <div class="debug-body" transition:slide={{ duration: 150 }}>
+        <DebugPanel onclose={() => (debugOpen = false)} />
+      </div>
+    {/if}
+  </div>
 </main>
 
 <style>
@@ -185,9 +213,11 @@
   }
 
   .route-card.unavailable {
-    opacity: 0.55;
     cursor: default;
     pointer-events: none;
+  }
+  .route-card.unavailable * {
+    opacity: 0.6;
   }
 
   .route-icon {
@@ -213,6 +243,45 @@
     color: var(--text-muted);
     margin: 0;
     line-height: 1.5;
+  }
+
+  .debug-section {
+    margin-top: 2rem;
+    width: 100%;
+    max-width: 860px;
+  }
+
+  .debug-trigger {
+    
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    background: var(--surface);
+    color: var(--text-muted);
+    font-size: 11px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+  }
+
+  .debug-trigger:hover {
+    color: var(--text);
+    border-color: var(--border-strong);
+  }
+
+  .debug-trigger :global(.flip) {
+    transform: rotate(180deg);
+  }
+
+  .debug-body {
+    margin-top: 8px;
+    height: 420px;
+    border-radius: var(--radius-lg);
+    overflow: hidden;
+    border: 1px solid var(--border);
   }
 
   .badge {
