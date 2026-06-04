@@ -1,6 +1,5 @@
 <script lang="ts">
   import Settings from "$lib/export/Settings.svelte";
-  import Tables from "$lib/export/Tables.svelte";
   import ZipInput from "$lib/export/ZipInput.svelte";
   import Question from "$lib/export/template/Question.svelte";
   import AuditTab from "$lib/export/audit/AuditTab.svelte";
@@ -8,17 +7,13 @@
   import TextInput from "$lib/export/ui/TextInput.svelte";
 
   import {
-    compareMode,
     compareExamIndex1,
     compareExamIndex2,
     showMenu,
     questions,
-    oldQuestions,
     inzage,
     zoom,
     multiple,
-    merge,
-    examsIndex,
     exams,
     windowName,
     randomizeQuestion,
@@ -26,7 +21,6 @@
     questionMapping,
     answerMapping,
     showLetter,
-    darkMode,
     currentPage,
   } from "$lib/export/store";
   import Log from "$lib/export/Log.svelte";

@@ -20,7 +20,7 @@
       title: 'Import',
       description: 'Import raw exam data from various sources and normalize it for use in the application.',
       icon: '📥',
-      available: false,
+      available: true,
     },
     {
       path: '/forge',

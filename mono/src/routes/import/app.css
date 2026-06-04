@@ -1,0 +1,38 @@
+@import url("https://fonts.googleapis.com/css2?family=Source+Sans+Pro:ital,wght@0,400;0,600;0,900;1,400;1,600;1,900&display=swap");
+
+:root {
+  font-family: "Source Sans Pro", sans-serif;
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  -webkit-text-size-adjust: 100%;
+}
+
+body {
+  margin: 0;
+  min-height: 100vh;
+}
+
+.txt-underline {
+  text-decoration: underline;
+}
+
+.col-12::after {
+  content: "\a";
+  white-space: pre;
+}
+
+@media print {
+  #zip,
+  header {
+    display: none !important;
+  }
+  .hide-print {
+    display: none !important;
+  }
+}
+
+p {
+  margin: 0 0;
+}

@@ -1,5 +1,7 @@
 <!-- @migration-task Error while migrating Svelte code: This type of directive is not valid on components
 https://svelte.dev/e/component_invalid_directive -->
+<!-- @migration-task Error while migrating Svelte code: This type of directive is not valid on components
+https://svelte.dev/e/component_invalid_directive -->
 <script lang="ts">
   import { ChevronDown } from 'lucide-svelte';
   import type { AuditIssue } from './types';
