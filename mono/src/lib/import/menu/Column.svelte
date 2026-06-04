@@ -63,8 +63,8 @@
     align-items: center;
   }
   .line {
-    background-color: var(--border-color);
-    width: 2px;
+    background-color: var(--border);
+    width: 1px;
   }
   .columnPicker .sub {
     flex-direction: column;

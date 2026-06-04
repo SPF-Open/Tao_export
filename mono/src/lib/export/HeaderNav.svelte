@@ -1,23 +1,16 @@
 <script lang="ts">
   import {
-    Menu,
     ChevronLeft,
     ChevronRight,
-    Sun,
-    Moon,
-    Settings as SettingsIcon,
     Info,
     FileText,
-    Download,
   } from 'lucide-svelte';
   
   import {
-    showMenu,
     questions,
     exams,
     examsIndex,
     windowName,
-    darkMode,
     currentPage,
     compareMode,
     multiple,
@@ -53,10 +46,6 @@
     });
   }
 
-  function toggleDarkMode() {
-    darkMode.update((v: boolean) => !v);
-  }
-
   function handlePageChange(page: 'questions' | 'audit' | 'compare') {
     currentPage.set(page);
   }
@@ -77,18 +66,6 @@
 </script>
 
 <header class="header hide-print">
-  <div class="header-left">
-    <button
-      class="menu-toggle"
-      onclick={() => showMenu.update((v: boolean) => !v)}
-      aria-label="Toggle menu"
-      title="Toggle sidebar (M)"
-    >
-      <Menu size={18} />
-    </button>
-    <span class="app-title">TAO Export</span>
-  </div>
-
   <div class="header-center">
     {#if $questions.length > 0}
       <div class="page-tabs" role="tablist">
@@ -151,14 +128,6 @@
   </div>
 
   <div class="header-right">
-    <button class="icon-btn" onclick={toggleDarkMode} aria-label="Toggle dark mode" title="Toggle dark mode">
-      {#if $darkMode}
-        <Sun size={18} />
-      {:else}
-        <Moon size={18} />
-      {/if}
-    </button>
-
     <div class="about-container">
       <button
         class="icon-btn"
@@ -212,7 +181,7 @@
 <style>
   .header {
     position: sticky;
-    top: 0;
+    top: var(--layout-header-height);
     z-index: 100;
     display: flex;
     align-items: center;
@@ -224,30 +193,6 @@
     gap: 16px;
   }
 
-  .header-left {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    min-width: fit-content;
-  }
-
-  .menu-toggle {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 32px;
-    height: 32px;
-    border: none;
-    background: transparent;
-    color: var(--text);
-    border-radius: var(--radius);
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-
-  .menu-toggle:hover {
-    background: var(--surface);
-  }
 
   .app-title {
     font-weight: 600;

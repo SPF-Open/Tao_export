@@ -18,7 +18,8 @@
   } from "../helper/store";
   import { Question } from "../helper/question";
   import Button from "$lib/ui/Button.svelte";
-  
+  import { FilesIcon } from "lucide-svelte";
+
   let linkFile: HTMLAnchorElement = $state();
 
   const onClick = () => {
@@ -103,7 +104,7 @@
 <a bind:this={linkFile} download></a>
 <Button type="info" {onClick}>
   <div class="button">
-    <img src="file.svg" alt="FileIcon" />
+  <FilesIcon size={18} />
     <span> Download Export</span>
   </div>
 </Button>

@@ -19,9 +19,15 @@
     titleColumn,
   } from "$lib/import/helper/store";
   import { QCM, Question } from "$lib/import/helper/question";
+  import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
 
   let questions = $state<QCM[]>([]);
   let workbook = $state<XLSX.WorkBook | undefined>(undefined);
+
+  $effect(() => {
+    sidebarEnabled.set(true);
+    return () => sidebarEnabled.set(false);
+  });
 
   const parseAndShow = () => {
     if (!workbook) return;
@@ -59,38 +65,69 @@
 </script>
 
 <main>
-  <div class="left">
-    <Menu />
+  <div class="content" class:sidebar-open={$sidebarOpen}>
+    {#if $sidebarOpen}
+      <aside class="sidebar">
+        <div class="sidebar-content">
+          <Menu />
+        </div>
+      </aside>
+    {/if}
+
+    <div class="main-area">
+      <PreviewTao bind:QCMs={questions} bind:hideAnswer={$hideAnswer} />
+    </div>
   </div>
-  <PreviewTao bind:QCMs={questions} bind:hideAnswer={$hideAnswer} />
 </main>
 
 <style>
   main {
-    min-width: 1280px;
     display: flex;
-    justify-items: center;
-  }
-  .left {
-    width: 400px;
-    margin: 50px 50px;
-  }
-  main :global(.questions) {
-    width: calc(100% - 400px);
-    margin: 50px 50px;
+    flex-direction: column;
+    min-height: calc(100vh - var(--layout-header-height));
   }
 
-  @media only screen and (max-width: 1280px) {
-    .left :global(.menu) {
-      position: relative;
-    }
+  .content {
+    display: flex;
+    flex: 1;
+    min-height: calc(100vh - var(--layout-header-height));
   }
+
+  .sidebar {
+    position: sticky;
+    top: var(--layout-header-height);
+    height: calc(100vh - var(--layout-header-height));
+    width: var(--sidebar-width);
+    background: var(--surface);
+    border-right: 1px solid var(--border);
+    box-shadow: var(--shadow-lg);
+    z-index: 50;
+    overflow-y: auto;
+    scrollbar-gutter: stable;
+    flex-shrink: 0;
+  }
+
+  .sidebar-content {
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    min-height: 100%;
+  }
+
+  .main-area {
+    flex: 1;
+    padding: 16px;
+    min-width: 0;
+    overflow-x: auto;
+  }
+
   @media print {
-    .left {
-      display: none;
+    .sidebar {
+      display: none !important;
     }
-    main :global(.questions) {
-      width: 80%;
+    .main-area {
+      padding: 0;
     }
   }
 </style>

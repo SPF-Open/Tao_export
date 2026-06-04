@@ -65,7 +65,7 @@ export const sortQuestions = () => {
 }
 
 // Menu
-export const showMenu = writable(true);
+export { sidebarOpen as showMenu } from '$lib/sidebar';
 
 // Settings
 export const showAnswer = writable(true);
@@ -351,15 +351,7 @@ export const settings = derived([showAnswer, showInstruction, showLetter, inzage
   }
 });
 
-darkMode.subscribe((value) => {
-  if (typeof document !== 'undefined') {
-    if (value) {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
-  }
-});
+
 
 export const resetSettings = () => {
   showAnswer.set(true);

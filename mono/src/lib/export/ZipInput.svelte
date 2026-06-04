@@ -16,8 +16,8 @@
     resetSettings,
     windowName,
   } from "./store";
-  import Button from "./ui/Button.svelte";
-  import FileInput from "./ui/FileInput.svelte";
+  import Button from "$lib/ui/Button.svelte";
+  import FileInput from "$lib/ui/FileInput.svelte";
   import { get } from "svelte/store";
   import { Printer, FileJson, ChevronDown } from 'lucide-svelte';
 

@@ -4,7 +4,8 @@
   import Question from "$lib/export/template/Question.svelte";
   import AuditTab from "$lib/export/audit/AuditTab.svelte";
   import HeaderNav from "$lib/export/HeaderNav.svelte";
-  import TextInput from "$lib/export/ui/TextInput.svelte";
+  import TextInput from "$lib/ui/TextInput.svelte";
+  import { sidebarEnabled } from "$lib/sidebar";
 
   import {
     compareExamIndex1,
@@ -91,6 +92,11 @@
   function exportToPdf() {
     window.print();
   }
+
+  $effect(() => {
+    sidebarEnabled.set(true);
+    return () => sidebarEnabled.set(false);
+  });
 </script>
 
 <svelte:head>
@@ -269,13 +275,13 @@
   .content {
     display: flex;
     flex: 1;
-    min-height: calc(100vh - var(--header-height) - 40px);
+    min-height: calc(100vh - var(--layout-header-height) - var(--header-height) - 40px);
   }
 
   .sidebar {
     position: sticky;
-    top: var(--header-height);
-    height: calc(100vh - var(--header-height));
+    top: calc(var(--layout-header-height) + var(--header-height));
+    height: calc(100vh - var(--layout-header-height) - var(--header-height));
     width: var(--sidebar-width);
     background: var(--surface);
     border-right: 1px solid var(--border);

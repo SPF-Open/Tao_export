@@ -5,3 +5,5 @@ export { default as FileInput } from "./FileInput.svelte";
 export { default as Char } from "./Char.svelte";
 export { default as Numeric } from "./Numeric.svelte";
 export { default as Files } from "./Files.svelte";
+export { default as RadioGroup } from "./RadioGroup.svelte";
+export { default as Combobox } from "./Combobox.svelte";

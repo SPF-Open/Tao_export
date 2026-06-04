@@ -5,7 +5,7 @@
     placeholder?: string;
   }
 
-  let { value = $bindable(""), disabled = false, placeholder = "" }: Props = $props();
+  let { value = $bindable(""), disabled = $bindable(false), placeholder = "" }: Props = $props();
 </script>
 
 <input

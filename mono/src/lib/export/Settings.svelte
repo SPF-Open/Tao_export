@@ -1,6 +1,6 @@
 <script lang="ts">
-  import Switch from "./ui/Switch.svelte";
-  import TextInput from "./ui/TextInput.svelte";
+  import Switch from "$lib/ui/Switch.svelte";
+  import TextInput from "$lib/ui/TextInput.svelte";
   import {
     compareMode,
     inzage,

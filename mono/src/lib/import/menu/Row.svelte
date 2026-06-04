@@ -38,6 +38,7 @@
 
 <style>
   label {
-    margin-top: -2px;
+    font-size: var(--font-size-base);
+    color: var(--text-muted);
   }
 </style>

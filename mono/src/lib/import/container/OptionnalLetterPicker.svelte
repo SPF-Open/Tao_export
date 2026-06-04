@@ -31,7 +31,11 @@
     align-items: center;
     gap: 10px;
   }
-  input {
+  input[type="checkbox"] {
     margin: 0;
+    width: 15px;
+    height: 15px;
+    accent-color: var(--primary);
+    cursor: pointer;
   }
 </style>

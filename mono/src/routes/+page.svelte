@@ -1,4 +1,67 @@
 <script lang="ts">
+  import { onMount } from 'svelte';
+
+  let canvas: HTMLCanvasElement;
+
+  onMount(() => {
+    const ctx = canvas.getContext('2d')!;
+    const GAP = 10;
+    const RADIUS = 1;
+    const GLOW_RADIUS = 70;
+    const mouse = { x: -9999, y: -9999 };
+
+    function resize() {
+      canvas.width = canvas.offsetWidth;
+      canvas.height = canvas.offsetHeight;
+    }
+
+    function draw() {
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+      const cols = Math.ceil(canvas.width / GAP) + 1;
+      const rows = Math.ceil(canvas.height / GAP) + 1;
+
+      for (let r = 0; r < rows; r++) {
+        for (let c = 0; c < cols; c++) {
+          const x = c * GAP;
+          const y = r * GAP;
+          const dx = x - mouse.x;
+          const dy = y - mouse.y;
+          const dist = Math.sqrt(dx * dx + dy * dy);
+          const t = Math.max(0, 1 - dist / GLOW_RADIUS);
+          const alpha = 0.12 + t * 0.65;
+          const r2 = RADIUS + t * 1.2;
+
+          ctx.beginPath();
+          ctx.arc(x, y, r2, 0, Math.PI * 2);
+          ctx.fillStyle = `rgba(128,128,128,${alpha})`;
+          ctx.fill();
+        }
+      }
+      requestAnimationFrame(draw);
+    }
+
+    const ro = new ResizeObserver(resize);
+    ro.observe(canvas);
+    resize();
+    draw();
+
+    const onMouseMove = (e: MouseEvent) => {
+      const rect = canvas.getBoundingClientRect();
+      mouse.x = e.clientX - rect.left;
+      mouse.y = e.clientY - rect.top;
+    };
+    const onMouseLeave = () => { mouse.x = -9999; mouse.y = -9999; };
+
+    window.addEventListener('mousemove', onMouseMove);
+    canvas.addEventListener('mouseleave', onMouseLeave);
+
+    return () => {
+      ro.disconnect();
+      window.removeEventListener('mousemove', onMouseMove);
+      canvas.removeEventListener('mouseleave', onMouseLeave);
+    };
+  });
+
   interface Route {
     path: string;
     title: string;
@@ -39,11 +102,9 @@
   ];
 </script>
 
+<canvas bind:this={canvas} class="dot-bg" aria-hidden="true"></canvas>
 <main>
-  <header>
-    <h1>TAO Export</h1>
-    <p>Select a module to get started</p>
-  </header>
+  <p class="subtitle">Select a module to get started</p>
 
   <nav class="route-grid">
     {#each routes as route}
@@ -68,32 +129,30 @@
 </main>
 
 <style>
+  .dot-bg {
+    position: fixed;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 0;
+  }
+
   main {
-    min-height: 100vh;
+    position: relative;
+    z-index: 1;
+    min-height: calc(100vh - 36px);
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
     padding: 2rem 1rem;
-    background-color: var(--bg);
   }
 
-  header {
-    text-align: center;
-    margin-bottom: 2.5rem;
-  }
-
-  header h1 {
-    font-size: 2rem;
-    font-weight: 700;
-    color: var(--text);
-    margin: 0 0 0.5rem;
-  }
-
-  header p {
+  .subtitle {
     color: var(--text-muted);
     font-size: 1rem;
-    margin: 0;
+    margin: 0 0 2.5rem;
   }
 
   .route-grid {
