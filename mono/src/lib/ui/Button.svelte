@@ -11,8 +11,8 @@
   let { 
     variant = "primary", 
     disabled = false, 
-    onclick,
-    onClick,
+    onclick = undefined,
+    onClick = undefined,
     type = "button",
     children,
     ...rest 

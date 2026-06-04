@@ -99,7 +99,7 @@
       title: 'Forge',
       description: 'Create and compose new exam questions from scratch or from existing templates.',
       icon: '🔨',
-      available: false,
+      available: true,
     },
     {
       path: '/iat',

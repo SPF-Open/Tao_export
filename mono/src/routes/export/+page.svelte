@@ -3,7 +3,6 @@
   import ZipInput from "$lib/export/ZipInput.svelte";
   import Question from "$lib/export/template/Question.svelte";
   import AuditTab from "$lib/export/audit/AuditTab.svelte";
-  import HeaderNav from "$lib/export/HeaderNav.svelte";
   import TextInput from "$lib/ui/TextInput.svelte";
   import { sidebarEnabled } from "$lib/sidebar";
   import { showDocsStore, showChangelogStore } from "$lib/about";
@@ -112,11 +111,6 @@
 </svelte:head>
 
 <main>
-  <HeaderNav
-    onExportPDF={exportToPdf}
-    onExportJSON={exportToJson}
-  />
-
   <Log />
   
   
@@ -286,7 +280,7 @@
   .sidebar {
     position: sticky;
     top: calc(var(--layout-header-height) + var(--header-height));
-    height: calc(100vh - var(--layout-header-height) - var(--header-height));
+    height: calc(100vh - var(--layout-header-height));
     width: var(--sidebar-width);
     background: var(--surface);
     border-right: 1px solid var(--border);
