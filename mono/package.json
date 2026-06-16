@@ -1,7 +1,7 @@
 {
 	"name": "mono",
 	"private": true,
-	"version": "0.0.1",
+	"version": "2.0.1",
 	"type": "module",
 	"scripts": {
 		"dev": "vite dev",
@@ -27,6 +27,7 @@
 	},
 	"dependencies": {
 		"@lv00/toolkit": "^1.2.10",
+		"@sveltejs/adapter-cloudflare": "^7.2.8",
 		"@zip.js/zip.js": "^2.8.26",
 		"lucide-svelte": "^1.0.1",
 		"marked": "^18.0.4",
