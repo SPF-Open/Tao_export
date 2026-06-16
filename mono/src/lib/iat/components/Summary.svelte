@@ -73,11 +73,15 @@
     <div class="flex-h">
       {#each $testInfo as info}
         <Card size="md">
-          <span slot="title">{info.name}</span>
+          {#snippet title()}
+                    <span >{info.name}</span>
+                  {/snippet}
           <div class="flex-h tests">
             {#each info.diplome as diplome}
               <Card>
-                <span slot="title">{diplome.name}</span>
+                {#snippet title()}
+                                <span >{diplome.name}</span>
+                              {/snippet}
                 <p>Question : {diplome.questionNb}</p>
                 <p>Candidate : {diplome.candidateNb}</p>
               </Card>
@@ -89,7 +93,9 @@
   {/if}
 
   <Card size="lg">
-    <span slot="title">Questions Overview</span>
+    {#snippet title()}
+        <span >Questions Overview</span>
+      {/snippet}
     <p>Total Questions: {rows.length}</p>
     <!-- Alternative Heat Minimap using rows data -->
     <div class="alt-minimap">

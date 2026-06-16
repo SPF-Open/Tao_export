@@ -5,7 +5,7 @@
 
 <script lang="ts">
 	import "./layout.css";
-	import { page } from "$app/stores";
+	import { page } from "$app/state";
 	import { Sun, Moon, Menu, Info, FileText } from "lucide-svelte";
 	import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
 	import { showDocsStore, showChangelogStore } from "$lib/about";
@@ -37,7 +37,7 @@
 		"/iat": "iat",
 	};
 
-	let appName = $derived(APP_NAMES[$page.url.pathname] ?? null);
+	let appName = $derived(APP_NAMES[page.url.pathname] ?? null);
 </script>
 
 <header class="layout-header hide-print">

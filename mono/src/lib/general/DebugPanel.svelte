@@ -1,6 +1,6 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import { page } from '$app/stores';
+	import { page } from '$app/state';
 	import { X, Trash2 } from 'lucide-svelte';
 
 	interface Props {
@@ -26,7 +26,7 @@
 	// Reactive: re-runs only when $page changes (route navigation)
 	$effect(() => {
 		browserInfo = {
-			Route: $page.url.pathname,
+			Route: page.url.pathname,
 			Language: navigator.language,
 			Platform: navigator.platform,
 			Screen: `${screen.width}×${screen.height}`,

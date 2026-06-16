@@ -24,7 +24,6 @@
     showLetter,
     currentPage,
   } from "$lib/export/store";
-  import Log from "$lib/export/Log.svelte";
   import ChangelogModal from "$lib/export/ChangelogModal.svelte";
   import DocumentationModal from "$lib/export/DocumentationModal.svelte";
 
@@ -33,7 +32,6 @@
   
   let titleHeader = $state("");
   let rrnHeader = $state("");
-  let showDebug = $state(false);
   let showChangelog = $state(false);
   let showDocumentation = $state(false);
 
@@ -111,9 +109,6 @@
 </svelte:head>
 
 <main>
-  <Log />
-  
-  
   <div class="content" class:sidebar-open={$showMenu}>
     {#if $showMenu}
       <aside class="sidebar" >
