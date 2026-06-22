@@ -15,7 +15,7 @@
   let { legend = "", choices = [], value = $bindable(), disabled = false }: Props = $props();
 </script>
 
-<fieldset class="combobox">
+<fieldset class:combobox={legend}>
   {#if legend}
     <legend class="combobox-legend">{legend}</legend>
   {/if}

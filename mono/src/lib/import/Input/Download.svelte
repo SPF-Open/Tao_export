@@ -11,8 +11,9 @@
     langOutput,
     rowOffset,
     competencyColumn,
-    dimensionColumn,
     indicatorColumn,
+    competencyDescrColumn,
+    masteryDescrColumn,
     alternative,
     skipRow,
   } from "../helper/store";
@@ -31,8 +32,9 @@
         prompt: $promptColumn,
         correct: $correctColumn,
         competency: $competencyColumn,
-        dimension: $dimensionColumn,
         indicator: $indicatorColumn,
+        competencyDescr: $competencyDescrColumn,
+        masteryDescr: $masteryDescrColumn,
       },
       { offset: $rowOffset, alternative: $alternative, skipRow: $skipRow },
     );

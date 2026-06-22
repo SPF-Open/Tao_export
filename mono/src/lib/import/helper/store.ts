@@ -18,6 +18,11 @@ export type BindingTemplateDef = {
     title: string | undefined,
     prompt: string | undefined,
     correct?: string | undefined,
+    // Optional metadata columns (empty string = no default for this template).
+    competency?: string,
+    indicator?: string,
+    competencyDescr?: string,
+    masteryDescr?: string,
   },
   row: {
     offset: number,
@@ -29,14 +34,18 @@ export type BindingTemplateDef = {
 export const bindingTemplate: Record<TemplateColumn, BindingTemplateDef> = {
   [TemplateColumn.FIN]: {
     column: {
-      title: 'E',
-      prompt: 'F',
+      title: 'G',
+      prompt: 'H',
       correct: "",
+      competency: 'C',
+      competencyDescr: 'D',
+      masteryDescr: 'E',
+      indicator: 'F',
     },
     row: {
       offset: 17,
       alternative: 4,
-      skipRow: 1,
+      skipRow: 0,
     },
   },
   [TemplateColumn.OLD_BOSA]: {
@@ -44,6 +53,10 @@ export const bindingTemplate: Record<TemplateColumn, BindingTemplateDef> = {
       title: 'F',
       prompt: 'H',
       correct: 'I',
+      competency: '',
+      indicator: '',
+      competencyDescr: '',
+      masteryDescr: '',
     },
     row: {
       offset: 16,
@@ -56,6 +69,10 @@ export const bindingTemplate: Record<TemplateColumn, BindingTemplateDef> = {
       title: 'D',
       prompt: 'F',
       correct: 'G',
+      competency: '',
+      indicator: '',
+      competencyDescr: '',
+      masteryDescr: '',
     },
     row: {
       offset: 7,
@@ -85,7 +102,7 @@ export const workbook = writable<null | Workbook>(null);
 
 // Menu
 export const currentSheet = writable<string>('');
-export const selectedFormat = writable('');
+export const selectedFormat = writable('CSV');
 export const hideAnswer = writable(false);
 export const langOutput = writable('FR');
 
@@ -95,9 +112,11 @@ export const titleColumn = writable("");
 export const promptColumn = writable("");
 export const correctColumn = writable("");
 
-export const dimensionColumn = writable("");
 export const competencyColumn = writable("");
 export const indicatorColumn = writable("");
+
+export const competencyDescrColumn = writable("");
+export const masteryDescrColumn = writable("");
 
 // Row
 export const rowOffset = writable(7);
@@ -111,6 +130,10 @@ followTemplate.subscribe((value) => {
   titleColumn.set(v.column.title);
   promptColumn.set(v.column.prompt);
   correctColumn.set(v.column.correct);
+  competencyColumn.set(v.column.competency ?? "");
+  indicatorColumn.set(v.column.indicator ?? "");
+  competencyDescrColumn.set(v.column.competencyDescr ?? "");
+  masteryDescrColumn.set(v.column.masteryDescr ?? "");
   rowOffset.set(v.row.offset);
   alternative.set(v.row.alternative);
   skipRow.set(v.row.skipRow);

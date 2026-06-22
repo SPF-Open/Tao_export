@@ -1,17 +1,27 @@
 <script lang="ts">
   import Download from "./Input/Download.svelte";
-  import DropZone from "./Input/DropZone.svelte";
-  import RadioInput from "./Input/RadioInput.svelte";
   import { Combobox } from "$lib/ui";
+  import RadioGroup from "$lib/ui/RadioGroup.svelte";
+  import Switch from "$lib/ui/Switch.svelte";
+  import {
+    FileSpreadsheet,
+    SlidersHorizontal,
+    Columns3,
+    Rows3,
+    X,
+  } from "lucide-svelte";
   import {
     currentSheet,
     selectedFormat,
     hideAnswer,
     workbook,
     langOutput,
-    followTemplate,
-    templateList,
+    file,
+    name,
   } from "./helper/store";
+  import Section from "./container/Section.svelte";
+  import Column from "./menu/Column.svelte";
+  import Row from "./menu/Row.svelte";
 
   const sheetToIgnore = [
     "Checklist Questionnaire",
@@ -19,59 +29,118 @@
     "Introduction - Introductie",
   ];
 
-  import Column from "./menu/Column.svelte";
-  import Row from "./menu/Row.svelte";
-    import Switch from "$lib/ui/Switch.svelte";
-  let sheet: { txt: string; selected: boolean }[] = $state();
+  let sheet = $state<{ label: string; value: string }[]>([]);
 
   workbook.subscribe((workbook) => {
     if (!workbook || !workbook.SheetNames) return;
-    sheet = workbook.SheetNames.map((s: string, n: number) => ({
-      txt: s,
-      selected: n === 0,
-    })).filter(
-      (s) => !sheetToIgnore.includes(s.txt)
-    );
+    sheet = workbook.SheetNames.filter(
+      (s: string) => !sheetToIgnore.includes(s),
+    ).map((s: string) => ({ label: s, value: s }));
+    // Auto-select the first usable sheet so the preview populates immediately.
+    if (sheet.length) currentSheet.set(sheet[0].value);
   });
+
+  // Persist which sections are open across reloads.
+  type Panels = {
+    source: boolean;
+    output: boolean;
+    columns: boolean;
+    rows: boolean;
+  };
+  const defaultPanels: Panels = {
+    source: true,
+    output: true,
+    columns: true,
+    rows: false,
+  };
+
+  function loadPanels(): Panels {
+    if (typeof localStorage === "undefined") return defaultPanels;
+    try {
+      return {
+        ...defaultPanels,
+        ...JSON.parse(localStorage.getItem("import-panels") ?? "{}"),
+      };
+    } catch {
+      return defaultPanels;
+    }
+  }
+
+  let panels = $state(loadPanels());
+
+  $effect(() => {
+    if (typeof localStorage !== "undefined") {
+      localStorage.setItem("import-panels", JSON.stringify(panels));
+    }
+  });
+
+  // Clearing the file sends the user back to the centered drop zone in the main area.
+  function clearFile() {
+    file.set(null);
+    name.set("TAO");
+    workbook.set(null);
+    currentSheet.set("");
+  }
 </script>
 
 <div class="menu-content hide-print">
-  <DropZone />
-  <div class="choiceSelection">
-    <RadioInput
-      title="Sheet"
-      inputChoices={sheet}
-      bind:choice={$currentSheet}
-    />
-    <RadioInput
-      title="Format"
-      inputChoices={[
-        { txt: "CSV", selected: true },
-        { txt: "PDF" },
-      ]}
-      bind:choice={$selectedFormat}
-    />
-    <fieldset class="switch-field">
-      <legend class="switch-legend">Answer</legend>
-      <label class="switch-label">
-        <span>Hide</span>
-        <Switch bind:checked={$hideAnswer} />
-      </label>
-    </fieldset>
-    <RadioInput
-      title="Langage"
-      inputChoices={[{ txt: "FR" }, { txt: "NL" }, { txt: "DE" }]}
-      bind:choice={$langOutput}
-    />
+  {#if $file}
+    <div class="file-badge">
+      <FileSpreadsheet size={15} />
+      <span class="file-name" title={$file.name}>{$file.name}</span>
+      <button
+        class="file-clear"
+        type="button"
+        onclick={clearFile}
+        aria-label="Change file"
+      >
+        <X size={14} />
+      </button>
+    </div>
+  {:else}
+    <p class="file-empty">No file loaded</p>
+  {/if}
 
-    <Combobox
-      legend="Template"
-      choices={templateList.map((t) => ({ label: t.txt, value: t.value }))}
-      bind:value={$followTemplate}
+  <Section title="Source" bind:open={panels.source}>
+    {#snippet icon()}<FileSpreadsheet size={15} />{/snippet}
+    <Combobox choices={sheet} bind:value={$currentSheet} />
+  </Section>
+
+  <Section title="Output" bind:open={panels.output}>
+    {#snippet icon()}<SlidersHorizontal size={15} />{/snippet}
+    <!-- <RadioGroup
+      legend="Format"
+      choices={[
+        { label: "CSV", value: "CSV" },
+        { label: "PDF", value: "PDF" },
+      ]}
+      bind:value={$selectedFormat}
+    /> -->
+    <RadioGroup
+      legend="Language"
+      choices={[
+        { label: "FR", value: "FR" },
+        { label: "NL", value: "NL" },
+        { label: "DE", value: "DE" },
+      ]}
+      bind:value={$langOutput}
     />
-  </div>
-  <Row />
-  <Column />
+    <!-- <label class="switch-row">
+      <span>Hide answers</span>
+      <Switch bind:checked={$hideAnswer} />
+    </label> -->
+  </Section>
+
+  <Section title="Column mapping" bind:open={panels.columns}>
+    {#snippet icon()}<Columns3 size={15} />{/snippet}
+    <Column />
+  </Section>
+
+  <Section title="Row layout" bind:open={panels.rows}>
+    {#snippet icon()}<Rows3 size={15} />{/snippet}
+    <Row />
+  </Section>
+
   <div class="bottom">
     <Download />
   </div>
@@ -81,46 +150,73 @@
   .menu-content {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
   }
-  .choiceSelection {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 8px;
-  }
-  .choiceSelection :global(fieldset:first-child) {
-    width: 100%;
-  }
-  .switch-field {
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 6px 10px 8px 10px;
-    margin: 0;
-  }
-  .switch-legend {
-    padding: 0 4px;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    line-height: 1;
-  }
-  .switch-label {
+
+  .file-badge {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 8px;
+    padding: 8px 10px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+    color: var(--text);
+  }
+
+  .file-name {
+    flex: 1;
+    min-width: 0;
+    font-size: 13px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .file-clear {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    cursor: pointer;
+    padding: 2px;
+    border-radius: var(--radius);
+    transition:
+      color 0.15s,
+      background 0.15s;
+  }
+
+  .file-clear:hover {
+    color: var(--text);
+    background: var(--surface);
+  }
+
+  .file-empty {
+    margin: 0;
+    padding: 4px 10px;
+    font-size: 12px;
+    font-style: italic;
+    color: var(--text-muted);
+  }
+
+  .switch-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 8px;
     font-size: var(--font-size-base);
     color: var(--text);
     cursor: pointer;
     user-select: none;
   }
+
   .bottom {
     display: flex;
     flex-direction: column;
-    gap: 10px;
     margin-top: auto;
     width: 100%;
-    padding-top: 8px;
   }
 </style>

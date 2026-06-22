@@ -33,17 +33,23 @@
     Shuffle,
     ChevronDown,
   } from "lucide-svelte";
-    import Tables from "./Tables.svelte";
+  import Tables from "./Tables.svelte";
 
   // Load section state from localStorage
   function loadSectionState() {
-    if (typeof localStorage === 'undefined') return { general: false, filtering: false, paperTest: false, advanced: false };
+    if (typeof localStorage === "undefined")
+      return {
+        general: false,
+        filtering: false,
+        paperTest: false,
+        advanced: false,
+      };
     const stored = localStorage.getItem("settings-panels");
     if (stored) {
       try {
         const parsed = JSON.parse(stored);
         // Migrate old 5-section structure to new structure
-        if ('display' in parsed || 'manipulation' in parsed) {
+        if ("display" in parsed || "manipulation" in parsed) {
           return {
             general: parsed.display ?? false,
             filtering: parsed.filtering ?? false,
@@ -73,7 +79,7 @@
 
   // Save section state to localStorage
   $effect(() => {
-    if (typeof localStorage !== 'undefined') {
+    if (typeof localStorage !== "undefined") {
       localStorage.setItem("settings-panels", JSON.stringify(state));
     }
   });
@@ -174,22 +180,6 @@
           </span>
           <Switch bind:checked={$sort} />
         </div>
-        <div class="setting-row">
-          <span class="setting-label">
-            <span>Zoom Level</span>
-          </span>
-          <div class="zoom-control">
-            <input
-              type="range"
-              min="0.8"
-              max="1.5"
-              step="0.1"
-              bind:value={$zoom}
-              class="zoom-slider"
-            />
-            <span class="zoom-value">{Math.round($zoom * 100)}%</span>
-          </div>
-        </div>
       </div>
     {/if}
   </div>
@@ -272,6 +262,22 @@
           </span>
           <Switch bind:checked={$multiple} />
         </div>
+                <div class="setting-row">
+          <span class="setting-label">
+            <span>Zoom Level</span>
+          </span>
+          <div class="zoom-control">
+            <input
+              type="range"
+              min="0.8"
+              max="1.5"
+              step="0.1"
+              bind:value={$zoom}
+              class="zoom-slider"
+            />
+            <span class="zoom-value">{Math.round($zoom * 100)}%</span>
+          </div>
+        </div>
         {#if $multiple}
           <div class="setting-row sub-setting">
             <span class="setting-label">
@@ -292,7 +298,7 @@
     {/if}
   </div>
 
-    <!-- Question Filtering Section -->
+  <!-- Question Filtering Section -->
   {#if $questions && $questions.length}
     <div class="settings-section">
       <button
@@ -414,7 +420,7 @@
   }
 
   .section-content {
-    padding: 8px 14px;
+    padding: 10px;
     display: flex;
     flex-direction: column;
     gap: 8px;

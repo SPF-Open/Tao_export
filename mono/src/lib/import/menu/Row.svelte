@@ -1,44 +1,39 @@
-<script>
+<script lang="ts">
   import Numeric from "$lib/ui/Numeric.svelte";
-
-  import {
-    alternative,
-    followTemplate,
-    rowOffset,
-    skipRow,
-    TemplateColumn,
-  } from "../helper/store";
-  import Fieldset from "../container/Fieldset.svelte";
-
+  import { alternative, rowOffset, skipRow } from "../helper/store";
 </script>
 
-<Fieldset title="Row">
-  <label for="">Offset</label>
-  <Numeric
-    name="Row offset"
-    bind:value={$rowOffset}
-    size="sm"
-    max={99}
-  />
-  <label for="">Alternative</label>
-  <Numeric
-    name="Alternative"
-    bind:value={$alternative}
-    size="sm"
-    max={99}
-  />
-  <label for="">Skip</label>
-  <Numeric
-    name="Alternative"
-    bind:value={$skipRow}
-    size="sm"
-    max={99}
-  />
-</Fieldset>
+<div class="rows">
+  <div class="field">
+    <label for="row-offset">First data row</label>
+    <Numeric id="row-offset" name="First data row" bind:value={$rowOffset} size="sm" min={0} max={99} />
+  </div>
+  <div class="field">
+    <label for="row-alternative">Answers per question</label>
+    <Numeric id="row-alternative" name="Answers per question" bind:value={$alternative} size="sm" min={0} max={99} />
+  </div>
+  <div class="field">
+    <label for="row-skip">Rows to skip between questions</label>
+    <Numeric id="row-skip" name="Rows to skip" bind:value={$skipRow} size="sm" min={0} max={99} />
+  </div>
+</div>
 
 <style>
+  .rows {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+
+  .field {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
   label {
     font-size: var(--font-size-base);
-    color: var(--text-muted);
+    color: var(--text);
   }
 </style>

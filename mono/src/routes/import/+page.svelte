@@ -3,16 +3,18 @@
   import * as XLSX from "xlsx";
   import Menu from "$lib/import/Menu.svelte";
   import PreviewTao from "$lib/import/preview/PreviewTAO.svelte";
+  import DropZone from "$lib/import/Input/DropZone.svelte";
   import {
     alternative,
     column_row,
     competencyColumn,
     correctColumn,
     currentSheet,
-    dimensionColumn,
     file,
     hideAnswer,
     indicatorColumn,
+    competencyDescrColumn,
+    masteryDescrColumn,
     promptColumn,
     rowOffset,
     skipRow,
@@ -38,8 +40,9 @@
         prompt: get(promptColumn),
         correct: get(correctColumn),
         competency: get(competencyColumn),
-        dimension: get(dimensionColumn),
         indicator: get(indicatorColumn),
+        competencyDescr: get(competencyDescrColumn),
+        masteryDescr: get(masteryDescrColumn),
       },
       {
         offset: get(rowOffset),
@@ -75,7 +78,17 @@
     {/if}
 
     <div class="main-area">
-      <PreviewTao bind:QCMs={questions} bind:hideAnswer={$hideAnswer} />
+      {#if $file}
+        <PreviewTao bind:QCMs={questions} bind:hideAnswer={$hideAnswer} />
+      {:else}
+        <div class="dropzone-center">
+          <div class="dropzone-inner">
+            <h2>Import a question file</h2>
+            <p>Upload an Excel workbook to generate a TAO export.</p>
+            <DropZone />
+          </div>
+        </div>
+      {/if}
     </div>
   </div>
 </main>
@@ -108,7 +121,7 @@
   }
 
   .sidebar-content {
-    padding: 16px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
     gap: 16px;
@@ -120,6 +133,39 @@
     padding: 16px;
     min-width: 0;
     overflow-x: auto;
+  }
+
+  .dropzone-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - var(--layout-header-height) - 32px);
+  }
+
+  .dropzone-inner {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .dropzone-inner h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .dropzone-inner p {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .dropzone-inner :global(.files-area) {
+    padding: 36px 16px;
   }
 
   @media print {

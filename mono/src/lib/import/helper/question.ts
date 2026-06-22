@@ -35,15 +35,17 @@ export class Question {
   prompt: Txt;
 
   competency?: Txt;
-  dimension?: Txt;
   indicator?: Txt;
+  competencyDescr?: Txt;
+  masteryDescr?: Txt;
 
-  constructor({ id, prompt, competency, dimension, indicator }: Question) {
+  constructor({ id, prompt, competency, indicator, competencyDescr, masteryDescr }: Question) {
     this.id = new Txt(id);
     this.prompt = new Txt(prompt);
     if (competency) this.competency = new Txt(competency);
-    if (dimension) this.dimension = new Txt(dimension);
     if (indicator) this.indicator = new Txt(indicator);
+    if (competencyDescr) this.competencyDescr = new Txt(competencyDescr);
+    if (masteryDescr) this.masteryDescr = new Txt(masteryDescr);
   }
 
   static parseSheet(
@@ -53,8 +55,9 @@ export class Question {
       prompt: string;
       correct: string;
       competency: string;
-      dimension: string;
       indicator: string;
+      competencyDescr: string;
+      masteryDescr: string;
     },
     row: { offset: number; alternative: number, skipRow: number }
   ) {
@@ -64,8 +67,9 @@ export class Question {
 
     const previousDataInfo = {
       competency: undefined,
-      dimension: undefined,
       indicator: undefined,
+      competencyDescr: undefined,
+      masteryDescr: undefined,
     };
 
     while (sheet[column.prompt + currentRow]) {
@@ -74,14 +78,18 @@ export class Question {
           previousDataInfo.competency = sheet[column.competency + currentRow]
             ? sheet[column.competency + currentRow]
             : previousDataInfo.competency;
-        if (column.dimension)
-          previousDataInfo.dimension = sheet[column.dimension + currentRow]
-            ? sheet[column.dimension + currentRow]
-            : previousDataInfo.dimension;
         if (column.indicator)
           previousDataInfo.indicator = sheet[column.indicator + currentRow]
             ? sheet[column.indicator + currentRow]
             : previousDataInfo.indicator;
+        if (column.competencyDescr)
+          previousDataInfo.competencyDescr = sheet[column.competencyDescr + currentRow]
+            ? sheet[column.competencyDescr + currentRow]
+            : previousDataInfo.competencyDescr;
+        if (column.masteryDescr)
+          previousDataInfo.masteryDescr = sheet[column.masteryDescr + currentRow]
+            ? sheet[column.masteryDescr + currentRow]
+            : previousDataInfo.masteryDescr;
 
         if (currentQuestion && !column.correct) {
           currentQuestion.answers[0].correct = true;
@@ -91,8 +99,9 @@ export class Question {
             id: sheet[column.title + currentRow],
             prompt: sheet[column.prompt + currentRow],
             competency: previousDataInfo.competency,
-            dimension: previousDataInfo.dimension,
             indicator: previousDataInfo.indicator,
+            competencyDescr: previousDataInfo.competencyDescr,
+            masteryDescr: previousDataInfo.masteryDescr,
           });
         }
         catch (e) {
@@ -136,22 +145,25 @@ export class QCM extends Question {
     prompt,
     answers,
     competency,
-    dimension,
     indicator,
+    competencyDescr,
+    masteryDescr,
   }: {
     id: Txt;
     prompt: Txt;
     answers?: Answer[];
     competency?: Txt;
-    dimension?: Txt;
     indicator?: Txt;
+    competencyDescr?: Txt;
+    masteryDescr?: Txt;
   }) {
     super({
       id: new Txt(id),
       prompt: new Txt(prompt),
       competency,
-      dimension,
       indicator,
+      competencyDescr,
+      masteryDescr,
     });
     this.answers = answers ? answers : [];
   }

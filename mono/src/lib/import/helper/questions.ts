@@ -19,7 +19,8 @@ const headerSCV = [
   'choice_4_score',
   'choice_5_score',
   'correct_answer',
-  'metadata_Specdimension',
+  'metadata_SpeccompetenceDecr',
+  'metadata_masteryDescr',
   'metadata_Speccompetence',
   'metadata_Specindicator',
 ];
@@ -64,7 +65,8 @@ export const exportToCSV = (questions: QCM[], { lang, }: { lang: string }) => {
       'choice_' + (question.answers.findIndex((q) => q.correct) + 1),
     );
 
-    csv.addSequentially(question.dimension ? question.dimension.v : '');
+    csv.addSequentially(question.competencyDescr ? question.competencyDescr.v : '');
+    csv.addSequentially(question.masteryDescr ? question.masteryDescr.v : '');
     csv.addSequentially(question.competency ? question.competency.v : '');
     csv.addSequentially(question.indicator ? question.indicator.v : '');
   });

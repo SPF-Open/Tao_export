@@ -5,6 +5,7 @@
     max?: number;
     min?: number;
     name?: string;
+    id?: string;
     placeholder?: string;
     disabled?: boolean;
   }
@@ -15,6 +16,7 @@
     max,
     min,
     name = "",
+    id,
     placeholder = "",
     disabled = false
   }: Props = $props();
@@ -26,6 +28,7 @@
   min={min}
   max={max}
   name={name}
+  {id}
   placeholder={placeholder}
   disabled={disabled}
   class={`numeric ${size}`.trim()}
