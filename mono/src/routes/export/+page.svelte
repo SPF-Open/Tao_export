@@ -98,6 +98,27 @@
     window.print();
   }
 
+  function toggleQuestion(index: number, show: boolean) {
+    questions.update((o) =>
+      o.map((q, i) => (i === index ? { ...q, show } : q)),
+    );
+  }
+
+  function toggleExamQuestion(examIndex: number, index: number, show: boolean) {
+    exams.update((list) =>
+      list.map((ex, ei) =>
+        ei === examIndex
+          ? {
+              ...ex,
+              questions: ex.questions.map((q, i) =>
+                i === index ? { ...q, show } : q,
+              ),
+            }
+          : ex,
+      ),
+    );
+  }
+
   $effect(() => {
     sidebarEnabled.set(true);
     return () => sidebarEnabled.set(false);
@@ -158,8 +179,11 @@
                   </div>
                 </div>
               {/if}
-              {#each $exams[$compareExamIndex1]?.questions || [] as question}
-                <Question {question} />
+              {#each $exams[$compareExamIndex1]?.questions || [] as question, i}
+                <Question
+                  {question}
+                  onToggleShow={(show) => toggleExamQuestion($compareExamIndex1, i, show)}
+                />
               {/each}
             </div>
           </div>
@@ -176,8 +200,11 @@
                   </div>
                 </div>
               {/if}
-              {#each $exams[$compareExamIndex2]?.questions || [] as question}
-                <Question {question} />
+              {#each $exams[$compareExamIndex2]?.questions || [] as question, i}
+                <Question
+                  {question}
+                  onToggleShow={(show) => toggleExamQuestion($compareExamIndex2, i, show)}
+                />
               {/each}
             </div>
           </div>
@@ -206,8 +233,11 @@
           {/if}
 
           {#if $questions.length > 0}
-            {#each $questions as question}
-              <Question {question} />
+            {#each $questions as question, i}
+              <Question
+                {question}
+                onToggleShow={(show) => toggleQuestion(i, show)}
+              />
             {/each}
           {/if}
            

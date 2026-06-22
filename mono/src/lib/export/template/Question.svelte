@@ -3,9 +3,10 @@
   import Qcm from './QCM.svelte';
   interface Props {
     question: QuestionType;
+    onToggleShow?: (show: boolean) => void;
   }
 
-  let { question = $bindable() }: Props = $props();
+  let { question = $bindable(), onToggleShow }: Props = $props();
 
   let questionDom = $state();
 </script>
@@ -22,7 +23,8 @@
         <input
           class="hide-print"
           type="checkbox"
-          bind:checked={question.show}
+          checked={question.show}
+          onchange={(e) => onToggleShow?.(e.currentTarget.checked)}
         />
       </label>
       <span class="title-text">{question.title}</span>

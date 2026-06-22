@@ -106,6 +106,12 @@
     );
   }
 
+  function toggleQuestion(index: number, value: boolean) {
+    questions.update((o) =>
+      o.map((q, i) => (i === index ? { ...q, show: value } : q)),
+    );
+  }
+
   function onDragStart(
     e: DragEvent & { currentTarget: EventTarget & HTMLDivElement },
     i: number,
@@ -330,7 +336,8 @@
                   <input
                     type="checkbox"
                     id="{question.title}-{i}"
-                    bind:checked={question.show}
+                    checked={question.show}
+                    onchange={(e) => toggleQuestion(i, e.currentTarget.checked)}
                   />
                 </label>
                 <div
