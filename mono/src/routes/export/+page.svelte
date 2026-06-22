@@ -1,6 +1,7 @@
 <script lang="ts">
   import Settings from "$lib/export/Settings.svelte";
   import ZipInput from "$lib/export/ZipInput.svelte";
+  import ZipDropZone from "$lib/export/ZipDropZone.svelte";
   import Question from "$lib/export/template/Question.svelte";
   import AuditTab from "$lib/export/audit/AuditTab.svelte";
   import TextInput from "$lib/ui/TextInput.svelte";
@@ -134,6 +135,18 @@
     {#if $showMenu}
       <aside class="sidebar" >
         <div class="sidebar-content">
+          <div class="mode-switch">
+            <button
+              class="mode-btn"
+              class:active={$currentPage !== 'audit'}
+              onclick={() => currentPage.set('questions')}
+            >Questions</button>
+            <button
+              class="mode-btn"
+              class:active={$currentPage === 'audit'}
+              onclick={() => currentPage.set('audit')}
+            >Audit</button>
+          </div>
           <Settings />
           <ZipInput onExportPDF={exportToPdf} onExportJSON={exportToJson} />
         </div>
@@ -207,6 +220,14 @@
                 />
               {/each}
             </div>
+          </div>
+        </div>
+      {:else if $exams.length === 0}
+        <div class="dropzone-center">
+          <div class="dropzone-inner">
+            <h2>Import a TAO export</h2>
+            <p>Upload the .zip package exported from TAO to preview and export it.</p>
+            <ZipDropZone />
           </div>
         </div>
       {:else}
@@ -304,7 +325,7 @@
 
   .sidebar {
     position: sticky;
-    top: calc(var(--layout-header-height) + var(--header-height));
+    top: calc(var(--layout-header-height));
     height: calc(100vh - var(--layout-header-height));
     width: var(--sidebar-width);
     background: var(--surface);
@@ -316,10 +337,41 @@
   }
 
   .sidebar-content {
-    padding: 16px;
+    padding: 8px;
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 8px;
+  }
+
+  .mode-switch {
+    display: flex;
+    gap: 4px;
+    padding: 4px;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .mode-btn {
+    flex: 1;
+    padding: 6px 10px;
+    background: transparent;
+    border: none;
+    border-radius: var(--radius);
+    color: var(--text-muted);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .mode-btn:hover {
+    color: var(--text);
+  }
+
+  .mode-btn.active {
+    background: var(--accent);
+    color: var(--accent-foreground);
   }
 
   .main-area {
@@ -327,6 +379,39 @@
     padding: 0 16px;
     min-width: 0;
     transition: margin-left 0.3s ease;
+  }
+
+  .dropzone-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: calc(100vh - var(--layout-header-height) - var(--header-height) - 80px);
+  }
+
+  .dropzone-inner {
+    width: 100%;
+    max-width: 480px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    text-align: center;
+  }
+
+  .dropzone-inner h2 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: var(--text);
+  }
+
+  .dropzone-inner p {
+    margin: 0 0 12px 0;
+    font-size: 13px;
+    color: var(--text-muted);
+  }
+
+  .dropzone-inner :global(.file-input-area) {
+    padding: 36px 16px;
   }
   
   .questions-container {

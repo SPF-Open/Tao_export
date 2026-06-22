@@ -1,6 +1,7 @@
 <script lang="ts">
   import Switch from "$lib/ui/Switch.svelte";
   import TextInput from "$lib/ui/TextInput.svelte";
+  import ZoomControl from "$lib/ui/ZoomControl.svelte";
   import {
     compareMode,
     inzage,
@@ -262,21 +263,12 @@
           </span>
           <Switch bind:checked={$multiple} />
         </div>
-                <div class="setting-row">
+        <div class="setting-row">
           <span class="setting-label">
+            <Type size={14} />
             <span>Zoom Level</span>
           </span>
-          <div class="zoom-control">
-            <input
-              type="range"
-              min="0.8"
-              max="1.5"
-              step="0.1"
-              bind:value={$zoom}
-              class="zoom-slider"
-            />
-            <span class="zoom-value">{Math.round($zoom * 100)}%</span>
-          </div>
+          <ZoomControl bind:value={$zoom} />
         </div>
         {#if $multiple}
           <div class="setting-row sub-setting">
@@ -453,49 +445,6 @@
   .sub-setting .setting-label {
     font-size: 12px;
     color: var(--text-muted);
-  }
-
-  .zoom-control {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
-
-  .zoom-slider {
-    width: 80px;
-    height: 4px;
-    -webkit-appearance: none;
-    appearance: none;
-    background: var(--border);
-    border-radius: 2px;
-    outline: none;
-  }
-
-  .zoom-slider::-webkit-slider-thumb {
-    -webkit-appearance: none;
-    appearance: none;
-    width: 14px;
-    height: 14px;
-    background: var(--accent);
-    border-radius: 50%;
-    cursor: pointer;
-  }
-
-  .zoom-slider::-moz-range-thumb {
-    width: 14px;
-    height: 14px;
-    background: var(--accent);
-    border-radius: 50%;
-    cursor: pointer;
-    border: none;
-  }
-
-  .zoom-value {
-    font-size: 12px;
-    font-weight: 500;
-    color: var(--text-muted);
-    min-width: 40px;
-    text-align: right;
   }
 
   .question-list-section {

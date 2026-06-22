@@ -18,6 +18,8 @@ export let questions = writable<QuestionType[]>([]);
 export let oldQuestions = writable<QuestionType[]>([]);
 export let examsIndex = writable<number>(0);
 export let windowName = writable<string>("TAO Export")
+// Name of the loaded source zip file(s), shown in the sidebar.
+export const sourceFileName = writable<string>("");
 
 examsIndex.subscribe((index) => {
   const ex = get(exams)

@@ -324,7 +324,7 @@
                   </div>
                   <div class="summary-item">
                     <span class="summary-label">Title Column:</span>
-                    <span class="summary-value">{$auditConfig.titleCol}</span>
+                    <span class="summary-value">{$auditConfig.columns.title}</span>
                   </div>
                   <div class="summary-item">
                     <span class="summary-label">Matching Threshold:</span>
