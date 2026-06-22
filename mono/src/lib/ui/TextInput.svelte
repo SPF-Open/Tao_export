@@ -38,17 +38,13 @@
 
   .text-input:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18);
   }
 
   .text-input:disabled {
     opacity: 0.5;
     cursor: not-allowed;
     background-color: var(--surface);
-  }
-
-  :global(.dark) .text-input:focus {
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
   }
 </style>

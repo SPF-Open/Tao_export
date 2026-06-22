@@ -48,10 +48,10 @@
 
 <style>
   .question {
-    font-family: "Source Sans Pro";
+    font-family: var(--font-family);
     display: flex;
     flex-direction: column;
-    border: 3px solid #007f9f;
+    border: 3px solid var(--primary);
     margin: 30px 10px;
     margin-top: 0;
     min-width: 700px;
@@ -63,8 +63,8 @@
 
   .title {
     padding: 1px 0px 3px 5px;
-    background-color: #007f9f;
-    color: white;
+    background-color: var(--primary);
+    color: var(--primary-foreground);
     font-size: 16px;
     font-weight: bold;
     height: fit-content;
@@ -79,7 +79,7 @@
     margin: 0;
     display: flex;
     flex-direction: column;
-    border: 6px solid #f5f4f2;
+    border: 6px solid var(--surface);
     padding: 5px;
     padding-left: 20px;
     list-style: circle;
@@ -100,9 +100,10 @@
     font-weight: bold;
     right: -22px;
     top: 0;
-    border: 2px solid #266d9c;
+    border: 2px solid var(--primary);
     padding: 2px 3px;
-    background-color: white;
+    background-color: var(--surface-elevated);
+    color: var(--text);
     width: 12px;
     text-align: center;
   }

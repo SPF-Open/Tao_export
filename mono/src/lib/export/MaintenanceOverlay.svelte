@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { onMount, onDestroy } from 'svelte';
+	import { Wrench } from 'lucide-svelte';
 
 	let { endTime }: { endTime: string | Date } = $props();
 	
@@ -48,7 +49,7 @@
 {#if isActive}
 	<div class="overlay">
 		<div class="maintenance-card">
-			<div class="icon">🔧</div>
+			<div class="icon"><Wrench size={56} strokeWidth={1.5} /></div>
 			<h1>Maintenance en cours</h1>
 			<p class="message">L'accès est temporairement verrouillé pour maintenance.</p>
 			
@@ -79,7 +80,7 @@
 		left: 0;
 		right: 0;
 		bottom: 0;
-		background: rgba(0, 0, 0, 0.95);
+		background: rgba(0, 0, 0, 0.6);
 		backdrop-filter: blur(10px);
 		display: flex;
 		align-items: center;
@@ -89,19 +90,26 @@
 	}
 
 	.maintenance-card {
-		background: linear-gradient(135deg, #1a1a1a 0%, #0a0a0a 100%);
-		border: 1px solid rgba(102, 227, 255, 0.3);
-		border-radius: 20px;
+		background: var(--surface-elevated);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-xl);
 		padding: 3rem;
 		max-width: 500px;
 		width: 100%;
 		text-align: center;
-		box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 40px rgba(102, 227, 255, 0.1);
+		box-shadow: var(--shadow-xl), 0 0 40px rgba(var(--brand-rgb), 0.12);
 	}
 
 	.icon {
-		font-size: 4rem;
-		margin-bottom: 1rem;
+		display: grid;
+		place-items: center;
+		width: 96px;
+		height: 96px;
+		margin: 0 auto 1.25rem;
+		border-radius: var(--radius-xl);
+		color: var(--brand);
+		background: rgba(var(--brand-rgb), 0.1);
+		border: 1px solid rgba(var(--brand-rgb), 0.22);
 		animation: pulse 2s ease-in-out infinite;
 	}
 
@@ -111,8 +119,8 @@
 			opacity: 1;
 		}
 		50% {
-			transform: scale(1.1);
-			opacity: 0.8;
+			transform: scale(1.06);
+			opacity: 0.85;
 		}
 	}
 
@@ -120,12 +128,12 @@
 		margin: 0 0 1rem 0;
 		font-size: 2rem;
 		font-weight: 700;
-		color: rgba(255, 255, 255, 0.95);
+		color: var(--text);
 	}
 
 	.message {
 		margin: 0 0 2rem 0;
-		color: rgba(255, 255, 255, 0.7);
+		color: var(--text-muted);
 		font-size: 1rem;
 		line-height: 1.5;
 	}
@@ -148,24 +156,27 @@
 	.value {
 		font-size: 3rem;
 		font-weight: 700;
-		color: #66e3ff;
-		text-shadow: 0 0 20px rgba(102, 227, 255, 0.5);
+		color: var(--brand);
 		font-variant-numeric: tabular-nums;
 		min-width: 60px;
 	}
 
 	.label {
 		font-size: 0.75rem;
-		color: rgba(255, 255, 255, 0.5);
+		color: var(--text-muted);
 		text-transform: uppercase;
 		letter-spacing: 0.1em;
 	}
 
 	.separator {
 		font-size: 2.5rem;
-		color: rgba(102, 227, 255, 0.6);
+		color: rgba(var(--brand-rgb), 0.6);
 		font-weight: 300;
 		margin-bottom: 1.5rem;
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.icon { animation: none; }
 	}
 </style>
 

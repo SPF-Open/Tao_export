@@ -11,3 +11,6 @@ export { default as Numeric } from "./Numeric.svelte";
 export { default as Files } from "./Files.svelte";
 export { default as RadioGroup } from "./RadioGroup.svelte";
 export { default as Combobox } from "./Combobox.svelte";
+export { default as DotCanvas } from "./DotCanvas.svelte";
+export { default as PageHeader } from "./PageHeader.svelte";
+export { default as EmptyState } from "./EmptyState.svelte";

@@ -104,12 +104,8 @@
   }
 
   .radio-input:focus-visible + .radio-dot {
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.15);
-    border-color: var(--primary);
-  }
-
-  :global(.dark) .radio-input:focus-visible + .radio-dot {
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.15);
+    box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.25);
+    border-color: var(--brand);
   }
 
   .radio-text {

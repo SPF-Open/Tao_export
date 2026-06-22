@@ -68,10 +68,10 @@
   }
 
   .stat.qo :global(svg) {
-    color: #8b5cf6;
+    color: var(--primary);
   }
 
   .stat.qcm :global(svg) {
-    color: #10b981;
+    color: var(--success);
   }
 </style>

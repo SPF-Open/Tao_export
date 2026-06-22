@@ -22,10 +22,23 @@ hover/focus. When in doubt, calmer and more monochrome.
 `--bg --surface --surface-elevated --border --border-strong --text --text-muted`,
 `--radius / --radius-lg / --radius-xl`, `--shadow-sm..xl`. Font: **Inter**.
 
-**Brand accent (single, theme-aware).** Define per-view and reference as
-`rgba(var(--brand-rgb), …)`:
+**Brand accent (single, theme-aware, GLOBAL).** Defined once in `layout.css` and
+inherited app-wide — `--primary` and `--accent` both flow from `--brand`, so the
+whole UI is one accent. Reference tints as `rgba(var(--brand-rgb), …)`:
 - Light: indigo `--brand: #4f46e5` → `--brand-rgb: 79, 70, 229`
 - Dark:  emerald `--brand: #34d399` → `--brand-rgb: 52, 211, 153`
+- Emerald is light, so in `.dark` `--primary-foreground`/`--accent-foreground`
+  flip to near-black (`#0a0a0a`) for text on accent backgrounds.
+
+**Shared building blocks (reuse — do not recreate).** `lib/ui/` primitives plus:
+- `DotCanvas.svelte` — the mouse-reactive dot-grid background (props: `gap`,
+  `glow`, `interactive`).
+- `PageHeader.svelte` — standard route header: `icon` (lucide), `eyebrow`,
+  `title`, `subtitle`, `align`, `actions` snippet. Use on every inner route.
+- `EmptyState.svelte` — centered icon + title + description + `children` slot,
+  with brand halo. Use for dropzone/empty views.
+- `icon` props are typed `ComponentType` (lucide icons are not the new `Component`
+  functional type — using `Component<…>` fails svelte-check).
 
 **Iconography.** Use **lucide-svelte** line icons (`size=20`, `strokeWidth=1.75`),
 never emoji. Icon tiles sit on `--surface` with a `--border` hairline and
@@ -33,8 +46,8 @@ never emoji. Icon tiles sit on `--surface` with a `--border` hairline and
 `rgba(var(--brand-rgb),0.08)` tint.
 
 **Signature elements.**
-- *Dot-grid canvas background* (`.dot-bg`): mouse-reactive glow, dots colored with
-  the accent (indigo light / emerald dark). Decorative, `aria-hidden`.
+- *Dot-grid canvas background*: use `<DotCanvas />`. Mouse-reactive glow, dots
+  colored with the accent (indigo light / emerald dark). Decorative, `aria-hidden`.
 - *Brand halo*: one soft radial glow in the accent — never multiple colored orbs.
 - *Logomark*: a ringed triad of dots (echoes the dot grid) in brand color; the
   `TAO` wordmark is solid `--text`, weight 700, letter-spacing `-0.045em`.
@@ -44,6 +57,8 @@ never emoji. Icon tiles sit on `--surface` with a `--border` hairline and
   `onpointermove` handler), and an `ArrowUpRight` that slides in.
 - *Entrance*: staggered `rise` keyframe (fade + `translateY(16px)`),
   `cubic-bezier(0.22, 1, 0.36, 1)`, `animation-delay: i * 70ms`.
+- *Print artifacts*: `@media print` borders stay hardcoded `#000` (no token
+  resolves black in dark-mode print). Restyle screen UI to tokens, not print ink.
 
 **Accessibility.** Every animation must be disabled under
 `@media (prefers-reduced-motion: reduce)`. Interactive elements get a

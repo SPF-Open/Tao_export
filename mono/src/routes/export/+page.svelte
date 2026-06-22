@@ -5,6 +5,8 @@
   import Question from "$lib/export/template/Question.svelte";
   import AuditTab from "$lib/export/audit/AuditTab.svelte";
   import TextInput from "$lib/ui/TextInput.svelte";
+  import { EmptyState } from "$lib/ui";
+  import { FileArchive } from "lucide-svelte";
   import { sidebarEnabled } from "$lib/sidebar";
   import { showDocsStore, showChangelogStore } from "$lib/about";
 
@@ -224,11 +226,17 @@
         </div>
       {:else if $exams.length === 0}
         <div class="dropzone-center">
-          <div class="dropzone-inner">
-            <h2>Import a TAO export</h2>
-            <p>Upload the .zip package exported from TAO to preview and export it.</p>
-            <ZipDropZone />
-          </div>
+          <EmptyState
+            icon={FileArchive}
+            title="Import a TAO export"
+            description="Upload the .zip package exported from TAO to preview and export it."
+          >
+            {#snippet children()}
+              <div class="dropzone-inner">
+                <ZipDropZone />
+              </div>
+            {/snippet}
+          </EmptyState>
         </div>
       {:else}
         <div class="questions-container" style="zoom:{$zoom};">
@@ -391,23 +399,7 @@
   .dropzone-inner {
     width: 100%;
     max-width: 480px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    text-align: center;
-  }
-
-  .dropzone-inner h2 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .dropzone-inner p {
-    margin: 0 0 12px 0;
-    font-size: 13px;
-    color: var(--text-muted);
+    margin: 0 auto;
   }
 
   .dropzone-inner :global(.file-input-area) {

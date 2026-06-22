@@ -42,11 +42,13 @@
     position: fixed;
     inset: 0;
     background-color: rgba(0, 0, 0, 0.45);
+    backdrop-filter: blur(2px);
     z-index: 100;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 1rem;
+    animation: modal-fade 150ms ease;
   }
 
   .modal-panel {
@@ -59,6 +61,22 @@
     max-height: 90vh;
     width: 100%;
     overflow: hidden;
+    animation: modal-rise 180ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  @keyframes modal-fade {
+    from { opacity: 0; }
+    to   { opacity: 1; }
+  }
+
+  @keyframes modal-rise {
+    from { opacity: 0; transform: translateY(8px) scale(0.98); }
+    to   { opacity: 1; transform: translateY(0) scale(1); }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .modal-backdrop,
+    .modal-panel { animation: none; }
   }
 
   .size-sm  { max-width: 400px; }

@@ -9,6 +9,7 @@
     TextArea,
     Tooltip,
   } from "$lib/ui";
+  import { Search } from "lucide-svelte";
   import type { PageInfo } from "$lib/iat/store";
   import { visibleColumns, colorRules } from "./DynamicTable";
   import { read, utils, write } from "xlsx";
@@ -444,7 +445,9 @@
               </td>
             {/each}
             <td class="hide-print">
-              <Button variant="ghost" onclick={() => openModal(row)}>🔍</Button>
+              <Button variant="ghost" onclick={() => openModal(row)}>
+                <Search size={15} />
+              </Button>
             </td>
           {/if}
         </tr>

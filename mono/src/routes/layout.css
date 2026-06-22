@@ -13,9 +13,15 @@
   --border-strong: #d1d5db;
   --text: #111827;
   --text-muted: #6b7280;
-  --accent: #000000;
+
+  /* Brand accent — single, theme-aware. Light: indigo. Dark: emerald (see .dark). */
+  --brand: #4f46e5;
+  --brand-rgb: 79, 70, 229;
+
+  /* Interactive accents now flow from --brand for a unified look across the app. */
+  --accent: var(--brand);
   --accent-foreground: #ffffff;
-  --primary: #1d4ed8;
+  --primary: var(--brand);
   --primary-foreground: #ffffff;
   --danger: #dc2626;
   --danger-foreground: #ffffff;
@@ -23,6 +29,11 @@
   --success-foreground: #ffffff;
   --warning: #ca8a04;
   --warning-foreground: #ffffff;
+
+  /* Severity scale (used by previews now; audit suite later). */
+  --severity-critical: #dc2626;
+  --severity-major: #f97316;
+  --severity-minor: #ca8a04;
 
   --radius: 6px;
   --radius-lg: 8px;
@@ -50,16 +61,24 @@
   --border-strong: #3f3f46;
   --text: #ffffff;
   --text-muted: #a1a1aa;
-  --accent: #ffffff;
-  --accent-foreground: #000000;
-  --primary: #2563eb;
-  --primary-foreground: #ffffff;
+
+  /* Dark brand = emerald. --accent/--primary inherit via var(--brand). */
+  --brand: #34d399;
+  --brand-rgb: 52, 211, 153;
+
+  /* Emerald is light, so text ON accent/primary backgrounds must be near-black. */
+  --accent-foreground: #0a0a0a;
+  --primary-foreground: #0a0a0a;
   --danger: #ef4444;
   --danger-foreground: #000000;
   --success: #22c55e;
   --success-foreground: #000000;
   --warning: #eab308;
   --warning-foreground: #000000;
+
+  --severity-critical: #ef4444;
+  --severity-major: #fb923c;
+  --severity-minor: #eab308;
 }
 
 * {

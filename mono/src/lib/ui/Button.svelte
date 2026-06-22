@@ -120,4 +120,9 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  .btn:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.35);
+  }
 </style>

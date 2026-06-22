@@ -54,8 +54,8 @@
 
   .numeric:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18);
   }
 
   .numeric:disabled {
@@ -67,9 +67,5 @@
   .sm {
     width: 4rem;
     font-size: 0.9rem;
-  }
-
-  :global(.dark) .numeric:focus {
-    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.1);
   }
 </style>

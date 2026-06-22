@@ -22,6 +22,8 @@
   } from "$lib/import/helper/store";
   import { QCM, Question } from "$lib/import/helper/question";
   import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
+  import { EmptyState } from "$lib/ui";
+  import { FileSpreadsheet } from "lucide-svelte";
 
   let questions = $state<QCM[]>([]);
   let workbook = $state<XLSX.WorkBook | undefined>(undefined);
@@ -67,6 +69,11 @@
   });
 </script>
 
+<svelte:head>
+  <title>Import — TAO</title>
+  <meta name="description" content="Import raw exam data from Excel and normalize it into a TAO export." />
+</svelte:head>
+
 <main>
   <div class="content" class:sidebar-open={$sidebarOpen}>
     {#if $sidebarOpen}
@@ -82,11 +89,17 @@
         <PreviewTao bind:QCMs={questions} bind:hideAnswer={$hideAnswer} />
       {:else}
         <div class="dropzone-center">
-          <div class="dropzone-inner">
-            <h2>Import a question file</h2>
-            <p>Upload an Excel workbook to generate a TAO export.</p>
-            <DropZone />
-          </div>
+          <EmptyState
+            icon={FileSpreadsheet}
+            title="Import a question file"
+            description="Upload an Excel workbook to generate a TAO export."
+          >
+            {#snippet children()}
+              <div class="dropzone-inner">
+                <DropZone />
+              </div>
+            {/snippet}
+          </EmptyState>
         </div>
       {/if}
     </div>
@@ -145,23 +158,7 @@
   .dropzone-inner {
     width: 100%;
     max-width: 480px;
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-    text-align: center;
-  }
-
-  .dropzone-inner h2 {
-    margin: 0;
-    font-size: 18px;
-    font-weight: 600;
-    color: var(--text);
-  }
-
-  .dropzone-inner p {
-    margin: 0 0 12px 0;
-    font-size: 13px;
-    color: var(--text-muted);
+    margin: 0 auto;
   }
 
   .dropzone-inner :global(.files-area) {

@@ -143,6 +143,20 @@
     box-shadow: var(--shadow);
     border: 1px solid var(--bd);
     width: fit-content;
+    margin: 0 auto;
+    overflow: hidden;
+    background: var(--surface-elevated);
+  }
+
+  .weekday {
+    font-size: 0.7rem;
+    font-weight: 600;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    background: var(--surface);
+    padding: 0.5rem 0;
+    min-height: 0;
   }
 
   .cell.sm {
@@ -184,6 +198,17 @@
     border-bottom: 1px solid var(--bd);
     font-weight: bold;
     color: var(--text-muted);
+    transition: box-shadow 150ms ease, color 150ms ease;
+  }
+
+  .day.currentMonth {
+    cursor: pointer;
+  }
+
+  .day.currentMonth:hover {
+    box-shadow: inset 0 0 0 2px rgba(var(--brand-rgb), 0.5);
+    color: var(--text);
+    z-index: 1;
   }
 
   .innerCell {

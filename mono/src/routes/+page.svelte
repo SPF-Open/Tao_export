@@ -1,5 +1,4 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
   import { slide } from 'svelte/transition';
   import {
     Bug,
@@ -11,6 +10,7 @@
     ClipboardCheck,
   } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
+  import DotCanvas from '$lib/ui/DotCanvas.svelte';
   import DebugPanel from '$lib/general/DebugPanel.svelte';
 
   let debugOpen = $state(false);
@@ -21,71 +21,6 @@
   const PAGE_TITLE = 'TAO — Exam toolkit by lv0.eu';
   const PAGE_DESC =
     'TAO is a unified exam toolkit: import raw data, forge questions, run interactive assessments, and export formatted results — all in one place.';
-
-  let canvas: HTMLCanvasElement;
-
-  onMount(() => {
-    const ctx = canvas.getContext('2d')!;
-    const GAP = 10;
-    const RADIUS = 1;
-    const GLOW_RADIUS = 70;
-    const mouse = { x: -9999, y: -9999 };
-
-    function resize() {
-      canvas.width = canvas.offsetWidth;
-      canvas.height = canvas.offsetHeight;
-    }
-
-    function draw() {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      const isDark = document.documentElement.classList.contains('dark');
-      // light: soft indigo  |  dark: emerald green
-      const [cr, cg, cb] = isDark ? [52, 211, 153] : [99, 102, 241];
-
-      const cols = Math.ceil(canvas.width / GAP) + 1;
-      const rows = Math.ceil(canvas.height / GAP) + 1;
-
-      for (let row = 0; row < rows; row++) {
-        for (let col = 0; col < cols; col++) {
-          const x = col * GAP;
-          const y = row * GAP;
-          const dx = x - mouse.x;
-          const dy = y - mouse.y;
-          const dist = Math.sqrt(dx * dx + dy * dy);
-          const t = Math.max(0, 1 - dist / GLOW_RADIUS);
-          const alpha = 0.1 + t * 0.6;
-          const r2 = RADIUS + t * 1.2;
-
-          ctx.beginPath();
-          ctx.arc(x, y, r2, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(${cr},${cg},${cb},${alpha})`;
-          ctx.fill();
-        }
-      }
-      requestAnimationFrame(draw);
-    }
-
-    const ro = new ResizeObserver(resize);
-    ro.observe(canvas);
-    resize();
-    draw();
-
-    const onMouseMove = (e: MouseEvent) => {
-      const rect = canvas.getBoundingClientRect();
-      mouse.x = e.clientX - rect.left;
-      mouse.y = e.clientY - rect.top;
-    };
-    const onMouseLeave = () => { mouse.x = -9999; mouse.y = -9999; };
-
-    window.addEventListener('mousemove', onMouseMove);
-    canvas.addEventListener('mouseleave', onMouseLeave);
-
-    return () => {
-      ro.disconnect();
-      window.removeEventListener('mousemove', onMouseMove);
-      canvas.removeEventListener('mouseleave', onMouseLeave);
-    };
-  });
 
   // Track the pointer over each card so the spotlight follows the cursor.
   function onCardMove(e: PointerEvent) {
@@ -185,7 +120,7 @@
   })}</` + `script>`}
 </svelte:head>
 
-<canvas bind:this={canvas} class="dot-bg" aria-hidden="true"></canvas>
+<DotCanvas />
 <div class="halo" aria-hidden="true"></div>
 
 <main>
@@ -252,24 +187,7 @@
 </main>
 
 <style>
-  /* Single cohesive brand accent, theme-aware. */
-  :root {
-    --brand: #4f46e5;
-    --brand-rgb: 79, 70, 229;
-  }
-  :global(.dark) main {
-    --brand: #34d399;
-    --brand-rgb: 52, 211, 153;
-  }
-
-  .dot-bg {
-    position: fixed;
-    inset: 0;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    z-index: 0;
-  }
+  /* --brand / --brand-rgb are now global tokens in layout.css. */
 
   /* One restrained glow behind the hero — not a rainbow. */
   .halo {
@@ -279,13 +197,10 @@
     width: 640px;
     height: 640px;
     transform: translate(-50%, -50%);
-    background: radial-gradient(circle, rgba(79, 70, 229, 0.14), transparent 62%);
+    background: radial-gradient(circle, rgba(var(--brand-rgb), 0.14), transparent 62%);
     filter: blur(40px);
     pointer-events: none;
     z-index: 0;
-  }
-  :global(.dark) .halo {
-    background: radial-gradient(circle, rgba(52, 211, 153, 0.12), transparent 62%);
   }
 
   main {
