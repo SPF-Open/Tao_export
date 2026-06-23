@@ -2,7 +2,9 @@
   import { get } from "svelte/store";
   import * as XLSX from "xlsx";
   import Menu from "$lib/import/Menu.svelte";
-  import PreviewTao from "$lib/import/preview/PreviewTAO.svelte";
+  import QuestionPreview from "$lib/export/template/Question.svelte";
+  import { showAnswer } from "$lib/export/store";
+  import type { QuestionType } from "$lib/export/helper";
   import DropZone from "$lib/import/Input/DropZone.svelte";
   import {
     alternative,
@@ -21,12 +23,26 @@
     titleColumn,
   } from "$lib/import/helper/store";
   import { QCM, Question } from "$lib/import/helper/question";
+  import { qcmsToQuestionTypes } from "$lib/import/helper/toQuestionType";
   import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
   import { EmptyState } from "$lib/ui";
   import { FileSpreadsheet } from "lucide-svelte";
 
   let questions = $state<QCM[]>([]);
+  let renderQuestions = $state<QuestionType[]>([]);
   let workbook = $state<XLSX.WorkBook | undefined>(undefined);
+
+  // Render the import preview with the same component the export route uses by
+  // adapting the parsed QCMs into the shared QuestionType model.
+  $effect(() => {
+    renderQuestions = qcmsToQuestionTypes(questions);
+  });
+
+  // Keep the shared renderer's answer visibility in sync with the import-side
+  // "hide answers" toggle (Question.svelte / QCM.svelte read the export store).
+  $effect(() => {
+    showAnswer.set(!$hideAnswer);
+  });
 
   $effect(() => {
     sidebarEnabled.set(true);
@@ -86,7 +102,14 @@
 
     <div class="main-area">
       {#if $file}
-        <PreviewTao bind:QCMs={questions} bind:hideAnswer={$hideAnswer} />
+        <div class="questions-container">
+          {#each renderQuestions as question, i}
+            <QuestionPreview
+              {question}
+              onToggleShow={(show) => (renderQuestions[i].show = show)}
+            />
+          {/each}
+        </div>
       {:else}
         <div class="dropzone-center">
           <EmptyState
@@ -146,6 +169,11 @@
     padding: 16px;
     min-width: 0;
     overflow-x: auto;
+  }
+
+  .questions-container {
+    max-width: 1080px;
+    margin: 0 auto;
   }
 
   .dropzone-center {
