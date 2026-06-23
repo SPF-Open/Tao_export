@@ -2,6 +2,21 @@ import type { QuestionType } from "$lib/export/helper";
 import type { QCM } from "./question";
 
 /**
+ * Spreadsheet cells can carry rich text, whose string form (`.r`) is raw
+ * SpreadsheetML markup such as `<t>Question 01</t>`. That was harmless when the
+ * legacy preview rendered it via `{@html}` (the browser dropped the unknown
+ * `<t>` tag), but the shared export component renders the title as plain text,
+ * so the tags would leak through. Strip any markup to get clean plain text.
+ */
+function plainText(txt: { w?: string; r?: string; v?: string } | undefined): string {
+  if (!txt) return "";
+  const raw = txt.w ?? txt.r ?? txt.v ?? "";
+  return String(raw)
+    .replace(/<[^>]*>/g, "")
+    .trim();
+}
+
+/**
  * Adapt the import-side `QCM` model into the export-side `QuestionType` so the
  * import preview can be rendered with the exact same `Question.svelte`
  * component the export route uses. Keeping a single renderer guarantees both
@@ -18,7 +33,7 @@ export function qcmToQuestionType(qcm: QCM): QuestionType {
   promptEl.innerHTML = qcm.prompt?.toString() ?? "";
 
   return {
-    title: qcm.id?.toString() ?? "",
+    title: plainText(qcm.id),
     type: "QCM",
     prompt: [promptEl],
     answers: qcm.answers.map((answer, i) => ({
@@ -33,6 +48,7 @@ export function qcmToQuestionType(qcm: QCM): QuestionType {
     show: true,
   };
 }
+
 
 export function qcmsToQuestionTypes(qcms: QCM[]): QuestionType[] {
   return qcms.map(qcmToQuestionType);

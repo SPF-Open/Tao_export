@@ -69,8 +69,10 @@
     align-items: center;
     gap: 8px;
     padding: 5px 7px;
-    background: var(--accent);
-    color: var(--accent-foreground);
+    /* Black title bar, intentionally fixed across light/dark themes (no token
+       stays black in dark mode) and shared by the import + export previews. */
+    background: #111827;
+    color: #ffffff;
     font-size: 15px;
     font-weight: 600;
   }
@@ -84,7 +86,8 @@
   .checkbox-wrapper input {
     width: 14px;
     height: 14px;
-    accent-color: var(--accent-foreground);
+    /* On the fixed black title bar regardless of theme. */
+    accent-color: #ffffff;
     cursor: pointer;
   }
 
