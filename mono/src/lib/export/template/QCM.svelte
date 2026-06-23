@@ -127,8 +127,9 @@
     width: 24px;
     height: 24px;
     padding: 0 8px;
-    background: var(--accent);
-    color: var(--accent-foreground);
+    /* Black by default (fixed across themes), green when correct. */
+    background: #111827;
+    color: #ffffff;
     border-radius: var(--radius);
     font-size: 12px;
     font-weight: 600;
