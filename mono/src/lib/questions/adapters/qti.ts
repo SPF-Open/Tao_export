@@ -35,8 +35,10 @@ export class QtiAdapter implements AssessmentAdapter {
 				!e.filename.toLowerCase().endsWith('.css')
 		);
 
-		// Find test.xml
-		const testEntry = xmlEntries.find((e) => e.filename.includes('/tests/'));
+		// Find test.xml (entry paths may or may not have a leading slash)
+		const testEntry =
+			xmlEntries.find((e) => /(^|\/)tests\//.test(e.filename)) ??
+			xmlEntries.find((e) => e.filename.toLowerCase().endsWith('test.xml'));
 		if (!testEntry) throw new Error('No test.xml found in ZIP');
 
 		const testXmlText = await testEntry.getData(new TextWriter());
@@ -63,11 +65,14 @@ export class QtiAdapter implements AssessmentAdapter {
 
 		let overallMaxTime = 0;
 
-		// item ref map: itemId → { href, tools, informational, sectionId, testPart }
+		// Refs are linked to item files by href (the ref @identifier differs from the
+		// item file's own @identifier), so we key everything by a normalized href.
 		const itemRefMap = new Map<
 			string,
-			{ href: string; tools: TaoTools; informational: boolean; sectionId: string; testPart: string }
+			{ refId: string; tools: TaoTools; informational: boolean; sectionId: string; testPart: string }
 		>();
+		// Preserves test.xml order for placing items into sections.
+		const refOrder: { key: string; sectionId: string }[] = [];
 		const sections: Section[] = [];
 
 		for (const tp of testPartEls) {
@@ -83,10 +88,14 @@ export class QtiAdapter implements AssessmentAdapter {
 				const secMaxTime = secTl ? Number(secTl.getAttribute('maxTime') ?? 0) : undefined;
 
 				for (const ref of Array.from(sectionEl.querySelectorAll('assessmentItemRef'))) {
-					const itemId = ref.getAttribute('identifier') ?? '';
+					const refId = ref.getAttribute('identifier') ?? '';
 					const href = ref.getAttribute('href') ?? '';
+					const key = itemKey(href);
 					const { tools, informational } = parseCategory(ref.getAttribute('category'));
-					if (itemId) itemRefMap.set(itemId, { href, tools, informational, sectionId, testPart: testPartId });
+					if (key) {
+						itemRefMap.set(key, { refId, tools, informational, sectionId, testPart: testPartId });
+						refOrder.push({ key, sectionId });
+					}
 				}
 
 				sections.push({
@@ -109,9 +118,11 @@ export class QtiAdapter implements AssessmentAdapter {
 		const assets: Record<string, Asset> = {};
 		const itemAssets: Record<string, string[]> = {};
 
-		// Parse item XMLs
-		const itemXmlEntries = xmlEntries.filter((e) => e.filename.includes('/items/'));
-		const itemById = new Map<string, AssessmentItem>();
+		// Parse item XMLs (entry paths may or may not have a leading slash)
+		const itemXmlEntries = xmlEntries.filter(
+			(e) => /(^|\/)items\//.test(e.filename) || e.filename.toLowerCase().endsWith('qti.xml')
+		);
+		const itemByKey = new Map<string, AssessmentItem>();
 
 		let examLanguage: string | undefined;
 
@@ -122,6 +133,7 @@ export class QtiAdapter implements AssessmentAdapter {
 			const assessmentItemEl = doc.querySelector('assessmentItem');
 			if (!assessmentItemEl) continue;
 
+			const key = itemKey(xmlEntry.filename);
 			const itemId = assessmentItemEl.getAttribute('identifier') ?? xmlEntry.filename;
 			const itemTitle = assessmentItemEl.getAttribute('title') ?? 'unknown';
 			const itemLabel = assessmentItemEl.getAttribute('label') ?? undefined;
@@ -156,7 +168,7 @@ export class QtiAdapter implements AssessmentAdapter {
 			if (itemAssetIds.length) itemAssets[itemId] = itemAssetIds;
 
 			const item = parseItem(doc, itemId, itemTitle, itemLabel, itemAssets);
-			const ref = itemRefMap.get(itemId);
+			const ref = itemRefMap.get(key);
 			if (ref) {
 				item.metadata = {
 					...item.metadata,
@@ -164,19 +176,18 @@ export class QtiAdapter implements AssessmentAdapter {
 					informational: ref.informational || undefined
 				};
 			}
-			itemById.set(itemId, item);
+			itemByKey.set(key, item);
 		}
 
 		// Place items into sections in test.xml order
 		let allTools: TaoTools = {};
-		for (const section of sections) {
-			for (const [itemId, ref] of itemRefMap.entries()) {
-				if (ref.sectionId !== section.id) continue;
-				const item = itemById.get(itemId);
-				if (item) {
-					section.items.push(item);
-					if (item.metadata?.tools) allTools = mergeTools(allTools, item.metadata.tools);
-				}
+		const sectionById = new Map(sections.map((s) => [s.id, s]));
+		for (const { key, sectionId } of refOrder) {
+			const section = sectionById.get(sectionId);
+			const item = itemByKey.get(key);
+			if (section && item) {
+				section.items.push(item);
+				if (item.metadata?.tools) allTools = mergeTools(allTools, item.metadata.tools);
 			}
 		}
 
@@ -198,6 +209,16 @@ export class QtiAdapter implements AssessmentAdapter {
 	async write(_assessment: Assessment, _options?: AdapterWriteOptions): Promise<Blob> {
 		throw new AdapterWriteNotSupportedError(this.name);
 	}
+}
+
+/**
+ * Normalize a test.xml href ("../../items/iXXXX/qti.xml") or a ZIP entry path
+ * ("items/iXXXX/qti.xml") to a stable key ("iXXXX/qti.xml") so refs and item
+ * files can be joined regardless of relative-path prefixes.
+ */
+function itemKey(path: string): string {
+	const parts = path.split('/').filter((p) => p && p !== '..' && p !== '.');
+	return parts.slice(-2).join('/');
 }
 
 function parseItem(
