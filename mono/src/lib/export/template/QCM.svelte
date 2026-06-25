@@ -7,7 +7,7 @@
     item: AssessmentItem;
   }
 
-  let { question = $bindable() }: Props = $props();
+  let { item }: Props = $props();
 
   let inzageSelection = $state(-1);
 
