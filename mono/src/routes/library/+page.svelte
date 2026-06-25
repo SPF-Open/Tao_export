@@ -1,9 +1,10 @@
 <script lang="ts">
   import { get } from "svelte/store";
+  import { onMount } from "svelte";
   import { Library, Database, Upload, Search, TerminalSquare, FileStack } from "lucide-svelte";
   import { PageHeader } from "$lib/ui";
   import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
-  import { dbInfo, busy, ingestRunning } from "$lib/library/store";
+  import { dbInfo, busy, ingestRunning, restoreDb } from "$lib/library/store";
   import DbPanel from "$lib/library/components/DbPanel.svelte";
   import IngestPanel from "$lib/library/components/IngestPanel.svelte";
   import SearchFilters from "$lib/library/components/SearchFilters.svelte";
@@ -30,6 +31,11 @@
   $effect(() => {
     sidebarEnabled.set(true);
     return () => sidebarEnabled.set(false);
+  });
+
+  // Reattach to a persisted (OPFS) library so it survives a page refresh.
+  onMount(() => {
+    if (!get(dbInfo)) void restoreDb();
   });
 
   // Guard against accidental refresh/close when unsaved data is at risk:

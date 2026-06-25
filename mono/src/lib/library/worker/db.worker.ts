@@ -6,6 +6,7 @@ import sqlite3InitModule, {
 } from '@sqlite.org/sqlite-wasm';
 import type {
 	LibraryCommand,
+	LibraryDbInfo,
 	LibraryRequest,
 	LibraryResponse,
 	LibraryStorageMode
@@ -77,6 +78,35 @@ async function createDatabase(appVersion: string) {
 	return getInfo(db, storageMode);
 }
 
+/**
+ * Reopens the OPFS-backed database left behind by a previous session, if one
+ * exists. Returns null when storage is in-memory (nothing persisted) or no
+ * library file is present, so the UI shows the create/open state. Without this,
+ * a refresh leaves the persisted file on disk but never reattaches to it.
+ */
+async function restoreDatabase(): Promise<LibraryDbInfo | null> {
+	await ensureSqlite();
+	if (storageMode !== 'opfs' || !poolUtil) return null;
+	if (!poolUtil.getFileNames().includes(DB_FILENAME)) return null;
+
+	closeDb();
+	db = new poolUtil.OpfsSAHPoolDb(DB_FILENAME);
+	db.exec('PRAGMA foreign_keys = ON');
+
+	// Make sure it's actually one of our libraries before reporting it.
+	const hasMeta = db.selectValue(
+		"SELECT 1 FROM sqlite_master WHERE type = 'table' AND name = 'db_meta'"
+	);
+	if (!hasMeta) {
+		closeDb();
+		return null;
+	}
+
+	migrate(db);
+	syncSchemaVersion(db);
+	return getInfo(db, storageMode);
+}
+
 async function openDatabase(bytes: Uint8Array) {
 	const s = await ensureSqlite();
 	closeDb();
@@ -118,6 +148,8 @@ async function handle<C extends LibraryCommand>(
 	switch (command) {
 		case 'db:create':
 			return createDatabase((data as { appVersion?: string }).appVersion ?? '') as never;
+		case 'db:restore':
+			return (await restoreDatabase()) as never;
 		case 'db:open':
 			return openDatabase((data as { bytes: Uint8Array }).bytes) as never;
 		case 'db:export':

@@ -100,6 +100,18 @@ export async function createDb(): Promise<void> {
 	}
 }
 
+/**
+ * Reattaches to a previously-persisted OPFS library on startup. No-op (leaves
+ * `dbInfo` null) when nothing is persisted or storage is in-memory.
+ */
+export async function restoreDb(): Promise<void> {
+	const info = await run(() => libraryClient.call('db:restore', {}));
+	if (info) {
+		dbInfo.set(info);
+		await refreshFacets();
+	}
+}
+
 export async function openDb(file: File): Promise<void> {
 	const info = await run(async () => {
 		const bytes = new Uint8Array(await file.arrayBuffer());

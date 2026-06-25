@@ -194,6 +194,7 @@ export interface IngestAsset {
 /** Map of command name → { request payload, response data }. */
 export interface LibraryCommandMap {
 	'db:create': { req: { appVersion?: string }; res: LibraryDbInfo };
+	'db:restore': { req: Record<string, never>; res: LibraryDbInfo | null };
 	'db:open': { req: { bytes: Uint8Array; name?: string }; res: LibraryDbInfo };
 	'db:export': { req: Record<string, never>; res: { bytes: Uint8Array } };
 	'db:getInfo': { req: Record<string, never>; res: LibraryDbInfo };
