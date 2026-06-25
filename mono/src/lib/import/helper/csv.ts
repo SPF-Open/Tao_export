@@ -1,7 +1,7 @@
 export class CSV extends Array<Array<string | number>> {
   maxCol = 0;
 
-  constructor({ header }) {
+  constructor({ header }: { header?: string[] }) {
     super(new Array<string>(1));
     if (header) this.setHeader(header);
   }
@@ -11,7 +11,7 @@ export class CSV extends Array<Array<string | number>> {
     this.maxCol = head.length;
   }
 
-  addSequentially(s: string | number) {
+  addSequentially(s: string | number): number {
     const lastLine = this[this.length - 1];
     if (lastLine.length >= this.maxCol || this.length === 1) {
       this.push(new Array(0));

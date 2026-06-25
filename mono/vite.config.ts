@@ -3,6 +3,7 @@ import { sveltekit } from '@sveltejs/kit/vite';
 import { defineConfig } from 'vite';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
+import { generateSitemap } from './scripts/generate-sitemap.mjs';
 
 const file = fileURLToPath(new URL('package.json', import.meta.url));
 const json = readFileSync(file, 'utf8');
@@ -12,7 +13,17 @@ const timeOption = { timeZone: "Europe/Brussels" };
 
 
 export default defineConfig({
-    plugins: [tailwindcss(), sveltekit()],
+    plugins: [
+        {
+            name: 'generate-sitemap',
+            apply: 'build',
+            buildStart() {
+                generateSitemap();
+            }
+        },
+        tailwindcss(),
+        sveltekit()
+    ],
     define: {
         PKG: pkg,
         BUILD_DATE: JSON.stringify(new Date().toLocaleDateString("FR-fr", timeOption) + " - " + new Date().toLocaleTimeString("FR-fr", timeOption)),

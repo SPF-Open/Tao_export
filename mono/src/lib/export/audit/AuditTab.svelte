@@ -17,7 +17,7 @@
   } from "../store";
 
   let excelFile = $state<File | null>(null);
-  let fileInputElement: HTMLInputElement;
+  let fileInputElement: HTMLInputElement | undefined = $state();
   let availableSheets = $state<string[]>([]);
   let selectedSheet = $state("");
   let matchingThreshold = $state(0.95);
@@ -497,38 +497,6 @@
     background: rgba(220, 38, 38, 0.1);
     border: 1px solid var(--danger);
     color: var(--danger);
-  }
-
-  .sheet-selector {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .sheet-selector label {
-    font-size: 14px;
-    font-weight: 500;
-    color: var(--text);
-  }
-
-  .sheet-selector select {
-    flex: 1;
-    min-width: 150px;
-    padding: 8px 12px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    font-size: 14px;
-    background: var(--surface);
-    color: var(--text);
-    cursor: pointer;
-  }
-
-  .sheet-selector select:focus {
-    outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px var(--accent);
-    opacity: 0.5;
   }
 
   .threshold-control-group {

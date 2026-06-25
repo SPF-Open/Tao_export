@@ -49,7 +49,7 @@ export class Question {
   }
 
   static parseSheet(
-    sheet,
+    sheet: WorkSheet,
     column: {
       title: string;
       prompt: string;
@@ -63,7 +63,7 @@ export class Question {
   ) {
     let currentRow = row.offset;
     const questions: QCM[] = [];
-    let currentQuestion: QCM;
+    let currentQuestion: QCM | undefined;
 
     const previousDataInfo = {
       competency: undefined,
@@ -117,7 +117,7 @@ export class Question {
 
         questions.push(currentQuestion);
       } else {
-        currentQuestion.addAlt({
+        currentQuestion?.addAlt({
           prompt: sheet[column.prompt + currentRow],
           correct: !column.correct ?
             false :
@@ -202,3 +202,4 @@ export const langZone = (lang: string) => {
   }
   return { zone, titlePrefix };
 };
+import type { WorkSheet } from "xlsx";

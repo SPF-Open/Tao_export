@@ -1,21 +1,70 @@
 <script lang="ts">
-  import { Upload } from 'lucide-svelte';
+  import { Upload } from "lucide-svelte";
+  import { buildUnsupportedFileMessage, matchesAcceptedType, parseAccept } from "./fileAccept";
+  import { pushError } from "./notifications";
 
   interface Props {
     file?: File[];
     accept?: string;
     multiple?: boolean;
     disabled?: boolean;
+    invalidTitle?: string;
     [key: string]: any;
   }
 
-  let { file = $bindable([]), accept = "", multiple = false, disabled = false, ...rest } = $props();
+  let {
+    file = $bindable([]),
+    accept = "",
+    multiple = false,
+    disabled = false,
+    invalidTitle = "Unsupported file type",
+    ...rest
+  } = $props();
 
   let inputElement: HTMLInputElement;
+  let errorMessage = $state("");
+  let rejected = $state(false);
+  let rejectTimer: ReturnType<typeof setTimeout> | undefined;
+
+  const acceptedTypes = $derived(parseAccept(accept));
+
+  function animateRejection() {
+    rejected = false;
+    if (rejectTimer) clearTimeout(rejectTimer);
+    requestAnimationFrame(() => {
+      rejected = true;
+      rejectTimer = setTimeout(() => {
+        rejected = false;
+      }, 420);
+    });
+  }
+
+  function rejectFiles() {
+    errorMessage = buildUnsupportedFileMessage(acceptedTypes);
+    pushError(invalidTitle, errorMessage);
+    animateRejection();
+
+    if (inputElement) {
+      inputElement.value = "";
+    }
+  }
+
+  function acceptFiles(selectedFiles: File[]) {
+    if (!selectedFiles.length) return;
+
+    const invalidFiles = selectedFiles.filter((selectedFile) => !matchesAcceptedType(selectedFile, acceptedTypes));
+    if (invalidFiles.length > 0) {
+      rejectFiles();
+      return;
+    }
+
+    errorMessage = "";
+    file = multiple ? selectedFiles : [selectedFiles[0]];
+  }
 
   function handleChange(event: Event) {
     const target = event.target as HTMLInputElement;
-    file = Array.from(target.files || []);
+    acceptFiles(Array.from(target.files || []));
   }
 
   function handleDragOver(event: DragEvent) {
@@ -28,7 +77,7 @@
     event.stopPropagation();
     if (!disabled) {
       const droppedFiles = Array.from(event.dataTransfer?.files || []);
-      file = multiple ? droppedFiles : [droppedFiles[0]];
+      acceptFiles(multiple ? droppedFiles : droppedFiles.slice(0, 1));
     }
   }
 </script>
@@ -39,6 +88,7 @@
     aria-label="File upload area"
     class="file-input-area"
     class:disabled
+    class:rejected
     ondragover={handleDragOver}
     ondrop={handleDrop}
   >
@@ -50,6 +100,7 @@
       accept={accept}
       disabled={disabled}
       style="display: none"
+      {...rest}
     />
     <button
       type="button"
@@ -60,6 +111,9 @@
       <Upload size={20} />
       <span>Click to upload or drag and drop</span>
     </button>
+    {#if errorMessage}
+      <p class="file-error" role="alert">{errorMessage}</p>
+    {/if}
     {#if file.length > 0}
       <div class="file-list">
         <p class="file-count">{file.length} file{file.length !== 1 ? 's' : ''} selected</p>
@@ -92,6 +146,12 @@
     background-color: var(--surface);
   }
 
+  .file-input-area.rejected {
+    border-color: var(--danger);
+    background: color-mix(in srgb, var(--danger) 6%, var(--surface));
+    animation: reject-shake 420ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
   .file-input-area.disabled {
     opacity: 0.5;
     cursor: not-allowed;
@@ -116,9 +176,23 @@
     color: var(--text);
   }
 
+  .file-input-button:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18);
+  }
+
   .file-input-button:disabled {
     cursor: not-allowed;
     opacity: 0.5;
+  }
+
+  .file-error {
+    margin: 10px 0 0;
+    color: var(--danger);
+    font-size: 12px;
+    font-weight: 600;
+    line-height: 1.35;
+    text-align: center;
   }
 
   .file-list {
@@ -145,5 +219,29 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  @keyframes reject-shake {
+    0%, 100% {
+      transform: translateX(0);
+    }
+    18% {
+      transform: translateX(-5px);
+    }
+    36% {
+      transform: translateX(5px);
+    }
+    54% {
+      transform: translateX(-3px);
+    }
+    72% {
+      transform: translateX(3px);
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .file-input-area.rejected {
+      animation: none;
+    }
   }
 </style>

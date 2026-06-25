@@ -202,17 +202,6 @@
     color: var(--text-muted);
   }
 
-  .switch-row {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 8px;
-    font-size: var(--font-size-base);
-    color: var(--text);
-    cursor: pointer;
-    user-select: none;
-  }
-
   .bottom {
     display: flex;
     flex-direction: column;

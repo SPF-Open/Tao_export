@@ -9,6 +9,7 @@
 	import { Sun, Moon, Menu, Info, FileText } from "lucide-svelte";
 	import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
 	import { showDocsStore, showChangelogStore } from "$lib/about";
+	import NotificationQueue from "$lib/ui/NotificationQueue.svelte";
 
 	let { children } = $props();
 
@@ -127,6 +128,7 @@
 </header>
 
 {@render children()}
+<NotificationQueue />
 
 <style>
 	.layout-header {

@@ -122,9 +122,10 @@ const translations = {
 };
 
 let currentLanguage: "en" | "nl" | "fr" = "en";
+const dictionary = translations as Record<string, Record<string, string>>;
 
 export function t(key: string, params?: Record<string, string | number>): string {
-  let text = translations[currentLanguage][key] || key;
+  let text = dictionary[currentLanguage]?.[key] || key;
   if (params) {
     Object.keys(params).forEach((param) => {
       text = text.replace(`{{${param}}}`, String(params[param]));

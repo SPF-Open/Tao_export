@@ -11,6 +11,7 @@
 
 <span
   class="tooltip-anchor"
+  role="presentation"
   onmouseenter={() => (visible = true)}
   onmouseleave={() => (visible = false)}
   onfocus={() => (visible = true)}

@@ -4,12 +4,13 @@
     footer?: import('svelte').Snippet;
     children?: import('svelte').Snippet;
     status?: "success" | "danger" | "warning" | "info";
+    size?: "sm" | "md" | "lg";
   }
 
-  let { title, footer, children, status }: Props = $props();
+  let { title, footer, children, status, size = "md" }: Props = $props();
 </script>
 
-<div class="card" class:status-success={status === 'success'} class:status-danger={status === 'danger'} class:status-warning={status === 'warning'} class:status-info={status === 'info'}>
+<div class="card size-{size}" class:status-success={status === 'success'} class:status-danger={status === 'danger'} class:status-warning={status === 'warning'} class:status-info={status === 'info'}>
   {#if title}
     <div class="card-title">
       {@render title()}
@@ -51,6 +52,14 @@
   .card-body {
     padding: 12px 14px;
     color: var(--text);
+  }
+
+  .size-sm .card-body {
+    padding: 8px 10px;
+  }
+
+  .size-lg .card-body {
+    padding: 16px 18px;
   }
 
   .card-footer {

@@ -58,31 +58,9 @@
   });
 </script>
 
-<FileInput bind:file={files} accept=".zip" multiple={$multiple} />
 
-{#if loading}
-  <p class="dz-status">Reading ZIP…</p>
-{/if}
-{#if loadError}
-  <p class="dz-error">{loadError}</p>
-{/if}
-
-<style>
-  .dz-status {
-    margin: 12px 0 0;
-    font-size: 13px;
-    color: var(--text-muted);
-    text-align: center;
-  }
-
-  .dz-error {
-    margin: 12px 0 0;
-    padding: 8px 12px;
-    font-size: 13px;
-    color: var(--danger, #dc2626);
-    background: rgba(220, 38, 38, 0.08);
-    border: 1px solid rgba(220, 38, 38, 0.3);
-    border-radius: var(--radius);
-    text-align: center;
-  }
-</style>
+<FileInput
+  bind:file={files}
+  accept=".zip,application/zip,application/x-zip-compressed"
+  multiple={$multiple}
+/>

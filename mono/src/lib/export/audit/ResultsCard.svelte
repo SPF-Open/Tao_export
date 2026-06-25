@@ -6,16 +6,37 @@ https://svelte.dev/e/component_invalid_directive -->
 https://svelte.dev/e/component_invalid_directive -->
 <script lang="ts">
   import { ChevronDown } from 'lucide-svelte';
-  import type { AuditIssue } from './types';
+
+  interface AuditIssue {
+    severity: string;
+    excelRow?: number;
+    excelTitle?: string;
+    qtiTitle?: string;
+    errors: Array<{
+      type: string;
+      expected?: string | number;
+      actual?: string | number;
+      message?: string;
+    }>;
+    metadata?: {
+      excelAnswerCount?: number;
+      qtiAnswerCount?: number;
+      matchingScore?: number;
+    };
+  }
 
   interface Props {
     issue: AuditIssue;
     expanded?: boolean;
   }
 
-  const { issue, expanded = false } = $props<Props>();
+  let { issue, expanded = false }: Props = $props();
 
-  let isExpanded = $state(expanded);
+  let isExpanded = $state(false);
+
+  $effect(() => {
+    isExpanded = expanded;
+  });
 
   // Determine severity color
   const severityColors: Record<string, string> = {
@@ -30,17 +51,10 @@ https://svelte.dev/e/component_invalid_directive -->
     MINEUR: 'ℹ️ Minor',
   };
 
-  function highlightDiff(original: string, current: string): string {
-    if (original === current) return original;
-    
-    // Simple diff: wrap different parts in spans
-    // In a real app, you'd use a proper diff library
-    return `<span class="diff-removed">${original}</span> → <span class="diff-added">${current}</span>`;
-  }
 </script>
 
 <div class="result-card" class:expanded={isExpanded} style="--severity-color: {severityColors[issue.severity] || '#6b7280'};">
-  <div class="card-header" onclick={() => isExpanded = !isExpanded} role="button" tabindex="0">
+  <button class="card-header" type="button" onclick={() => isExpanded = !isExpanded}>
     <div class="severity-indicator">
       <span class="severity-badge" title={issue.severity}>
         {severityLabels[issue.severity] || issue.severity}
@@ -55,9 +69,9 @@ https://svelte.dev/e/component_invalid_directive -->
     </div>
 
     <div class="card-toggle">
-      <ChevronDown size={18} class:rotated={isExpanded} />
+      <ChevronDown size={18} class={isExpanded ? 'rotated' : ''} />
     </div>
-  </div>
+  </button>
 
   {#if isExpanded}
     <div class="card-content">
@@ -133,11 +147,15 @@ https://svelte.dev/e/component_invalid_directive -->
 
   .card-header {
     display: flex;
+    width: 100%;
     align-items: center;
     gap: 12px;
     padding: 14px;
+    border: 0;
+    background: transparent;
     cursor: pointer;
     user-select: none;
+    text-align: left;
   }
 
   .card-header:hover {
@@ -319,20 +337,6 @@ https://svelte.dev/e/component_invalid_directive -->
     font-weight: 600;
     color: var(--text);
     font-family: 'Courier New', monospace;
-  }
-
-  .diff-removed {
-    background: rgba(239, 68, 68, 0.2);
-    color: #dc2626;
-    padding: 0 2px;
-    border-radius: 2px;
-  }
-
-  .diff-added {
-    background: rgba(34, 197, 94, 0.2);
-    color: #16a34a;
-    padding: 0 2px;
-    border-radius: 2px;
   }
 
   @media (max-width: 900px) {

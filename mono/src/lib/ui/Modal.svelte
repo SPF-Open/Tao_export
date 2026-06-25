@@ -13,10 +13,24 @@
 </script>
 
 {#if open}
-  <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-  <div class="modal-backdrop" onclick={() => (open = false)}>
-    <!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-    <div class="modal-panel size-{size}" onclick={(e) => e.stopPropagation()} role="dialog" aria-modal="true">
+  <div
+    class="modal-backdrop"
+    role="button"
+    tabindex="0"
+    aria-label="Close modal"
+    onclick={() => (open = false)}
+    onkeydown={(event) => {
+      if (event.key === "Enter" || event.key === " ") open = false;
+    }}
+  >
+    <div
+      class="modal-panel size-{size}"
+      onclick={(e) => e.stopPropagation()}
+      onkeydown={(e) => e.stopPropagation()}
+      role="dialog"
+      aria-modal="true"
+      tabindex="-1"
+    >
       <div class="modal-header">
         <div class="modal-header-content">
           {@render title?.()}
@@ -49,6 +63,8 @@
     justify-content: center;
     padding: 1rem;
     animation: modal-fade 150ms ease;
+    cursor: default;
+    text-align: left;
   }
 
   .modal-panel {

@@ -376,7 +376,7 @@
             <th rowspan="2" class="group-border"
               >{col.label}
               {#if col.tooltip}
-                <ToolTip>{col.tooltip}</ToolTip>
+                <Tooltip>{col.tooltip}</Tooltip>
               {/if}
             </th>
           {/if}
@@ -404,7 +404,7 @@
               <th class={getGroupBorderClass(colId)}>
                 {colMap[colId].label}
                 {#if colMap[colId].tooltip}
-                  <ToolTip>{colMap[colId].tooltip}</ToolTip>
+                  <Tooltip>{colMap[colId].tooltip}</Tooltip>
                 {/if}
               </th>
             {/if}
