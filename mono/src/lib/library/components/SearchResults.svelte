@@ -108,4 +108,7 @@
   .pager button:disabled { opacity: 0.4; cursor: not-allowed; }
   .pager button:hover:not(:disabled) { border-color: var(--border-strong); }
   @media (prefers-reduced-motion: reduce) { .result:hover { transform: none; } }
+  @media (max-width: 640px) {
+    .pager button { width: 44px; height: 44px; }
+  }
 </style>

@@ -95,31 +95,33 @@
           ? (yearOffset > 0 ? "+" : "") + yearOffset
           : ""}
       </h2>
-      <div class="grid" style="--nbRow:{rows}}">
-        {#each weekOfTheDay[$lang] as day}
-          <div class="weekday cell {size}">{day}</div>
-        {/each}
-        {#each days as day}
-          <div
-            class="day cell {size}"
-            class:currentMonth={day.isCurrentMonth || showNonCurrentMonth}
-            role="button"
-            tabindex="0"
-            onclick={() => onDayClick(day)}
-            onkeydown={(event) => {
-              if (event.key === "Enter" || event.key === " ") onDayClick(day);
-            }}
-            style="background:{day.bg};"
-          >
-            <div class="innerCell" style="border-color:{day.bd}">
-              <span> {day.day}</span>
-              <span>{day.text}</span>
+      <div class="grid-scroll">
+        <div class="grid" style="--nbRow:{rows}}">
+          {#each weekOfTheDay[$lang] as day}
+            <div class="weekday cell {size}">{day}</div>
+          {/each}
+          {#each days as day}
+            <div
+              class="day cell {size}"
+              class:currentMonth={day.isCurrentMonth || showNonCurrentMonth}
+              role="button"
+              tabindex="0"
+              onclick={() => onDayClick(day)}
+              onkeydown={(event) => {
+                if (event.key === "Enter" || event.key === " ") onDayClick(day);
+              }}
+              style="background:{day.bg};"
+            >
+              <div class="innerCell" style="border-color:{day.bd}">
+                <span> {day.day}</span>
+                <span>{day.text}</span>
+              </div>
+              {#if day.menu && (day.isCurrentMonth || showNonCurrentMonth)}
+                <DayMenu {day} onClose={() => onDayClick(day, false)} />
+              {/if}
             </div>
-            {#if day.menu && (day.isCurrentMonth || showNonCurrentMonth)}
-              <DayMenu {day} onClose={() => onDayClick(day, false)} />
-            {/if}
-          </div>
-        {/each}
+          {/each}
+        </div>
       </div>
     
   {/snippet}
@@ -140,6 +142,12 @@
     gap: 0.5rem;
     font-size: var(--font-size-base);
     color: var(--text-muted);
+  }
+
+  .grid-scroll {
+    max-width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
   }
 
   .grid {

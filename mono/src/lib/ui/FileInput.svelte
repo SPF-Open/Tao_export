@@ -298,4 +298,14 @@
       transition: none;
     }
   }
+
+  @media (max-width: 640px) {
+    .file-input-button {
+      min-height: 44px;
+      padding: 12px 8px;
+    }
+    .file-toggle {
+      min-height: 36px;
+    }
+  }
 </style>

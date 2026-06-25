@@ -196,7 +196,11 @@
 
   /* Work area */
   .work { display: grid; grid-template-columns: 220px 1fr; gap: 1rem; margin-top: 1rem; }
-  @media (max-width: 720px) { .work { grid-template-columns: 1fr; } }
+  @media (max-width: 640px) {
+    .work { grid-template-columns: 1fr; }
+    .run { min-height: 44px; }
+    .editor { font-size: 16px; }
+  }
 
   .examples h3 { display: inline-flex; align-items: center; gap: 0.4rem; margin: 0 0 0.5rem; font-size: 0.75rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
   .examples ul { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }

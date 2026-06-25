@@ -154,4 +154,11 @@
     background-color: var(--surface);
     flex-shrink: 0;
   }
+
+  /* Phones: use almost the full width and a larger close target. */
+  @media (max-width: 640px) {
+    .modal-backdrop { padding: 8px; }
+    .modal-body { padding: 12px; }
+    .modal-close { width: 40px; height: 40px; }
+  }
 </style>

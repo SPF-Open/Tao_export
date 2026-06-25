@@ -512,6 +512,8 @@
   /* Table */
   .table-wrap {
     overflow-x: auto;
+    max-width: 100%;
+    -webkit-overflow-scrolling: touch;
   }
 
   .data-table {
@@ -558,6 +560,12 @@
     display: grid;
     grid-template-columns: repeat(5, auto);
     gap: 0.4rem 0.75rem;
+  }
+
+  @media (max-width: 640px) {
+    .switches {
+      grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    }
   }
 
   .switch-label {

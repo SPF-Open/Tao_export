@@ -125,4 +125,11 @@
     outline: none;
     box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.35);
   }
+
+  @media (max-width: 640px) {
+    .btn {
+      min-height: 44px;
+      padding: 10px 18px;
+    }
+  }
 </style>

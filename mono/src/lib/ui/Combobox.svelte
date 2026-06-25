@@ -69,4 +69,12 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  @media (max-width: 640px) {
+    .combobox-select {
+      min-height: 44px;
+      padding: 8px 10px;
+      font-size: 16px;
+    }
+  }
 </style>

@@ -587,4 +587,26 @@
     border-color: var(--accent);
     box-shadow: 0 0 0 2px var(--accent-alpha);
   }
+
+  /* Mobile: sidebar drawer + stack comparison + keep tables scrollable. */
+  @media (max-width: 640px) {
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: var(--layout-header-height);
+      width: min(86vw, var(--sidebar-width));
+      z-index: 60;
+      box-shadow: var(--shadow-xl);
+      animation: slideInRight 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .main-area { padding: 0 12px; }
+    .compare-wrapper { flex-direction: column; }
+    .compare-selector { flex-direction: column; align-items: stretch; }
+    .mapping-table { overflow-x: auto; }
+    .exam-select { min-height: 44px; }
+    .mode-btn { min-height: 44px; }
+  }
+  @media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+    .sidebar { animation: none; }
+  }
 </style>

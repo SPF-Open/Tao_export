@@ -199,4 +199,23 @@
   .panel { animation: fade 200ms ease; max-width: 960px; }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .panel { animation: none; } }
+
+  /* Mobile: the sidebar becomes an overlay drawer above the backdrop. */
+  @media (max-width: 640px) {
+    .sidebar {
+      position: fixed;
+      left: 0;
+      top: var(--layout-header-height);
+      width: min(86vw, var(--sidebar-width));
+      z-index: 60;
+      box-shadow: var(--shadow-xl);
+      animation: slideInRight 200ms cubic-bezier(0.22, 1, 0.36, 1);
+    }
+    .main-area { padding: 0 12px 2rem; }
+    .mode-btn { min-height: 44px; }
+    .query-btn { min-height: 44px; }
+  }
+  @media (max-width: 640px) and (prefers-reduced-motion: reduce) {
+    .sidebar { animation: none; }
+  }
 </style>
