@@ -10,6 +10,18 @@
 	import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
 	import { showDocsStore, showChangelogStore } from "$lib/about";
 	import NotificationQueue from "$lib/ui/NotificationQueue.svelte";
+	import Modal from "$lib/ui/Modal.svelte";
+	import LicenseActivation from "$lib/license/LicenseActivation.svelte";
+	import LicenseGate from "$lib/license/LicenseGate.svelte";
+	import { PAYWALL_ENABLED } from "$lib/license/config";
+	import {
+		clearLicense,
+		initializeLicense,
+		licenseDialogOpen,
+		licenseDisplayName,
+		licenseState
+	} from "$lib/license/store";
+	import { formatLicenseExpiry } from "$lib/license/crypto";
 
 	let { children } = $props();
 
@@ -39,6 +51,11 @@
 	};
 
 	let appName = $derived(APP_NAMES[page.url.pathname] ?? null);
+	let protectedRoute = $derived(appName !== null);
+
+	$effect(() => {
+		initializeLicense();
+	});
 </script>
 
 <header class="layout-header hide-print">
@@ -108,7 +125,38 @@
 							<span class="info-label">Build</span>
 							<span class="info-value">{BUILD_DATE}</span>
 						</div>
+						{#if $licenseState.status === 'valid'}
+							<div class="info-row">
+								<span class="info-label">License</span>
+								<span class="info-value">{licenseDisplayName($licenseState.payload)}</span>
+							</div>
+							<div class="info-row">
+								<span class="info-label">Expires</span>
+								<span class="info-value">{formatLicenseExpiry($licenseState.payload.exp)}</span>
+							</div>
+						{/if}
 					</div>
+					{#if PAYWALL_ENABLED}
+						<div class="about-menu-divider"></div>
+						<button
+							class="about-menu-item"
+							role="menuitem"
+							onclick={() => { licenseDialogOpen.set(true); showAbout = false; }}
+						>
+							<FileText size={13} />
+							<span>{$licenseState.status === 'valid' ? 'Change license' : 'Activate license'}</span>
+						</button>
+						{#if $licenseState.status === 'valid'}
+							<button
+								class="about-menu-item"
+								role="menuitem"
+								onclick={() => { clearLicense(); showAbout = false; }}
+							>
+								<FileText size={13} />
+								<span>Remove license</span>
+							</button>
+						{/if}
+					{/if}
 				</div>
 			{/if}
 		</div>
@@ -127,7 +175,22 @@
 	</div>
 </header>
 
-{@render children()}
+{#if protectedRoute}
+	<LicenseGate>
+		{@render children()}
+	</LicenseGate>
+{:else}
+	{@render children()}
+{/if}
+
+<Modal bind:open={$licenseDialogOpen} size="md">
+	{#snippet title()}
+		<span>TAO license</span>
+	{/snippet}
+	{#snippet children()}
+		<LicenseActivation compact />
+	{/snippet}
+</Modal>
 <NotificationQueue />
 
 <style>
@@ -238,7 +301,7 @@
 		border: 1px solid var(--border);
 		border-radius: var(--radius-lg);
 		box-shadow: var(--shadow-lg);
-		min-width: 170px;
+		min-width: 230px;
 		z-index: 300;
 		display: flex;
 		flex-direction: column;
@@ -296,6 +359,11 @@
 		font-weight: 600;
 		color: var(--text);
 		font-family: monospace;
+		text-align: right;
+		max-width: 120px;
+		overflow: hidden;
+		text-overflow: ellipsis;
+		white-space: nowrap;
 	}
 
 	@keyframes fadeIn {
