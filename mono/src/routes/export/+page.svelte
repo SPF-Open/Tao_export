@@ -74,7 +74,6 @@
   function toggleItemShow(itemId: string, show: boolean) {
     showItems.update(m => { const u = new Map(m); u.set(itemId, show); return u; });
   }
-
   function isItemVisible(itemId: string, itemType: string): boolean {
     if (itemType === 'instruction' && !$showInstruction) {
       return $showItems.get(itemId) === true;
@@ -85,16 +84,23 @@
   $effect(() => {
     const visible = $showInstruction;
     const items = $activeItems;
-    const map = new Map($showItems);
+    const map = new Map(get(showItems));
     let changed = false;
+
     for (const item of items) {
       if (item.type !== 'instruction') continue;
+
       if (!visible) {
-        if (map.get(item.id) !== false) { map.set(item.id, false); changed = true; }
-      } else {
-        if (map.has(item.id)) { map.delete(item.id); changed = true; }
+        if (map.get(item.id) !== false) {
+          map.set(item.id, false);
+          changed = true;
+        }
+      } else if (map.has(item.id)) {
+        map.delete(item.id);
+        changed = true;
       }
     }
+
     if (changed) showItems.set(map);
   });
 

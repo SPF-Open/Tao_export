@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { activeItems, showItems, showInstruction } from "./store";
+  import { activeItems, showItems } from "./store";
   import { FileText, Grid } from 'lucide-svelte';
 
   let checked = true;
