@@ -1,14 +1,13 @@
 <script lang="ts">
   import { run } from 'svelte/legacy';
-
-  import type { QuestionType } from '../helper';
+  import type { AssessmentItem } from '$lib/questions/types.js';
   import { showLetter, showAnswer, inzage } from '../store';
 
   interface Props {
-    question: QuestionType;
+    item: AssessmentItem;
   }
 
-  let { question }: Props = $props();
+  let { item }: Props = $props();
 
   let inzageSelection = $state(-1);
 
@@ -19,23 +18,29 @@
   });
 
   const onClick = (n: number) => {
+    const options = item.responses?.[0]?.options ?? [];
     if (inzageSelection == n) {
       inzageSelection = -1;
-    }
-    else if ($inzage && !question.answers[n].correct) {
+    } else if ($inzage && !options[n]?.correct) {
       inzageSelection = n;
     }
   };
+
+  function getScore(optId: string): number | string {
+    const mapping = item.responses?.[0]?.mapping;
+    if (mapping && optId in mapping) return mapping[optId];
+    const scoring = item.scoring?.rules?.find(r => r.answerId === optId);
+    return scoring?.score ?? 0;
+  }
 </script>
 
 <ul class="answers" class:alpha={$showLetter}>
-  {#each question.answers as answer, n}
-    {@const { txt, point, correct } = answer}
+  {#each item.responses?.[0]?.options ?? [] as option, n}
     <!-- svelte-ignore a11y_click_events_have_key_events -->
     <!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
     <li
-      class:correct={(correct && $showAnswer && !$inzage) ||
-        (inzage && inzageSelection === n)}
+      class:correct={(option.correct && $showAnswer && !$inzage) ||
+        ($inzage && inzageSelection === n)}
       class="answer"
       onclick={() => onClick(n)}
     >
@@ -43,10 +48,10 @@
         {$showLetter ? String.fromCharCode(65 + n) : n + 1}
       </div>
       <div class="answer-text">
-        {@html txt}
+        {@html option.content.html ?? option.content.text ?? ''}
       </div>
       {#if $showAnswer}
-        <div class="points">{point || 0}</div>
+        <div class="points">{getScore(option.id)}</div>
       {/if}
     </li>
   {/each}
@@ -127,7 +132,6 @@
     width: 24px;
     height: 24px;
     padding: 0 8px;
-    /* Black by default (fixed across themes), green when correct. */
     background: #111827;
     color: #ffffff;
     border-radius: var(--radius);

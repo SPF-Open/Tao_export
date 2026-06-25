@@ -4,7 +4,7 @@
   import Menu from "$lib/import/Menu.svelte";
   import QuestionPreview from "$lib/export/template/Question.svelte";
   import { showAnswer } from "$lib/export/store";
-  import type { QuestionType } from "$lib/export/helper";
+  import type { AssessmentItem } from "$lib/questions/types.js";
   import DropZone from "$lib/import/Input/DropZone.svelte";
   import {
     alternative,
@@ -23,19 +23,19 @@
     titleColumn,
   } from "$lib/import/helper/store";
   import { QCM, Question } from "$lib/import/helper/question";
-  import { qcmsToQuestionTypes } from "$lib/import/helper/toQuestionType";
+  import { qcmsToAssessmentItems } from "$lib/import/helper/toQuestionType";
   import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
   import { EmptyState } from "$lib/ui";
   import { FileSpreadsheet } from "lucide-svelte";
 
   let questions = $state<QCM[]>([]);
-  let renderQuestions = $state<QuestionType[]>([]);
+  let renderItems = $state<AssessmentItem[]>([]);
+  let itemVisibility = $state<Map<string, boolean>>(new Map());
   let workbook = $state<XLSX.WorkBook | undefined>(undefined);
 
-  // Render the import preview with the same component the export route uses by
-  // adapting the parsed QCMs into the shared QuestionType model.
   $effect(() => {
-    renderQuestions = qcmsToQuestionTypes(questions);
+    renderItems = qcmsToAssessmentItems(questions);
+    itemVisibility = new Map();
   });
 
   // Keep the shared renderer's answer visibility in sync with the import-side
@@ -103,10 +103,12 @@
     <div class="main-area">
       {#if $file}
         <div class="questions-container">
-          {#each renderQuestions as question, i}
+          {#each renderItems as item}
+            {@const show = itemVisibility.get(item.id) !== false}
             <QuestionPreview
-              {question}
-              onToggleShow={(show) => (renderQuestions[i].show = show)}
+              {item}
+              {show}
+              onToggleShow={(s) => { itemVisibility.set(item.id, s); itemVisibility = new Map(itemVisibility); }}
             />
           {/each}
         </div>

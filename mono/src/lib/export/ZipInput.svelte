@@ -1,6 +1,6 @@
 <script lang="ts">
   import {
-    exams,
+    assessments,
     resetQuestions,
     windowName,
     sourceFileName,
@@ -22,7 +22,7 @@
 
   // Clearing the file sends the user back to the centered drop zone in the main area.
   function clearFile() {
-    exams.set([]);
+    assessments.set([]);
     resetQuestions();
     windowName.set("TAO Export");
     sourceFileName.set("");
@@ -40,7 +40,7 @@
     </div>
   {/if}
 
-  {#if $exams.length > 0}
+  {#if $assessments.length > 0}
     <Button
       onclick={() => {
         if (exportFormat === 'pdf') {

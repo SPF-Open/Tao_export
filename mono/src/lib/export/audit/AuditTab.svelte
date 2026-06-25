@@ -7,7 +7,7 @@
   import AuditConfig from "./AuditConfig.svelte";
   import AuditResults from "./AuditResults.svelte";
   import {
-    questions,
+    activeItems,
     auditReport,
     auditLoading,
     auditError,
@@ -41,56 +41,27 @@
       .trim();
   }
 
-  function convertQTIQuestions(qtiQuestions: any[]): QTIQuestion[] {
-    return qtiQuestions
-      .filter((q) => {
-        if (q.type === "Instruction" || q.type === "Instruction QCM")
-          return false;
-        return true;
-      })
-      .map((q) => {
-        let promptText = "";
-
-        if (q.prompt) {
-          if (typeof q.prompt === "string") {
-            promptText = stripHtmlTags(q.prompt);
-          } else if (Array.isArray(q.prompt)) {
-            promptText = q.prompt
-              .map((el: any) => {
-                if (el && typeof el === "object" && "textContent" in el) {
-                  return (el as Element).textContent || "";
-                } else if (el && typeof el === "object" && "outerHTML" in el) {
-                  return stripHtmlTags((el as Element).outerHTML);
-                }
-                return String(el || "");
-              })
-              .join(" ")
-              .trim();
-          }
-        }
-
-        if (!promptText) {
-          promptText = stripHtmlTags(q.text || q.content || "");
-        }
-
+  function convertQTIQuestions(items: typeof $activeItems): QTIQuestion[] {
+    return items
+      .filter(item => item.type !== 'instruction')
+      .map(item => {
+        const promptText = stripHtmlTags(item.content.html ?? item.content.text ?? '');
+        const options = item.responses?.[0]?.options ?? [];
         return {
-          id: q.id || q.title || "",
-          title: q.title,
+          id: item.id,
+          title: item.title,
           prompt: promptText,
-          answers: (q.answers || []).map((a: any) => ({
-            text: stripHtmlTags(a.text || a.txt || a.content || ""),
-            correct: a.correct === true || a.correct === "true",
-            id: a.id,
+          answers: options.map(opt => ({
+            text: stripHtmlTags(opt.content.html ?? opt.content.text ?? ''),
+            correct: opt.correct === true,
+            id: opt.id,
           })),
-          type: q.type,
-          points: q.points,
-          metadata: {
-            qtiId: q.id,
-            originalType: q.type,
-          },
+          type: (item.type === 'single-choice' ? 'QCM' : item.type === 'text' ? 'QO' : undefined) as 'QCM' | 'QO' | undefined,
+          points: item.scoring?.maxScore,
+          metadata: { qtiId: item.id, originalType: item.type },
         };
       })
-      .filter((q) => q.prompt && q.prompt.length > 0);
+      .filter(q => q.prompt && q.prompt.length > 0);
   }
 
   async function handleRunAudit() {
@@ -110,7 +81,7 @@
 
     try {
       const buffer = await excelFile.arrayBuffer();
-      const qtiQs = convertQTIQuestions($questions);
+      const qtiQs = convertQTIQuestions($activeItems);
 
       if (qtiQs.length === 0) {
         auditError.set(
@@ -178,7 +149,7 @@
     };
   });
 
-  const hasQuestions = $questions && $questions.length > 0;
+  const hasQuestions = $activeItems && $activeItems.length > 0;
 </script>
 
 <div class="audit-container">
@@ -316,7 +287,7 @@
                 <div class="summary-grid">
                   <div class="summary-item">
                     <span class="summary-label">QTI Questions:</span>
-                    <span class="summary-value">{$questions.length}</span>
+                    <span class="summary-value">{$activeItems.length}</span>
                   </div>
                   <div class="summary-item">
                     <span class="summary-label">Excel Start Row:</span>

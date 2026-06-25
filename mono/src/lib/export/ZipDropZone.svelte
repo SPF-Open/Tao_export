@@ -1,26 +1,18 @@
 <script lang="ts">
-  import { ZipReader } from "@zip.js/zip.js";
-
+  import { QtiAdapter } from "$lib/questions/adapters/qti.js";
   import {
-    entryToObj,
-    readAndParseXml,
-    xmlToObj,
-    type EntryObj,
-    type QuestionType,
-  } from "./helper";
-  import {
-    exams,
+    assessments,
     examsIndex,
     multiple,
-    questions,
+    activeItems,
     resetSettings,
     windowName,
     sourceFileName,
+    pushError,
   } from "./store";
   import FileInput from "$lib/ui/FileInput.svelte";
   import { get } from "svelte/store";
 
-  let assets: EntryObj[];
   let files = $state<File[]>([]);
 
   $effect(() => {
@@ -29,59 +21,27 @@
 
     sourceFileName.set(f.map((file) => file.name).join(", "));
 
+    const adapter = new QtiAdapter();
+
     Promise.all(
       f.map(async (file) => {
-        if (file.name.split(".").pop() !== "zip")
+        if (!file.name.toLowerCase().endsWith(".zip")) {
           throw new Error("Please select a zip file");
-
-        try {
-          const zipReader = new ZipReader(file.stream());
-          const entries = await zipReader.getEntries();
-
-          assets = entries
-            .filter(
-              (entry) =>
-                !entry.filename.toLowerCase().endsWith(".css") &&
-                !entry.filename.toLowerCase().endsWith(".xml"),
-            )
-            .map(entryToObj);
-
-          const xmls = await Promise.all(
-            entries
-              .filter(
-                (entry) =>
-                  entry.filename.toLowerCase().endsWith(".xml") &&
-                  entry.filename.toLowerCase() !== "imsmanifest.xml",
-              )
-              .map(entryToObj)
-              .map((obj) => readAndParseXml(obj, assets)),
-          );
-
-          const name = file.name.replace("_", " ").split("-")[0].toUpperCase();
-
-          return {
-            questions: xmls.map(xmlToObj).filter((q) => q),
-            error: null,
-            name,
-          };
-        } catch (e) {
-          return {
-            questions: [] as QuestionType[],
-            error: e as Error,
-            name: "",
-          };
         }
-      }),
+        return adapter.read(file);
+      })
     ).then((data) => {
-      exams.set(data);
-      const q = data[get(examsIndex)];
-      if (q && q.questions && q.questions.length) {
-        questions.set(q.questions);
-        windowName.set(
-          q.name || "TAO-Export" + Math.floor(Math.random() * 1000),
-        );
+      assessments.set(data);
+      const index = get(examsIndex);
+      const active = data[index] ?? data[0];
+      if (active) {
+        activeItems.set(active.sections.flatMap(s => s.items));
+        windowName.set(active.title || "TAO-Export" + Math.floor(Math.random() * 1000));
       }
+    }).catch((e) => {
+      pushError("ZIP Load Error", String(e?.message ?? e));
     });
+
     resetSettings();
   });
 </script>
