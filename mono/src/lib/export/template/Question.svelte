@@ -27,10 +27,7 @@
       </label>
       <span class="title-text">{item.title}</span>
     </div>
-    <div
-      class="prompt"
-      class:grid-row={item.type === 'instruction'}
-    >
+    <div class="prompt">
       {@html item.content.html ?? ''}
       {#if item.type === 'text' && item.responses?.[0]?.constraints?.maxLength}
         <p class="maxChar">{item.responses[0].constraints.maxLength} caractères maximum.</p>
@@ -91,7 +88,9 @@
     line-height: 1.5;
   }
 
-  .grid-row {
+  /* Each QTI grid-row is its own full-width row that stacks vertically;
+     its col-* children lay out as columns within that row. */
+  .prompt :global(.grid-row) {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
