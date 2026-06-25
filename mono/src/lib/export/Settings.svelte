@@ -178,6 +178,27 @@
           </span>
           <Switch bind:checked={$showInstruction} />
         </div>
+        {#if !$showInstruction}
+          {@const instructions = $activeItems.filter(i => i.type === 'instruction')}
+          {#if instructions.length}
+            <ul class="instruction-overrides">
+              {#each instructions as item (item.id)}
+                <li>
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={$showItems.get(item.id) === true}
+                      onchange={(e) => {
+                        showItems.update(m => { const u = new Map(m); u.set(item.id, e.currentTarget.checked); return u; });
+                      }}
+                    />
+                    <span>{item.title || item.label || item.id}</span>
+                  </label>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        {/if}
         <div class="setting-row">
           <span class="setting-label">
             <List size={14} />
@@ -541,6 +562,22 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .instruction-overrides {
+    list-style: none;
+    margin: 4px 0 8px;
+    padding: 6px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .instruction-overrides li {
+    display: flex;
   }
 
   .checkbox-label {

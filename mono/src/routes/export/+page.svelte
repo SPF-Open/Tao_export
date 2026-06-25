@@ -76,9 +76,27 @@
   }
 
   function isItemVisible(itemId: string, itemType: string): boolean {
-    if (itemType === 'instruction' && !$showInstruction) return false;
+    if (itemType === 'instruction' && !$showInstruction) {
+      return $showItems.get(itemId) === true;
+    }
     return $showItems.get(itemId) !== false;
   }
+
+  $effect(() => {
+    const visible = $showInstruction;
+    const items = $activeItems;
+    const map = new Map($showItems);
+    let changed = false;
+    for (const item of items) {
+      if (item.type !== 'instruction') continue;
+      if (!visible) {
+        if (map.get(item.id) !== false) { map.set(item.id, false); changed = true; }
+      } else {
+        if (map.has(item.id)) { map.delete(item.id); changed = true; }
+      }
+    }
+    if (changed) showItems.set(map);
+  });
 
   $effect(() => {
     sidebarEnabled.set(true);
