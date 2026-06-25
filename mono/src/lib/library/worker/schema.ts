@@ -104,13 +104,14 @@ CREATE VIRTUAL TABLE questions_fts USING fts5(
 );
 `;
 
-/** A single forward migration step. */
-interface Migration {
+/** A single forward migration step (upgrades the DB to `version`). */
+export interface Migration {
 	version: number;
 	up: (db: Database) => void;
 }
 
-const MIGRATIONS: Migration[] = [
+/** Ordered list of migrations shipped with this build. */
+export const MIGRATIONS: Migration[] = [
 	{
 		version: 1,
 		up: (db) => {
@@ -133,11 +134,12 @@ function setUserVersion(db: Database, version: number): void {
 /**
  * Applies every migration whose version is greater than the DB's current
  * `user_version`, in order, each in its own transaction. Returns the resulting
- * schema version. Safe to call on every open.
+ * schema version. Safe to call on every open. The `migrations` list is
+ * injectable for testing; production always uses {@link MIGRATIONS}.
  */
-export function migrate(db: Database): number {
+export function migrate(db: Database, migrations: Migration[] = MIGRATIONS): number {
 	let current = getUserVersion(db);
-	for (const m of MIGRATIONS) {
+	for (const m of migrations) {
 		if (m.version <= current) continue;
 		db.exec('BEGIN');
 		try {

@@ -1,9 +1,9 @@
 <script lang="ts">
-  import DOMPurify from "dompurify";
   import { Search, Timer, ChevronLeft, ChevronRight, FileQuestion } from "lucide-svelte";
   import { Combobox, EmptyState, TextInput } from "$lib/ui";
   import type { ItemType } from "$lib/questions/types.js";
   import type { LibraryQuestion, LibrarySearchFilters } from "$lib/library/types.js";
+  import { sanitizeSnippet } from "$lib/library/sanitize";
   import { dbInfo, facets, searchResponse, runSearch, getQuestion } from "$lib/library/store";
   import QuestionDetailModal from "./QuestionDetailModal.svelte";
 
@@ -71,7 +71,7 @@
   const totalPages = $derived(response ? Math.max(1, Math.ceil(response.total / LIMIT)) : 1);
 
   function cleanSnippet(html: string): string {
-    return DOMPurify.sanitize(html, { ALLOWED_TAGS: ["mark", "b", "i", "em", "strong"], ALLOWED_ATTR: [] });
+    return sanitizeSnippet(html);
   }
 
   async function open(id: number) {

@@ -47,8 +47,16 @@ function toIngestQuestion(
 	fallbackLanguage: string,
 	rawXmlByIdentifier: Map<string, string>
 ): IngestQuestion {
-	const promptHtml = item.content.html ?? '';
-	const answers = toAnswers(item);
+	const rawAnswers = toAnswers(item);
+
+	// QtiAdapter replaces <img src> with session-only blob: URLs that don't
+	// survive serialization. Rewrite them to a stable `asset:<filename>` scheme
+	// (in document order, matching item.assets) so the detail view can re-link
+	// them to the bytes stored in the DB.
+	const relink = makeBlobRelinker(item.assets ?? []);
+	const promptHtml = relink(item.content.html ?? '');
+	const answers = rawAnswers.map((a) => ({ ...a, textHtml: relink(a.textHtml) }));
+
 	const answerText = answers
 		.map((a) => a.textText)
 		.filter(Boolean)
@@ -90,6 +98,19 @@ function toAnswers(item: AssessmentItem): LibraryAnswer[] {
 	return answers;
 }
 
+/**
+ * Returns a function that replaces each `blob:` image src with `asset:<filename>`,
+ * consuming `filenames` in order (document order, as collected by QtiAdapter).
+ */
+function makeBlobRelinker(filenames: string[]): (html: string) => string {
+	let idx = 0;
+	return (html: string) =>
+		html.replace(/(<img\b[^>]*\bsrc=")(blob:[^"]*)(")/gi, (match, pre: string, _url, post: string) => {
+			const filename = filenames[idx++];
+			return filename ? `${pre}asset:${filename}${post}` : match;
+		});
+}
+
 function buildScoreMap(item: AssessmentItem): Map<string, number> {
 	const map = new Map<string, number>();
 	for (const response of item.responses ?? []) {
@@ -119,8 +140,10 @@ async function toIngestAssets(assessment: Assessment): Promise<IngestAsset[]> {
 		const buffer = await asset.blob.arrayBuffer();
 		assets.push({
 			questionIdentifier: ownerByFilename.get(asset.id) ?? null,
-			path: asset.path,
-			mime: asset.blob.type || mimeFromPath(asset.path),
+			// Store by filename so it matches the `asset:<filename>` markers and
+			// the question's assetRefs (item.assets).
+			path: asset.id,
+			mime: asset.blob.type || mimeFromPath(asset.id),
 			bytes: new Uint8Array(buffer)
 		});
 	}

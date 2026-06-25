@@ -1,14 +1,40 @@
 <script lang="ts">
-  import DOMPurify from "dompurify";
   import { Check } from "lucide-svelte";
   import { Modal } from "$lib/ui";
   import type { LibraryQuestion } from "$lib/library/types.js";
+  import { sanitizeRich } from "$lib/library/sanitize";
+  import { loadQuestionAssetUrls } from "$lib/library/store";
 
   interface Props {
     open?: boolean;
     question?: LibraryQuestion | null;
   }
   let { open = $bindable(false), question = null }: Props = $props();
+
+  // Map of `asset:<filename>` marker → object URL for this question's images.
+  let assetUrls = $state<Map<string, string>>(new Map());
+
+  function revoke(urls: Map<string, string>) {
+    for (const url of urls.values()) URL.revokeObjectURL(url);
+  }
+
+  // Load (and clean up) asset object URLs as the shown question changes.
+  $effect(() => {
+    const q = question;
+    if (!q) return;
+    let active = true;
+    let local = new Map<string, string>();
+    void loadQuestionAssetUrls(q.id).then((urls) => {
+      if (!active) { revoke(urls); return; }
+      local = urls;
+      assetUrls = urls;
+    });
+    return () => {
+      active = false;
+      revoke(local);
+      assetUrls = new Map();
+    };
+  });
 
   const typeLabels: Record<string, string> = {
     "single-choice": "Single choice",
@@ -22,7 +48,9 @@
   };
 
   function clean(html: string): string {
-    return DOMPurify.sanitize(html);
+    let out = html;
+    for (const [marker, url] of assetUrls) out = out.split(marker).join(url);
+    return sanitizeRich(out);
   }
 </script>
 

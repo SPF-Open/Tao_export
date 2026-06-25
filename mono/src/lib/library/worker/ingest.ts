@@ -112,6 +112,37 @@ export function ingest(db: Database, payload: IngestPayload): LibraryTestImportS
 		return summary;
 	}
 
+	// Reused prepared statements — these run once per row, so preparing them a
+	// single time (instead of re-parsing the SQL on every db.exec) keeps large
+	// imports fast.
+	const lastId = db.prepare('SELECT last_insert_rowid()');
+	const rowid = (): number => {
+		lastId.reset();
+		lastId.step();
+		return lastId.getInt(0) ?? 0;
+	};
+	const insQuestion = db.prepare(
+		`INSERT INTO questions
+			(test_id, qti_identifier, title, type, prompt_html, prompt_text, answer_text, language, raw_xml, metadata_json)
+			VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`
+	);
+	const insAnswer = db.prepare(
+		`INSERT INTO answers
+			(question_id, identifier, position, text_html, text_text, score, is_correct)
+			VALUES (?, ?, ?, ?, ?, ?, ?)`
+	);
+	const insFts = db.prepare(
+		`INSERT INTO questions_fts
+			(rowid, title, prompt_text, answer_text, competency_text, indicator, metadata_text)
+			VALUES (?, ?, ?, ?, ?, ?, ?)`
+	);
+	const insQc = db.prepare(
+		`INSERT OR IGNORE INTO question_competencies (question_id, competency_id, indicator) VALUES (?, ?, ?)`
+	);
+	const insAsset = db.prepare(
+		'INSERT INTO assets (test_id, question_id, path, mime, bytes) VALUES (?, ?, ?, ?, ?)'
+	);
+
 	db.exec('BEGIN');
 	try {
 		db.exec({
@@ -128,14 +159,11 @@ export function ingest(db: Database, payload: IngestPayload): LibraryTestImportS
 				JSON.stringify(payload.metadata ?? {})
 			]
 		});
-		const testId = Number(db.selectValue('SELECT last_insert_rowid()'));
+		const testId = rowid();
 
 		for (const q of payload.questions) {
-			db.exec({
-				sql: `INSERT INTO questions
-					(test_id, qti_identifier, title, type, prompt_html, prompt_text, answer_text, language, raw_xml, metadata_json)
-					VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
-				bind: [
+			insQuestion
+				.bind([
 					testId,
 					q.qtiIdentifier,
 					q.title,
@@ -146,43 +174,25 @@ export function ingest(db: Database, payload: IngestPayload): LibraryTestImportS
 					q.language,
 					q.rawXml,
 					JSON.stringify(q.metadata ?? {})
-				]
-			});
-			const questionId = Number(db.selectValue('SELECT last_insert_rowid()'));
+				])
+				.stepReset();
+			const questionId = rowid();
 
 			for (const a of q.answers) {
-				db.exec({
-					sql: `INSERT INTO answers
-						(question_id, identifier, position, text_html, text_text, score, is_correct)
-						VALUES (?, ?, ?, ?, ?, ?, ?)`,
-					bind: [
-						questionId,
-						a.identifier,
-						a.position,
-						a.textHtml,
-						a.textText,
-						a.score,
-						a.correct ? 1 : 0
-					]
-				});
+				insAnswer
+					.bind([questionId, a.identifier, a.position, a.textHtml, a.textText, a.score, a.correct ? 1 : 0])
+					.stepReset();
 			}
 
 			for (const c of q.competencies) {
 				if (!c.code) continue;
 				const competencyId = upsertCompetency(db, c);
-				db.exec({
-					sql: `INSERT OR IGNORE INTO question_competencies
-						(question_id, competency_id, indicator) VALUES (?, ?, ?)`,
-					bind: [questionId, competencyId, c.indicator]
-				});
+				insQc.bind([questionId, competencyId, c.indicator]).stepReset();
 			}
 
 			// Keep the FTS index in sync (rowid == questions.id).
-			db.exec({
-				sql: `INSERT INTO questions_fts
-					(rowid, title, prompt_text, answer_text, competency_text, indicator, metadata_text)
-					VALUES (?, ?, ?, ?, ?, ?, ?)`,
-				bind: [
+			insFts
+				.bind([
 					questionId,
 					q.title,
 					q.promptText,
@@ -190,8 +200,8 @@ export function ingest(db: Database, payload: IngestPayload): LibraryTestImportS
 					competencyText(q),
 					indicatorText(q),
 					metadataText(q)
-				]
-			});
+				])
+				.stepReset();
 		}
 
 		// Persist assets, resolving question identifiers to ids.
@@ -204,10 +214,7 @@ export function ingest(db: Database, payload: IngestPayload): LibraryTestImportS
 				);
 				questionId = found == null ? null : Number(found);
 			}
-			db.exec({
-				sql: 'INSERT INTO assets (test_id, question_id, path, mime, bytes) VALUES (?, ?, ?, ?, ?)',
-				bind: [testId, questionId, asset.path, asset.mime, asset.bytes]
-			});
+			insAsset.bind([testId, questionId, asset.path, asset.mime, asset.bytes]).stepReset();
 		}
 
 		bumpContent(db);
@@ -215,6 +222,8 @@ export function ingest(db: Database, payload: IngestPayload): LibraryTestImportS
 	} catch (err) {
 		db.exec('ROLLBACK');
 		throw err;
+	} finally {
+		for (const stmt of [lastId, insQuestion, insAnswer, insFts, insQc, insAsset]) stmt.finalize();
 	}
 
 	const summary = baseSummary(payload, duplicateStatus, performance.now() - start);

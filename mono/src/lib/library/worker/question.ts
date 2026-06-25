@@ -1,6 +1,11 @@
 import type { Database } from '@sqlite.org/sqlite-wasm';
 import type { ItemType } from '$lib/questions/types.js';
-import type { LibraryAnswer, LibraryCompetency, LibraryQuestion } from '../types.js';
+import type {
+	LibraryAnswer,
+	LibraryAssetBlob,
+	LibraryCompetency,
+	LibraryQuestion
+} from '../types.js';
 
 /** Hydrates a single question with its answers, competencies and asset refs. */
 export function getQuestion(db: Database, id: number): LibraryQuestion {
@@ -70,4 +75,17 @@ export function getQuestion(db: Database, id: number): LibraryQuestion {
 		competencies,
 		assetRefs
 	};
+}
+
+/** Returns the raw bytes of every asset attached to a question. */
+export function getQuestionAssets(db: Database, id: number): LibraryAssetBlob[] {
+	const rows = db.selectObjects(
+		'SELECT path, mime, bytes FROM assets WHERE question_id = ?',
+		[id]
+	);
+	return rows.map((r) => ({
+		path: String(r.path ?? ''),
+		mime: String(r.mime ?? 'application/octet-stream'),
+		bytes: r.bytes instanceof Uint8Array ? r.bytes : new Uint8Array()
+	}));
 }

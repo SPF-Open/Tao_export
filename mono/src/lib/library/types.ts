@@ -188,6 +188,14 @@ export interface LibraryCommandMap {
 	'search:questions': { req: { filters: LibrarySearchFilters }; res: LibrarySearchResponse };
 	'search:facets': { req: Record<string, never>; res: LibraryFacets };
 	'question:get': { req: { id: number }; res: LibraryQuestion };
+	'question:getAssets': { req: { id: number }; res: LibraryAssetBlob[] };
+}
+
+/** An asset's raw bytes, returned for rendering question images. */
+export interface LibraryAssetBlob {
+	path: string;
+	mime: string;
+	bytes: Uint8Array;
 }
 
 export type LibraryCommand = keyof LibraryCommandMap;

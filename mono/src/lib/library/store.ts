@@ -112,6 +112,25 @@ export async function getQuestion(id: number): Promise<LibraryQuestion | null> {
 	return run(() => libraryClient.call('question:get', { id }));
 }
 
+/**
+ * Loads a question's assets and returns a map of `asset:<filename>` marker →
+ * object URL for rendering its images. Caller is responsible for revoking the
+ * returned URLs when done.
+ */
+export async function loadQuestionAssetUrls(id: number): Promise<Map<string, string>> {
+	const urls = new Map<string, string>();
+	try {
+		const assets = await libraryClient.call('question:getAssets', { id });
+		for (const a of assets) {
+			const blob = new Blob([a.bytes.slice()], { type: a.mime });
+			urls.set(`asset:${a.path}`, URL.createObjectURL(blob));
+		}
+	} catch {
+		// Assets are optional; render without images on failure.
+	}
+	return urls;
+}
+
 async function refreshFacets(): Promise<void> {
 	try {
 		facets.set(await libraryClient.call('search:facets', {}));
