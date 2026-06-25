@@ -1,5 +1,5 @@
 <script lang="ts">
-  import { questions } from "./store";
+  import { activeItems, showItems, showInstruction } from "./store";
   import { FileText, Grid } from 'lucide-svelte';
 
   let checked = true;
@@ -8,32 +8,41 @@
   $effect.pre(() => {
     if (text) {
       const qn = text.split(",").map((n) => n.trim());
-      questions.update((o) =>
-        o.map((q) => ({
-          ...q,
-          show: qn.includes(q.title.split(" ")[1]),
-        })),
-      );
+      showItems.update(m => {
+        const updated = new Map(m);
+        for (const item of $activeItems) {
+          const num = item.title.split(" ")[1];
+          updated.set(item.id, qn.includes(num));
+        }
+        return updated;
+      });
     }
   });
 
-  let container = null;
+  const qoCount = $derived($activeItems.filter(i => i.type === 'text').length);
+  const qcmCount = $derived($activeItems.filter(i => i.type === 'single-choice').length);
+  const qoVisible = $derived(
+    $activeItems.filter(i => i.type === 'text' && $showItems.get(i.id) !== false).length
+  );
+  const qcmVisible = $derived(
+    $activeItems.filter(i => i.type === 'single-choice' && $showItems.get(i.id) !== false).length
+  );
 </script>
 
-    <div class="nb-questions">
-      <span class="stat qo">
-        <FileText size={14} />
-        <span class="stat-value">{$questions.filter((q) => q.type === "QO").length}</span>
-        <span class="stat-label">QO</span>
-        <span class="stat-count">({$questions.filter((q) => q.type === "Instruction QO" && q.show).length})</span>
-      </span>
-      <span class="stat qcm">
-        <Grid size={14} />
-        <span class="stat-value">{$questions.filter((q) => q.type === "QCM").length}</span>
-        <span class="stat-label">QCM</span>
-        <span class="stat-count">({$questions.filter((q) => q.type === "QCM" && q.show).length})</span>
-      </span>
-    </div>
+<div class="nb-questions">
+  <span class="stat qo">
+    <FileText size={14} />
+    <span class="stat-value">{qoCount}</span>
+    <span class="stat-label">QO</span>
+    <span class="stat-count">({qoVisible})</span>
+  </span>
+  <span class="stat qcm">
+    <Grid size={14} />
+    <span class="stat-value">{qcmCount}</span>
+    <span class="stat-label">QCM</span>
+    <span class="stat-count">({qcmVisible})</span>
+  </span>
+</div>
 
 <style>
   .nb-questions {

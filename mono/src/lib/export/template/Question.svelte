@@ -1,21 +1,19 @@
 <script lang="ts">
-  import type { QuestionType } from '../helper';
+  import type { AssessmentItem } from '$lib/questions/types.js';
   import Qcm from './QCM.svelte';
+
   interface Props {
-    question: QuestionType;
+    item: AssessmentItem;
+    show?: boolean;
     onToggleShow?: (show: boolean) => void;
   }
 
-  let { question = $bindable(), onToggleShow }: Props = $props();
-
-  let questionDom = $state();
+  let { item, show = true, onToggleShow }: Props = $props();
 </script>
 
-{#if question.show}
+{#if show}
   <div
     class="question"
-    bind:this={questionDom}
-    class:hidePrint={!question.show}
     style="page-break-inside: avoid !important; break-inside: avoid;"
   >
     <div class="title">
@@ -23,33 +21,26 @@
         <input
           class="hide-print"
           type="checkbox"
-          checked={question.show}
+          checked={show}
           onchange={(e) => onToggleShow?.(e.currentTarget.checked)}
         />
       </label>
-      <span class="title-text">{question.title}</span>
+      <span class="title-text">{item.title}</span>
     </div>
-    <div
-      class="prompt"
-      class:grid-row={question.type.includes('Instruction')}
-    >
-      {#each question.prompt as prompt, i}
-        {@html prompt.innerHTML}
-        <p class="maxChar">
-          {question.type == 'QO' && (question.maxLenght && question.maxLenght[i])
-            ? question.maxLenght[i] + ' caractères maximum.' || ''
-            : ''}
-        </p>
-      {/each}
+    <div class="prompt">
+      {@html item.content.html ?? ''}
+      {#if item.type === 'text' && item.responses?.[0]?.constraints?.maxLength}
+        <p class="maxChar">{item.responses[0].constraints.maxLength} caractères maximum.</p>
+      {/if}
     </div>
-    {#if question.type === 'QCM' || question.type === 'Instruction QCM'}
-      <Qcm bind:question />
+    {#if item.type === 'single-choice' || item.type === 'multiple-choice'}
+      <Qcm {item} />
     {/if}
   </div>
 {:else}
   <div class="question question-hidden">
     <div class="title">
-      <span class="title-text">Question masquée: {question.title || 'sans titre'}</span>
+      <span class="title-text">Question masquée: {item.title || 'sans titre'}</span>
     </div>
   </div>
 {/if}
@@ -69,8 +60,6 @@
     align-items: center;
     gap: 8px;
     padding: 5px 7px;
-    /* Black title bar, intentionally fixed across light/dark themes (no token
-       stays black in dark mode) and shared by the import + export previews. */
     background: #111827;
     color: #ffffff;
     font-size: 15px;
@@ -86,7 +75,6 @@
   .checkbox-wrapper input {
     width: 14px;
     height: 14px;
-    /* On the fixed black title bar regardless of theme. */
     accent-color: #ffffff;
     cursor: pointer;
   }
@@ -100,7 +88,9 @@
     line-height: 1.5;
   }
 
-  .grid-row {
+  /* Each QTI grid-row is its own full-width row that stacks vertically;
+     its col-* children lay out as columns within that row. */
+  .prompt :global(.grid-row) {
     width: 100%;
     display: flex;
     flex-wrap: wrap;
@@ -121,7 +111,7 @@
     margin-bottom: 0;
   }
 
-  .maxChar{
+  .maxChar {
     margin-top: 12px;
     font-size: 12px;
     color: var(--text-muted);
@@ -132,7 +122,7 @@
       break-inside: avoid;
     }
 
-    .question-hidden{
+    .question-hidden {
       display: none;
     }
 

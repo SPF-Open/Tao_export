@@ -15,10 +15,11 @@
     randomizeAnswer,
     randomizeQuestion,
     darkMode,
-    questions,
+    activeItems,
+    showItems,
   } from "./store";
   import { slide } from "svelte/transition";
-  import type { QuestionType } from "./helper";
+  import type { AssessmentItem } from "$lib/questions/types.js";
   import {
     Eye,
     EyeOff,
@@ -91,41 +92,44 @@
   let questionListContainer: HTMLUListElement | null = $state(null);
   let itemDraggingIndex = $state(-1);
   let itemHoveredIndex = $state(-1);
-  let itemDragged: QuestionType | null = $state(null);
+  let itemDragged: AssessmentItem | null = $state(null);
   let mouseYCoordinate = $state(-1);
   let distanceTopGrabbedVsPointer = $state(-1);
 
   $effect.pre(() => {
     if (questionListText) {
       const qn = questionListText.split(",").map((n: string) => n.trim());
-      questions.update((o) =>
-        o.map((q) => ({
-          ...q,
-          show: qn.includes(q.title.split(" ")[1]),
-        })),
-      );
+      showItems.update(m => {
+        const updated = new Map(m);
+        for (const item of $activeItems) {
+          updated.set(item.id, qn.includes(item.title.split(" ")[1]));
+        }
+        return updated;
+      });
     }
   });
 
   function changeQuestionSelection() {
-    questions.update((o) =>
-      o.map((q) => ({ ...q, show: questionListChecked })),
-    );
+    showItems.update(m => {
+      const updated = new Map(m);
+      for (const item of $activeItems) {
+        updated.set(item.id, questionListChecked);
+      }
+      return updated;
+    });
   }
 
-  function toggleQuestion(index: number, value: boolean) {
-    questions.update((o) =>
-      o.map((q, i) => (i === index ? { ...q, show: value } : q)),
-    );
+  function toggleQuestion(itemId: string, value: boolean) {
+    showItems.update(m => { const u = new Map(m); u.set(itemId, value); return u; });
   }
 
   function onDragStart(
     e: DragEvent & { currentTarget: EventTarget & HTMLDivElement },
     i: number,
-    question: QuestionType,
+    item: AssessmentItem,
   ) {
     mouseYCoordinate = e.clientY;
-    itemDragged = question;
+    itemDragged = item;
     itemDraggingIndex = i;
     distanceTopGrabbedVsPointer =
       e.currentTarget.getBoundingClientRect().y - e.clientY;
@@ -137,7 +141,7 @@
       itemHoveredIndex != -1 &&
       itemDraggingIndex != itemHoveredIndex
     ) {
-      questions.update((list) => {
+      activeItems.update((list) => {
         [list[itemDraggingIndex], list[itemHoveredIndex]] = [
           list[itemHoveredIndex],
           list[itemDraggingIndex],
@@ -174,6 +178,27 @@
           </span>
           <Switch bind:checked={$showInstruction} />
         </div>
+        {#if !$showInstruction}
+          {@const instructions = $activeItems.filter(i => i.type === 'instruction')}
+          {#if instructions.length}
+            <ul class="instruction-overrides">
+              {#each instructions as item (item.id)}
+                <li>
+                  <label class="checkbox-label">
+                    <input
+                      type="checkbox"
+                      checked={$showItems.get(item.id) === true}
+                      onchange={(e) => {
+                        showItems.update(m => { const u = new Map(m); u.set(item.id, e.currentTarget.checked); return u; });
+                      }}
+                    />
+                    <span>{item.title || item.label || item.id}</span>
+                  </label>
+                </li>
+              {/each}
+            </ul>
+          {/if}
+        {/if}
         <div class="setting-row">
           <span class="setting-label">
             <List size={14} />
@@ -291,7 +316,7 @@
   </div>
 
   <!-- Question Filtering Section -->
-  {#if $questions && $questions.length}
+  {#if $activeItems && $activeItems.length}
     <div class="settings-section">
       <button
         class="section-header"
@@ -328,14 +353,14 @@
           </div>
 
           <ul class="question-list-items" bind:this={questionListContainer}>
-            {#each $questions as question, i (question.title + i)}
+            {#each $activeItems as item, i (item.id + i)}
               <li ondragover={(e) => e.preventDefault()}>
                 <label class="checkbox-label">
                   <input
                     type="checkbox"
-                    id="{question.title}-{i}"
-                    checked={question.show}
-                    onchange={(e) => toggleQuestion(i, e.currentTarget.checked)}
+                    id="{item.id}-{i}"
+                    checked={$showItems.get(item.id) !== false}
+                    onchange={(e) => toggleQuestion(item.id, e.currentTarget.checked)}
                   />
                 </label>
                 <div
@@ -343,13 +368,13 @@
                   role="button"
                   tabindex="0"
                   draggable="true"
-                  ondragstart={(e) => onDragStart(e, i, question)}
+                  ondragstart={(e) => onDragStart(e, i, item)}
                   ondragover={() => (itemHoveredIndex = i)}
                 >
                   <GripVertical size={16} />
                 </div>
-                <label for="{question.title}-{i}" class="question-title"
-                  >{question.title}</label
+                <label for="{item.id}-{i}" class="question-title"
+                  >{item.title}</label
                 >
               </li>
             {/each}
@@ -500,6 +525,22 @@
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
+  }
+
+  .instruction-overrides {
+    list-style: none;
+    margin: 4px 0 8px;
+    padding: 6px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+
+  .instruction-overrides li {
+    display: flex;
   }
 
   .checkbox-label {

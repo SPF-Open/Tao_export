@@ -1,5 +1,6 @@
 import { writable, derived, get, } from "svelte/store";
 import type { QuestionType } from "$lib/export/helper";
+import type { Assessment, AssessmentItem } from "$lib/questions/types.js";
 import { pushError as pushUiError } from "$lib/ui/notifications";
 
 export let errors = writable<{ title: string, txt: string, visible: boolean }[]>([]);
@@ -14,61 +15,59 @@ export const pushError = (title: string, txt: string) => {
   }, 5000);
 }
 
-// Assesments
-export let exams = writable<{ questions: QuestionType[], error: null | Error, name: string }[]>([])
-export let questions = writable<QuestionType[]>([]);
-export let oldQuestions = writable<QuestionType[]>([]);
+// Assessments
+export let assessments = writable<Assessment[]>([]);
+export let activeItems = writable<AssessmentItem[]>([]);
+export let oldItems = writable<AssessmentItem[]>([]);
 export let examsIndex = writable<number>(0);
-export let windowName = writable<string>("TAO Export")
-// Name of the loaded source zip file(s), shown in the sidebar.
+export let windowName = writable<string>("TAO Export");
 export const sourceFileName = writable<string>("");
 
+// Per-item visibility overrides (false = hidden by user, undefined/absent = visible)
+export const showItems = writable<Map<string, boolean>>(new Map());
+
 examsIndex.subscribe((index) => {
-  const ex = get(exams)
-  if (!ex) return
-  if (index > ex.length) {
-    index = (ex.length % index) - 1
-  }
-  const q = ex[index]
-  if (!q) return
-
-  questions.set(q.questions)
-  originalQuestionOrder = [];
-  originalQuestionIndices = new Map();
+  const list = get(assessments);
+  if (!list || index >= list.length) return;
+  const assessment = list[index];
+  if (!assessment) return;
+  const items = assessment.sections.flatMap(s => s.items);
+  activeItems.set(items);
+  oldItems.set([]);
+  showItems.set(new Map());
+  originalItemOrder = [];
+  originalItemIndices = new Map();
   originalAnswerOrders = new Map();
-  windowName.set(q.name || "TAO-Export" + Math.floor(Math.random() * 1000))
-})
+  windowName.set(assessment.title || "TAO-Export" + Math.floor(Math.random() * 1000));
+});
 
-// Assesments action
+// Actions
 
 export const resetQuestions = () => {
-  questions.set([]);
-  oldQuestions.set([]);
-}
+  activeItems.set([]);
+  oldItems.set([]);
+  showItems.set(new Map());
+};
 
 export const copyQuestion = () => {
-  oldQuestions.set(get(questions));
-}
-
+  oldItems.set(get(activeItems));
+};
 
 export const sortQuestions = () => {
   copyQuestion();
-  questions.update(() =>
-    get(questions).sort((a, b) => {
-      if (a.type.includes('Instruction') || a.type === 'Instruction QCM')
-        return 1;
-      // sort by number find after QO and QCM
+  activeItems.update(items =>
+    [...items].sort((a, b) => {
+      if (a.type === 'instruction') return 1;
+      if (b.type === 'instruction') return -1;
       const aNumber = a.title.match(/\d+/);
       const bNumber = b.title.match(/\d+/);
-      if (aNumber && bNumber) {
-        return Number(aNumber[0]) - Number(bNumber[0]);
-      }
+      if (aNumber && bNumber) return Number(aNumber[0]) - Number(bNumber[0]);
       return 0;
     })
   );
-}
+};
 
-// Menu
+// Sidebar re-export
 export { sidebarOpen as showMenu } from '$lib/sidebar';
 
 // Settings
@@ -81,22 +80,20 @@ export const compareMode = writable(false);
 export const compareExamIndex1 = writable<number>(-1);
 export const compareExamIndex2 = writable<number>(-1);
 export const zoom = writable(1);
-export const multiple = writable(false)
-export const merge = writable(false)
-export const darkMode = writable(false)
+export const multiple = writable(false);
+export const merge = writable(false);
+export const darkMode = writable(false);
 
 // ============================================================================
-// AUDIT STORES - Declared early because used in subscriber functions below
+// AUDIT STORES
 // ============================================================================
 
 import type { AuditReport, ExcelConfig } from '$lib/export/audit/types';
 import { DEFAULT_CONFIG } from '$lib/export/audit/config';
 
-// Navigation
 export type PageType = 'questions' | 'audit' | 'compare';
 export const currentPage = writable<PageType>('questions');
 
-// Audit UI state (deprecated: use currentPage instead)
 export const auditTab = writable<boolean>(false);
 export const auditLoading = writable<boolean>(false);
 export const auditReport = writable<AuditReport | null>(null);
@@ -104,7 +101,6 @@ export const auditConfig = writable<ExcelConfig>(DEFAULT_CONFIG);
 export const auditFilename = writable<string>('');
 export const auditError = writable<string | null>(null);
 
-// Reset audit state
 export const resetAudit = () => {
   auditLoading.set(false);
   auditReport.set(null);
@@ -117,9 +113,8 @@ export const resetAudit = () => {
 export const randomizeAnswer = writable(false);
 export const randomizeQuestion = writable(false);
 
-// Store original question order for mapping
-let originalQuestionOrder: QuestionType[] = [];
-let originalQuestionIndices: Map<QuestionType, number> = new Map();
+let originalItemOrder: AssessmentItem[] = [];
+let originalItemIndices: Map<AssessmentItem, number> = new Map();
 let originalAnswerOrders: Map<string, { id: string; originalIndex: number }[]> = new Map();
 
 const shuffleArray = <T>(array: T[]): T[] => {
@@ -131,160 +126,137 @@ const shuffleArray = <T>(array: T[]): T[] => {
   return shuffled;
 };
 
-const randomizeQuestions = () => {
-  const currentQuestions = get(questions);
-  if (currentQuestions.length === 0) return;
-  
-  const nonInstructions = currentQuestions.filter(q => 
-    q.type !== 'Instruction' && 
-    q.type !== 'Instruction QCM' && 
-    q.type !== 'Instruction QO'
-  );
-  
-  if (originalQuestionOrder.length === 0) {
-    originalQuestionOrder = [...currentQuestions];
-    currentQuestions.forEach((q, i) => originalQuestionIndices.set(q, i));
+const randomizeItems = () => {
+  const current = get(activeItems);
+  if (current.length === 0) return;
+
+  if (originalItemOrder.length === 0) {
+    originalItemOrder = [...current];
+    current.forEach((item, i) => originalItemIndices.set(item, i));
   }
-  
-  const instructionCount = currentQuestions.filter(q => 
-    q.type === 'Instruction' || 
-    q.type === 'Instruction QCM' || 
-    q.type === 'Instruction QO'
-  ).length;
-  
-  const shuffled = shuffleArray(nonInstructions);
-  const instructions = currentQuestions.filter(q => 
-    q.type === 'Instruction' || 
-    q.type === 'Instruction QCM' || 
-    q.type === 'Instruction QO'
-  );
-  
-  questions.set([...instructions, ...shuffled]);
+
+  const nonInstructions = current.filter(item => item.type !== 'instruction');
+  const instructions = current.filter(item => item.type === 'instruction');
+  activeItems.set([...instructions, ...shuffleArray(nonInstructions)]);
 };
 
-const unrandomizeQuestions = () => {
-  if (originalQuestionOrder.length > 0) {
-    questions.set([...originalQuestionOrder]);
+const unrandomizeItems = () => {
+  if (originalItemOrder.length > 0) {
+    activeItems.set([...originalItemOrder]);
   }
 };
 
 randomizeQuestion.subscribe((value) => {
-  if (value) {
-    randomizeQuestions();
-  } else {
-    unrandomizeQuestions();
-  }
+  if (value) randomizeItems();
+  else unrandomizeItems();
 });
 
-export const getQuestionMapping = (currentQuestions: QuestionType[]): { currentIndex: number; originalIndex: number; title: string; type: string }[] => {
-  return currentQuestions.map((q, currentIdx) => {
-    const originalIdx = originalQuestionIndices.get(q) ?? currentIdx;
-    return {
-      currentIndex: currentIdx + 1,
-      originalIndex: originalIdx + 1,
-      title: q.title,
-      type: q.type
-    };
+export const getQuestionMapping = (items: AssessmentItem[]): { currentIndex: number; originalIndex: number; title: string; type: string }[] => {
+  return items.map((item, currentIdx) => {
+    const originalIdx = originalItemIndices.get(item) ?? currentIdx;
+    return { currentIndex: currentIdx + 1, originalIndex: originalIdx + 1, title: item.title, type: item.type };
   });
 };
 
-export const questionMapping = derived([questions, randomizeQuestion, randomizeAnswer], ([$questions, $randomizeQuestion, $randomizeAnswer]) => {
-  if ((!$randomizeQuestion && !$randomizeAnswer) || $questions.length === 0) return [];
-  return getQuestionMapping($questions);
-});
-
-export const answerMapping = derived([questions, randomizeAnswer], ([$questions, $randomizeAnswer]) => {
-  if (!$randomizeAnswer || $questions.length === 0) return [];
-  return $questions
-    .filter(q => q.type === 'QCM')
-    .map(q => ({
-      title: q.title,
-      mapping: getAnswerMapping(q.title, q.answers)
-    }))
-    .filter(item => item.mapping.length > 0);
-});
-
-export const shuffleCurrentAnswers = (question: QuestionType): QuestionType => {
-  if (originalAnswerOrders.has(question.title)) {
-    const currentOrder = originalAnswerOrders.get(question.title)!;
-    const restored = currentOrder.map(order => 
-      question.answers.find(a => a.id === order.id) || question.answers[order.originalIndex]
-    ).filter(Boolean);
-    return { ...question, answers: restored as typeof question.answers };
+export const questionMapping = derived(
+  [activeItems, randomizeQuestion, randomizeAnswer],
+  ([$items, $rq, $ra]) => {
+    if ((!$rq && !$ra) || $items.length === 0) return [];
+    return getQuestionMapping($items);
   }
-  
-  const newOrder = question.answers.map((a, i) => ({ id: a.id, originalIndex: i }));
-  originalAnswerOrders.set(question.title, newOrder);
-  
-  const shuffled = shuffleArray(question.answers);
-  return { ...question, answers: shuffled };
+);
+
+export const answerMapping = derived(
+  [activeItems, randomizeAnswer],
+  ([$items, $ra]) => {
+    if (!$ra || $items.length === 0) return [];
+    return $items
+      .filter(item => item.type === 'single-choice')
+      .map(item => ({
+        title: item.title,
+        mapping: getAnswerMapping(item.title, item.responses?.[0]?.options ?? [])
+      }))
+      .filter(entry => entry.mapping.length > 0);
+  }
+);
+
+export const shuffleCurrentAnswers = (item: AssessmentItem): AssessmentItem => {
+  const resp = item.responses?.[0];
+  if (!resp?.options) return item;
+
+  if (originalAnswerOrders.has(item.title)) {
+    const order = originalAnswerOrders.get(item.title)!;
+    const restored = order
+      .map(o => resp.options!.find(a => a.id === o.id) ?? resp.options![o.originalIndex])
+      .filter(Boolean) as typeof resp.options;
+    return { ...item, responses: [{ ...resp, options: restored }, ...(item.responses?.slice(1) ?? [])] };
+  }
+
+  const newOrder = resp.options.map((a, i) => ({ id: a.id, originalIndex: i }));
+  originalAnswerOrders.set(item.title, newOrder);
+  const shuffled = shuffleArray(resp.options);
+  return { ...item, responses: [{ ...resp, options: shuffled }, ...(item.responses?.slice(1) ?? [])] };
 };
 
 randomizeAnswer.subscribe((value) => {
-  const currentQuestions = get(questions);
-  if (currentQuestions.length === 0) return;
-  
+  const current = get(activeItems);
+  if (current.length === 0) return;
+
   if (value) {
-    questions.update(qs => qs.map(q => {
-      if ((q.type === 'QCM' || q.type === 'Instruction QCM') && q.answers.length > 0) {
-        if (!originalAnswerOrders.has(q.title)) {
-          const newOrder = q.answers.map((a, i) => ({ id: a.id, originalIndex: i }));
-          originalAnswerOrders.set(q.title, newOrder);
-          const shuffled = shuffleArray(q.answers);
-          return { ...q, answers: shuffled };
+    activeItems.update(items =>
+      items.map(item => {
+        const resp = item.responses?.[0];
+        if (item.type !== 'single-choice' || !resp?.options?.length) return item;
+        if (!originalAnswerOrders.has(item.title)) {
+          const newOrder = resp.options.map((a, i) => ({ id: a.id, originalIndex: i }));
+          originalAnswerOrders.set(item.title, newOrder);
+          return { ...item, responses: [{ ...resp, options: shuffleArray(resp.options) }, ...(item.responses?.slice(1) ?? [])] };
         }
-        return q;
-      }
-      return q;
-    }));
+        return item;
+      })
+    );
   } else {
-    questions.update(qs => qs.map(q => {
-      if ((q.type === 'QCM' || q.type === 'Instruction QCM') && originalAnswerOrders.has(q.title)) {
-        const currentOrder = originalAnswerOrders.get(q.title)!;
-        const restored = currentOrder.map(order => 
-          q.answers.find(a => a.id === order.id) || q.answers[order.originalIndex]
-        ).filter(Boolean) as typeof q.answers;
-        originalAnswerOrders.delete(q.title);
-        return { ...q, answers: restored };
-      }
-      return q;
-    }));
+    activeItems.update(items =>
+      items.map(item => {
+        const resp = item.responses?.[0];
+        if (item.type !== 'single-choice' || !resp?.options) return item;
+        const order = originalAnswerOrders.get(item.title);
+        if (!order) return item;
+        const restored = order
+          .map(o => resp.options!.find(a => a.id === o.id) ?? resp.options![o.originalIndex])
+          .filter(Boolean) as typeof resp.options;
+        originalAnswerOrders.delete(item.title);
+        return { ...item, responses: [{ ...resp, options: restored }, ...(item.responses?.slice(1) ?? [])] };
+      })
+    );
   }
 });
 
-export const getAnswerMapping = (questionTitle: string, currentAnswers: { id: string }[]): { currentIndex: number; originalIndex: number; id: string }[] => {
-  const originalOrder = originalAnswerOrders.get(questionTitle);
-  if (!originalOrder) return [];
-  
-  return currentAnswers.map((answer, currentIdx) => {
-    const originalEntry = originalOrder.find(o => o.id === answer.id);
-    return {
-      currentIndex: currentIdx + 1,
-      originalIndex: (originalEntry?.originalIndex ?? currentIdx) + 1,
-      id: answer.id
-    };
+export const getAnswerMapping = (title: string, options: { id: string }[]): { currentIndex: number; originalIndex: number; id: string }[] => {
+  const original = originalAnswerOrders.get(title);
+  if (!original) return [];
+  return options.map((opt, currentIdx) => {
+    const entry = original.find(o => o.id === opt.id);
+    return { currentIndex: currentIdx + 1, originalIndex: (entry?.originalIndex ?? currentIdx) + 1, id: opt.id };
   });
 };
 
 sort.subscribe((value) => {
   if (value) {
     sortQuestions();
-    oldQuestions.update((qs) => [...qs].sort((a, b) => {
-      if (a.type.includes('Instruction') || a.type === 'Instruction QCM')
-        return 1;
-      const aNumber = a.title.match(/\d+/);
-      const bNumber = b.title.match(/\d+/);
-      if (aNumber && bNumber) {
-        return Number(aNumber[0]) - Number(bNumber[0]);
-      }
+    oldItems.update(items => [...items].sort((a, b) => {
+      if (a.type === 'instruction') return 1;
+      if (b.type === 'instruction') return -1;
+      const aNum = a.title.match(/\d+/);
+      const bNum = b.title.match(/\d+/);
+      if (aNum && bNum) return Number(aNum[0]) - Number(bNum[0]);
       return 0;
     }));
   } else {
-    questions.set(get(oldQuestions));
+    activeItems.set(get(oldItems));
   }
 });
 
-// Disable compareMode when not in multiple files mode
 multiple.subscribe((value) => {
   if (!value) {
     compareMode.set(false);
@@ -296,12 +268,11 @@ multiple.subscribe((value) => {
 
 compareMode.subscribe((value) => {
   const isMultiple = get(multiple);
-  const examsArray = get(exams);
-  
-  if (value && isMultiple && examsArray.length > 1) {
-    // Initialize exam indices if not set
+  const list = get(assessments);
+
+  if (value && isMultiple && list.length > 1) {
     if (get(compareExamIndex1) === -1) compareExamIndex1.set(0);
-    if (get(compareExamIndex2) === -1) compareExamIndex2.set(examsArray.length > 1 ? 1 : 0);
+    if (get(compareExamIndex2) === -1) compareExamIndex2.set(list.length > 1 ? 1 : 0);
     currentPage.set('compare');
   } else if (!value) {
     compareExamIndex1.set(-1);
@@ -310,52 +281,30 @@ compareMode.subscribe((value) => {
   }
 });
 
-showInstruction.subscribe((showInstruction) => {
-  questions.update((o) => o.map((q) => ({
-    ...q,
-    show:
-      q.type === 'Instruction' ||
-        q.type === 'Instruction QCM' ||
-        q.type === 'Instruction QO'
-        ? showInstruction
-        : q.show,
-  })))
-  oldQuestions.update((o) => o.map((q) => ({
-    ...q,
-    show:
-      q.type === 'Instruction' ||
-        q.type === 'Instruction QCM' ||
-        q.type === 'Instruction QO'
-        ? showInstruction
-        : q.show,
-  })))
+merge.subscribe((merge) => {
+  const list = get(assessments);
+  const index = get(examsIndex);
+  let items: AssessmentItem[] = [];
+  if (merge) items = list.flatMap(a => a.sections.flatMap(s => s.items));
+  else if (list[index]) items = list[index].sections.flatMap(s => s.items);
+  activeItems.set(items);
+  oldItems.set([]);
+  showItems.set(new Map());
+  originalItemOrder = [];
+  originalItemIndices = new Map();
+  originalAnswerOrders = new Map();
 });
 
-merge.subscribe((merge) => {
-  const ex = get(exams);
-  const index = get(examsIndex);
-  let q: QuestionType[] = []
-  if (merge) q = ex.flatMap((e) => e.questions)
-  else if (ex[index]) q = ex[index].questions
-  else q = []
-  questions.set(q)
-  originalQuestionOrder = [];
-  originalQuestionIndices = new Map();
-  originalAnswerOrders = new Map();
-})
-
-// Derived Settings
-export const settings = derived([showAnswer, showInstruction, showLetter, inzage, sort], ([$showAnswer, $showInstruction, $showLetter, $inzage, $sort]) => {
-  return {
+export const settings = derived(
+  [showAnswer, showInstruction, showLetter, inzage, sort],
+  ([$showAnswer, $showInstruction, $showLetter, $inzage, $sort]) => ({
     showAnswer: $showAnswer,
     showInstruction: $showInstruction,
     showLetter: $showLetter,
     inzage: $inzage,
     sort: $sort
-  }
-});
-
-
+  })
+);
 
 export const resetSettings = () => {
   showAnswer.set(true);
@@ -363,24 +312,12 @@ export const resetSettings = () => {
   showLetter.set(false);
   inzage.set(false);
   sort.set(false);
-}
+};
 
-
-
-// Audit stats derived from report
 export const auditStats = derived([auditReport], ([$report]) => {
   if (!$report) {
-    return {
-      total: 0,
-      matched: 0,
-      unmatched: 0,
-      bloquants: 0,
-      majeurs: 0,
-      mineurs: 0,
-      status: 'idle' as const,
-    };
+    return { total: 0, matched: 0, unmatched: 0, bloquants: 0, majeurs: 0, mineurs: 0, status: 'idle' as const };
   }
-
   return {
     total: $report.summary.total,
     matched: $report.summary.matched,

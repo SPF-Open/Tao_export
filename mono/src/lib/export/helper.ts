@@ -92,9 +92,9 @@ export type QuestionType = {
   | 'Instruction QCM'
   | 'Instruction QO'
   | 'unknown';
-  prompt: Element[];
+  prompt: string;
   answers: { txt: string; point: string; id: string; correct: boolean }[];
-  maxLenght?: string[];
+  maxLenght?: string;
   show: boolean
 };
 
@@ -103,7 +103,7 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
     return {
       title: 'unknown',
       type: 'unknown',
-      prompt: [],
+      prompt: '',
       answers: [],
       show: false
     };
@@ -134,22 +134,22 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
     return {
       title,
       type: 'Instruction',
-      prompt: Array.from(xDoc.getElementsByClassName('grid-row')),
+      prompt: Array.from(xDoc.getElementsByClassName('grid-row')).map(el => el.outerHTML).join(''),
       answers: [],
       show: true
     };
   }
 
   let answers: QuestionType['answers'] = [];
-  let prompt: HTMLCollectionOf<Element> | Element[];
+  let promptHtml = '';
   let type;
-  let maxLenght: string[] = [];
+  let maxLenght: string | undefined;
 
   const inner = Array.from(xDoc.getElementsByTagName('itemBody'))[0];
 
   if (Instructie) {
-    prompt = Array.from(xDoc.getElementsByTagName('assessmentTest'));
     type = 'Instruction';
+    promptHtml = '';
   } else if (QO) {
     if (
       ['Voorbeeld', 'Exemple'].find((t) =>
@@ -160,28 +160,13 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
     } else {
       type = 'QO';
     }
-    prompt = inner.getElementsByClassName('grid-row');
-    const maxLenghtTemp = Array
-      .from(xDoc.getElementsByTagName('extendedTextInteraction'))
-      .map(i => i.getAttribute('patternMask'))
-      .map(i => {
-        try {
-          if (i === null) return '∞';
-          return i.split(',')[1].split('}')[0];
-        } catch (e) {
-          return '∞';
-        }
-      });
-    maxLenght = [];
-    for (let index = 0; index < prompt.length; index++) {
-      const p = prompt.item(index);
-      const extendedTextInteraction = p?.getElementsByTagName('extendedTextInteraction') || [];
-
-      if (extendedTextInteraction.length > 0) {
-        maxLenght.push(maxLenghtTemp.shift() || '');
-      }
-      else {
-        maxLenght.push('');
+    promptHtml = Array.from(inner.getElementsByClassName('grid-row')).map(el => el.outerHTML).join('');
+    const firstMask = xDoc.getElementsByTagName('extendedTextInteraction')[0]?.getAttribute('patternMask');
+    if (firstMask) {
+      try {
+        maxLenght = firstMask.split(',')[1].split('}')[0];
+      } catch (_) {
+        maxLenght = '∞';
       }
     }
   } else {
@@ -195,14 +180,13 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
       type = 'QCM';
     }
 
-    prompt = Array.from(inner.getElementsByClassName('grid-row')).filter(
+    const promptRows = Array.from(inner.getElementsByClassName('grid-row')).filter(
       (d) => d.getElementsByTagName('simpleChoice').length === 0
     );
-
-    prompt = prompt.concat(Array.from(inner.getElementsByTagName('prompt')));
+    const promptEls = Array.from(inner.getElementsByTagName('prompt'));
+    promptHtml = [...promptRows, ...promptEls].map(el => el.outerHTML).join('');
 
     // Get correct answer mapping
-
     const answerMapping = Array.from(
       xDoc.getElementsByTagName('mapping')[0].children
     ).map((child) => ({
@@ -224,14 +208,10 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
     );
   }
 
-  const normalizedPrompt: Element[] = Array.isArray(prompt) 
-    ? prompt as Element[] 
-    : Array.from((prompt as any) || []);
-
   return {
     title,
     type: type as QuestionType['type'],
-    prompt: normalizedPrompt,
+    prompt: promptHtml,
     answers,
     maxLenght,
     show: true

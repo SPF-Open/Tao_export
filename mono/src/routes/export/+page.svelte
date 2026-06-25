@@ -14,11 +14,14 @@
     compareExamIndex1,
     compareExamIndex2,
     showMenu,
-    questions,
+    activeItems,
+    showItems,
+    showInstruction,
     inzage,
     zoom,
     multiple,
-    exams,
+    assessments,
+    examsIndex,
     windowName,
     randomizeQuestion,
     randomizeAnswer,
@@ -27,12 +30,14 @@
     showLetter,
     currentPage,
   } from "$lib/export/store";
+  import { JsonAdapter } from "$lib/questions/adapters/json.js";
+  import ExamToolsBadge from "$lib/questions/ExamToolsBadge.svelte";
   import ChangelogModal from "$lib/export/ChangelogModal.svelte";
   import DocumentationModal from "$lib/export/DocumentationModal.svelte";
 
   import { get } from "svelte/store";
-  
-  
+
+
   let titleHeader = $state("");
   let rrnHeader = $state("");
   let showChangelog = $state(false);
@@ -45,48 +50,13 @@
     if ($showChangelogStore) { showChangelog = true; showChangelogStore.set(false); }
   });
 
-  function exportToJson() {
-    const data = {
-      title: titleHeader || "Exported Questions",
-      rrn: rrnHeader || "",
-      questions: get(questions).map(q => {
-        const promptArray = Array.isArray(q.prompt)
-          ? q.prompt
-          : q.prompt && typeof (q.prompt as any).length === 'number'
-          ? Array.from(q.prompt as any)
-          : [q.prompt as any];
-
-        return {
-          title: q.title,
-          type: q.type,
-          prompt: promptArray
-            .map((el) => (el && (el as Element).outerHTML ? (el as Element).outerHTML : String(el)))
-            .join(''),
-          answers: q.answers.map((a) => ({
-            text: a.txt,
-            points: a.point,
-            id: a.id,
-            correct: a.correct,
-          })),
-          maxLength: q.maxLenght || [],
-          show: q.show,
-        };
-      }),
-
-      mappings: {
-        questionMapping: get(questionMapping),
-        answerMapping: get(answerMapping)
-      },
-      settings: {
-        randomizeQuestion: get(randomizeQuestion),
-        randomizeAnswer: get(randomizeAnswer),
-        showLetter: get(showLetter),
-        zoom: get(zoom),
-        inzage: get(inzage)
-      }
-    };
-
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  async function exportToJson() {
+    const list = get(assessments);
+    const index = get(examsIndex);
+    const assessment = list[index];
+    if (!assessment) return;
+    const adapter = new JsonAdapter();
+    const blob = await adapter.write(assessment);
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
@@ -101,26 +71,32 @@
     window.print();
   }
 
-  function toggleQuestion(index: number, show: boolean) {
-    questions.update((o) =>
-      o.map((q, i) => (i === index ? { ...q, show } : q)),
-    );
+  function toggleItemShow(itemId: string, show: boolean) {
+    showItems.update(m => { const u = new Map(m); u.set(itemId, show); return u; });
   }
 
-  function toggleExamQuestion(examIndex: number, index: number, show: boolean) {
-    exams.update((list) =>
-      list.map((ex, ei) =>
-        ei === examIndex
-          ? {
-              ...ex,
-              questions: ex.questions.map((q, i) =>
-                i === index ? { ...q, show } : q,
-              ),
-            }
-          : ex,
-      ),
-    );
+  function isItemVisible(itemId: string, itemType: string): boolean {
+    if (itemType === 'instruction' && !$showInstruction) {
+      return $showItems.get(itemId) === true;
+    }
+    return $showItems.get(itemId) !== false;
   }
+
+  $effect(() => {
+    const visible = $showInstruction;
+    const items = $activeItems;
+    const map = new Map($showItems);
+    let changed = false;
+    for (const item of items) {
+      if (item.type !== 'instruction') continue;
+      if (!visible) {
+        if (map.get(item.id) !== false) { map.set(item.id, false); changed = true; }
+      } else {
+        if (map.has(item.id)) { map.delete(item.id); changed = true; }
+      }
+    }
+    if (changed) showItems.set(map);
+  });
 
   $effect(() => {
     sidebarEnabled.set(true);
@@ -159,30 +135,30 @@
       {#if $currentPage === 'audit'}
         <!-- Audit View -->
         <AuditTab />
-      {:else if $currentPage === 'compare' && $multiple && $exams.length > 1 && $compareExamIndex1 >= 0 && $compareExamIndex2 >= 0}
+      {:else if $currentPage === 'compare' && $multiple && $assessments.length > 1 && $compareExamIndex1 >= 0 && $compareExamIndex2 >= 0}
         <div class="compare-wrapper">
           <!-- Exam Selector -->
           <div class="compare-selector hide-print">
             <div class="selector-group">
               <label for="exam-select-1">Test A:</label>
               <select id="exam-select-1" bind:value={$compareExamIndex1} class="exam-select">
-                {#each $exams as exam, i}
-                  <option value={i}>{exam.name || `Exam ${i + 1}`}</option>
+                {#each $assessments as a, i}
+                  <option value={i}>{a.title || `Exam ${i + 1}`}</option>
                 {/each}
               </select>
             </div>
             <div class="selector-group">
               <label for="exam-select-2">Test B:</label>
               <select id="exam-select-2" bind:value={$compareExamIndex2} class="exam-select">
-                {#each $exams as exam, i}
-                  <option value={i}>{exam.name || `Exam ${i + 1}`}</option>
+                {#each $assessments as a, i}
+                  <option value={i}>{a.title || `Exam ${i + 1}`}</option>
                 {/each}
               </select>
             </div>
           </div>
-          
+
           <div class="compare-column">
-            <div class="compare-label">{$exams[$compareExamIndex1]?.name || `Test A`}</div>
+            <div class="compare-label">{$assessments[$compareExamIndex1]?.title || `Test A`}</div>
             <div class="questions-container" style="zoom:{$zoom};">
               {#if $inzage}
                 <div class="inzage-header hide-print">
@@ -194,16 +170,14 @@
                   </div>
                 </div>
               {/if}
-              {#each $exams[$compareExamIndex1]?.questions || [] as question, i}
-                <Question
-                  {question}
-                  onToggleShow={(show) => toggleExamQuestion($compareExamIndex1, i, show)}
-                />
+              {#each $assessments[$compareExamIndex1]?.sections.flatMap(s => s.items) ?? [] as item}
+                {@const show = isItemVisible(item.id, item.type)}
+                <Question {item} {show} onToggleShow={(s) => toggleItemShow(item.id, s)} />
               {/each}
             </div>
           </div>
           <div class="compare-column">
-            <div class="compare-label">{$exams[$compareExamIndex2]?.name || `Test B`}</div>
+            <div class="compare-label">{$assessments[$compareExamIndex2]?.title || `Test B`}</div>
             <div class="questions-container" style="zoom:{$zoom};">
               {#if $inzage}
                 <div class="inzage-header hide-print">
@@ -215,16 +189,14 @@
                   </div>
                 </div>
               {/if}
-              {#each $exams[$compareExamIndex2]?.questions || [] as question, i}
-                <Question
-                  {question}
-                  onToggleShow={(show) => toggleExamQuestion($compareExamIndex2, i, show)}
-                />
+              {#each $assessments[$compareExamIndex2]?.sections.flatMap(s => s.items) ?? [] as item}
+                {@const show = isItemVisible(item.id, item.type)}
+                <Question {item} {show} onToggleShow={(s) => toggleItemShow(item.id, s)} />
               {/each}
             </div>
           </div>
         </div>
-      {:else if $exams.length === 0}
+      {:else if $assessments.length === 0}
         <div class="dropzone-center">
           <EmptyState
             icon={FileArchive}
@@ -261,16 +233,23 @@
             </div>
           {/if}
 
-          {#if $questions.length > 0}
-            {#each $questions as question, i}
-              <Question
-                {question}
-                onToggleShow={(show) => toggleQuestion(i, show)}
-              />
+          {#if $activeItems.length > 0}
+            {@const activeAssessment = $assessments[$examsIndex]}
+            {#if activeAssessment}
+              <div class="exam-header hide-print">
+                <ExamToolsBadge
+                  tools={activeAssessment.metadata.tools}
+                  timeLimits={activeAssessment.metadata.timeLimits}
+                />
+              </div>
+            {/if}
+            {#each $activeItems as item}
+              {@const show = isItemVisible(item.id, item.type)}
+              <Question {item} {show} onToggleShow={(s) => toggleItemShow(item.id, s)} />
             {/each}
           {/if}
-           
-          {#if ($randomizeQuestion || $randomizeAnswer) && $questions.length > 0}
+
+          {#if ($randomizeQuestion || $randomizeAnswer) && $activeItems.length > 0}
             <div class="mapping-table">
               <h3>Mapping</h3>
               <table class="mapping-main-table">
@@ -285,7 +264,7 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {#each $questionMapping.filter((m: { type: string }) => m.type !== 'Instruction' && m.type !== 'Instruction QCM' && m.type !== 'Instruction QO') as qm, i}
+                  {#each $questionMapping.filter((m: { type: string }) => m.type !== 'instruction') as qm}
                     {@const ansMap = $answerMapping.find((a: { title: string }) => a.title.trim() === qm.title.trim())?.mapping || []}
                     <tr>
                       {#if $randomizeQuestion}
@@ -409,6 +388,10 @@
   .questions-container {
     max-width: 1080px;
     margin: 0 auto;
+  }
+
+  .exam-header {
+    padding: 12px 0 4px;
   }
 
   .compare-wrapper {
