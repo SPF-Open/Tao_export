@@ -34,7 +34,7 @@
 </script>
 
 <div>
-<Files bind:file={$fileTemp}/>
+<Files bind:file={$fileTemp} accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel" />
 </div>
 
 <style>

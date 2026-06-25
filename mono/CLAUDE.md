@@ -63,6 +63,13 @@ never emoji. Icon tiles sit on `--surface` with a `--border` hairline and
 **Accessibility.** Every animation must be disabled under
 `@media (prefers-reduced-motion: reduce)`. Interactive elements get a
 `:focus-visible` brand ring (`box-shadow: 0 0 0 3px rgba(var(--brand-rgb),0.18)`).
+Validation rejections, especially file/dropzone rejection states, should visibly
+use the error color token (`--danger`) and a short rejection animation (for
+example a restrained shake/flash), with the animation disabled under reduced
+motion.
+Menus, popovers, dropdowns, and newly revealed items should also animate in with
+a restrained fade/slide or scale transition, and those animations must respect
+`prefers-reduced-motion`.
 
 **Brand assets & SEO.** `static/favicon.svg` (triad mark on indigo tile),
 `static/og-image.png` (1200×630, regenerate from `static/og-image.svg` with

@@ -86,4 +86,8 @@
   });
 </script>
 
-<FileInput bind:file={files} accept=".zip" multiple={$multiple} />
+<FileInput
+  bind:file={files}
+  accept=".zip,application/zip,application/x-zip-compressed"
+  multiple={$multiple}
+/>

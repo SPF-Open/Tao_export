@@ -1,11 +1,13 @@
 import { writable, derived, get, } from "svelte/store";
 import type { QuestionType } from "$lib/export/helper";
+import { pushError as pushUiError } from "$lib/ui/notifications";
 
 export let errors = writable<{ title: string, txt: string, visible: boolean }[]>([]);
 
 export const pushError = (title: string, txt: string) => {
   const obj = { txt, title, visible: true };
   errors.update(errors => [...errors, obj]);
+  pushUiError(title, txt);
   // remove error after 5 seconds
   setTimeout(() => {
     errors.update(errors => errors.filter(err => err !== obj));
