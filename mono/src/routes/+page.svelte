@@ -10,6 +10,7 @@
     Download,
     Hammer,
     ClipboardCheck,
+    Library,
     Route as RouteIcon,
   } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
@@ -89,6 +90,14 @@
       eyebrow: 'Item analysis',
       description: 'Review item difficulty, discrimination, and alternative statistics after an exam session.',
       icon: ClipboardCheck,
+      available: true,
+    },
+    {
+      path: '/library',
+      title: 'Library',
+      eyebrow: 'Question bank',
+      description: 'Build a portable SQLite question database from TAO exports, then search it instantly — all in your browser.',
+      icon: Library,
       available: true,
     },
   ];
