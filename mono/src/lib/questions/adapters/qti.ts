@@ -221,6 +221,17 @@ function itemKey(path: string): string {
 	return parts.slice(-2).join('/');
 }
 
+const instructionLikeTitles = new Set([
+	'exemple question à choix multiple',
+	'voorbeeld meerkeuzevraag'
+]);
+
+function isInstructionLikeTitle(title: string, label?: string): boolean {
+	return [title, label]
+		.filter((value): value is string => Boolean(value))
+		.some((value) => instructionLikeTitles.has(value.trim().toLowerCase()));
+}
+
 function parseItem(
 	doc: Document,
 	id: string,
@@ -233,7 +244,9 @@ function parseItem(
 	const hasMapping = doc.querySelector('mapping') !== null;
 
 	let type: ItemType;
-	if (hasChoice || hasMapping) {
+	if (isInstructionLikeTitle(title, label)) {
+		type = 'instruction';
+	} else if (hasChoice || hasMapping) {
 		const maxChoices = Number(doc.querySelector('choiceInteraction')?.getAttribute('maxChoices') ?? 1);
 		type = maxChoices > 1 ? 'multiple-choice' : 'single-choice';
 	} else if (hasExtended) {
