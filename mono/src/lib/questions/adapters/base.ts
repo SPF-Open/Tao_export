@@ -1,5 +1,5 @@
 import type { Assessment } from '../types.js';
-import type { ExcelConfig } from '$lib/export/audit/types.js';
+import type { ExcelConfig } from '$lib/audit/types.js';
 
 export interface AdapterReadOptions {
 	sheetName?: string;

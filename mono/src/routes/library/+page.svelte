@@ -2,8 +2,7 @@
   import { get } from "svelte/store";
   import { onMount } from "svelte";
   import { Library, Database, Upload, Search, TerminalSquare, FileStack } from "lucide-svelte";
-  import { PageHeader } from "$lib/ui";
-  import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
+  import { PageHeader, SidebarLayout } from "$lib/ui";
   import { dbInfo, busy, ingestRunning, restoreDb } from "$lib/library/store";
   import DbPanel from "$lib/library/components/DbPanel.svelte";
   import IngestPanel from "$lib/library/components/IngestPanel.svelte";
@@ -26,12 +25,6 @@
     ingest: "Import TAO QTI .zip exports — up to 100 at a time.",
     search: "Search the question bank instantly; refine with the filters on the left.",
   };
-
-  // This page owns the global sidebar.
-  $effect(() => {
-    sidebarEnabled.set(true);
-    return () => sidebarEnabled.set(false);
-  });
 
   // Reattach to a persisted (OPFS) library so it survives a page refresh.
   onMount(() => {
@@ -64,93 +57,63 @@
   <meta name="twitter:title" content="Library — TAO" />
 </svelte:head>
 
-<main>
-  <div class="content">
-    {#if $sidebarOpen}
-      <aside class="sidebar">
-        <div class="sidebar-content">
-          <div class="brand"><Library size={16} strokeWidth={1.9} /> <span>Library</span></div>
+<SidebarLayout sidebarLabel="Library sections">
+  {#snippet sidebar()}
+    <div class="brand"><Library size={16} strokeWidth={1.9} /> <span>Library</span></div>
 
-          <nav class="mode-switch" aria-label="Library sections">
-            {#each tabs as t (t.id)}
-              {@const Icon = t.icon}
-              <button class="mode-btn" class:active={tab === t.id} onclick={() => (tab = t.id)}
-                aria-current={tab === t.id ? "page" : undefined}>
-                <Icon size={15} strokeWidth={1.75} />
-                <span>{t.label}</span>
-                {#if t.id === "db" && $dbInfo}<span class="dot" aria-hidden="true"></span>{/if}
-              </button>
-            {/each}
-          </nav>
+    <nav class="mode-switch" aria-label="Library sections">
+      {#each tabs as t (t.id)}
+        {@const Icon = t.icon}
+        <button class="mode-btn" class:active={tab === t.id} onclick={() => (tab = t.id)}
+          aria-current={tab === t.id ? "page" : undefined}>
+          <Icon size={15} strokeWidth={1.75} />
+          <span>{t.label}</span>
+          {#if t.id === "db" && $dbInfo}<span class="dot" aria-hidden="true"></span>{/if}
+        </button>
+      {/each}
+    </nav>
 
-          {#if tab === "search"}
-            <SearchFilters />
-          {:else if tab === "db"}
-            <p class="side-hint">Manage your library file on the right. Everything stays in your browser.</p>
-          {:else}
-            <p class="side-hint">Drop TAO <code>.zip</code> exports on the right; they import through a queue.</p>
-          {/if}
-
-          <div class="divider"></div>
-
-          <button class="query-btn" onclick={() => (queryOpen = true)} disabled={!$dbInfo}>
-            <TerminalSquare size={15} strokeWidth={1.75} /> Write SQL query
-          </button>
-
-          {#if $dbInfo}
-            <div class="db-chip">
-              <FileStack size={13} strokeWidth={1.75} />
-              <span>{$dbInfo.counts.questions} questions · {$dbInfo.counts.tests} tests</span>
-            </div>
-          {/if}
-
-          {#if $busy}<span class="busy" aria-live="polite">Working…</span>{/if}
-        </div>
-      </aside>
+    {#if tab === "search"}
+      <SearchFilters />
+    {:else if tab === "db"}
+      <p class="side-hint">Manage your library file on the right. Everything stays in your browser.</p>
+    {:else}
+      <p class="side-hint">Drop TAO <code>.zip</code> exports on the right; they import through a queue.</p>
     {/if}
 
-    <div class="main-area">
-      <PageHeader
-        icon={Library}
-        eyebrow="Question bank"
-        title={tabs.find((t) => t.id === tab)?.label ?? "Library"}
-        subtitle={subtitles[tab]}
-      />
+    <div class="divider"></div>
 
-      <section class="panel">
-        {#if tab === "db"}<DbPanel />
-        {:else if tab === "ingest"}<IngestPanel />
-        {:else}<SearchResults />{/if}
-      </section>
-    </div>
-  </div>
+    <button class="query-btn" onclick={() => (queryOpen = true)} disabled={!$dbInfo}>
+      <TerminalSquare size={15} strokeWidth={1.75} /> Write SQL query
+    </button>
 
-  <QueryModal bind:open={queryOpen} />
-</main>
+    {#if $dbInfo}
+      <div class="db-chip">
+        <FileStack size={13} strokeWidth={1.75} />
+        <span>{$dbInfo.counts.questions} questions · {$dbInfo.counts.tests} tests</span>
+      </div>
+    {/if}
+
+    {#if $busy}<span class="busy" aria-live="polite">Working…</span>{/if}
+  {/snippet}
+
+  <PageHeader
+    icon={Library}
+    eyebrow="Question bank"
+    title={tabs.find((t) => t.id === tab)?.label ?? "Library"}
+    subtitle={subtitles[tab]}
+  />
+
+  <section class="panel">
+    {#if tab === "db"}<DbPanel />
+    {:else if tab === "ingest"}<IngestPanel />
+    {:else}<SearchResults />{/if}
+  </section>
+</SidebarLayout>
+
+<QueryModal bind:open={queryOpen} />
 
 <style>
-  .content {
-    display: flex;
-    flex: 1;
-    min-height: calc(100vh - var(--layout-header-height) - 40px);
-  }
-
-  .sidebar {
-    position: sticky;
-    top: var(--layout-header-height);
-    height: calc(100vh - var(--layout-header-height));
-    width: var(--sidebar-width);
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    box-shadow: var(--shadow-lg);
-    z-index: 50;
-    overflow-y: auto;
-    scrollbar-gutter: stable;
-    flex-shrink: 0;
-  }
-
-  .sidebar-content { padding: 10px; display: flex; flex-direction: column; gap: 10px; }
-
   .brand { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em; padding: 2px; }
 
   .mode-switch {
@@ -193,29 +156,12 @@
   }
   .busy { font-size: 0.78rem; color: var(--text-muted); }
 
-  .main-area { flex: 1; min-width: 0; padding: 0 16px 2rem; }
-  .main-area :global(.page-header) { margin-top: 0.5rem; }
-
   .panel { animation: fade 200ms ease; max-width: 960px; }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .panel { animation: none; } }
 
-  /* Mobile: the sidebar becomes an overlay drawer above the backdrop. */
   @media (max-width: 640px) {
-    .sidebar {
-      position: fixed;
-      left: 0;
-      top: var(--layout-header-height);
-      width: min(86vw, var(--sidebar-width));
-      z-index: 60;
-      box-shadow: var(--shadow-xl);
-      animation: slideInRight 200ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .main-area { padding: 0 12px 2rem; }
     .mode-btn { min-height: 44px; }
     .query-btn { min-height: 44px; }
-  }
-  @media (max-width: 640px) and (prefers-reduced-motion: reduce) {
-    .sidebar { animation: none; }
   }
 </style>

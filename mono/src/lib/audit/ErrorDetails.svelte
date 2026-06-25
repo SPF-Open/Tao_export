@@ -1,5 +1,6 @@
 <script lang="ts">
-  import type { MatchedPair, ComparisonError } from "../audit/types";
+  import { Check } from "lucide-svelte";
+  import type { MatchedPair, ComparisonError } from "./types";
   import HighlightedText from "./HighlightedText.svelte";
 
   interface Props {
@@ -9,22 +10,14 @@
 
   let { pair, errors }: Props = $props();
 
-  function formatValue(val: any): string {
-    if (val === null || val === undefined) return "(empty)";
-    if (typeof val === "string") return val;
-    if (typeof val === "number") return String(val);
-    if (Array.isArray(val)) return val.join(", ");
-    return JSON.stringify(val);
-  }
-
   function getSeverityColor(severity: string): string {
     switch (severity) {
       case "BLOQUANT":
-        return "var(--danger)";
+        return "var(--severity-critical)";
       case "MAJEUR":
-        return "var(--warning)";
+        return "var(--severity-major)";
       case "MINEUR":
-        return "var(--accent)";
+        return "var(--severity-minor)";
       default:
         return "var(--text-muted)";
     }
@@ -182,7 +175,7 @@
                     diffs={answerError?.detail?.qtiDiff}
                   />
                   {#if pair.qti.answers[i].correct}
-                    <span class="correct-marker">✓ Correct</span>
+                    <span class="correct-marker"><Check size={12} strokeWidth={2.5} /> Correct</span>
                   {/if}
                 {:else}
                   <span class="missing">(no answer)</span>
@@ -493,9 +486,10 @@
     display: inline-block;
     padding: 2px 8px;
     border-radius: 3px;
-    color: var(--accent-foreground);
+    color: #fff;
     font-size: 0.75em;
     font-weight: 600;
+    text-transform: capitalize;
   }
 
   .error-type {

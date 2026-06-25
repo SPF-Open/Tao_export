@@ -48,6 +48,7 @@
 		"/import": "import",
 		"/forge": "forge",
 		"/iat": "iat",
+		"/audit": "audit",
 	};
 
 	let appName = $derived(APP_NAMES[page.url.pathname] ?? null);

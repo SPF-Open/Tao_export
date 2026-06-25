@@ -71,6 +71,19 @@ Menus, popovers, dropdowns, and newly revealed items should also animate in with
 a restrained fade/slide or scale transition, and those animations must respect
 `prefers-reduced-motion`.
 
+**Page structure & layout.** Every inner tool route (`/import`, `/export`,
+`/library`, `/audit`, …) uses the shared `lib/ui/SidebarLayout.svelte` — a **left
+side menu, main content on the right**. Pass the menu (section nav, filters,
+settings, file inputs) as the `sidebar` snippet and the primary content as the
+default children, led by a `PageHeader`. Do not hand-roll the shell: the component
+owns the sticky desktop sidebar, the `.main-area`, and the **≤640px overlay
+drawer** — on phones the sidebar collapses to a left drawer over the global
+backdrop (in `+layout.svelte`); the header burger toggles `sidebarOpen` and the
+backdrop tap closes it. Reuse `PageHeader`/`Card`/`EmptyState` for headers,
+surfaces and empty/dropzone states; tokens only. **Never use emoji** — not in UI,
+labels, or generated reports — use lucide-svelte icons, and the severity tokens
+(`--severity-critical/major/minor`) for status.
+
 **Brand assets & SEO.** `static/favicon.svg` (triad mark on indigo tile),
 `static/og-image.png` (1200×630, regenerate from `static/og-image.svg` with
 `sharp`). New routes should add `<svelte:head>` with title/description + Open

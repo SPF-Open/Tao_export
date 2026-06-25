@@ -3,17 +3,14 @@
   import ZipInput from "$lib/export/ZipInput.svelte";
   import ZipDropZone from "$lib/export/ZipDropZone.svelte";
   import Question from "$lib/export/template/Question.svelte";
-  import AuditTab from "$lib/export/audit/AuditTab.svelte";
   import TextInput from "$lib/ui/TextInput.svelte";
-  import { EmptyState } from "$lib/ui";
+  import { EmptyState, SidebarLayout } from "$lib/ui";
   import { FileArchive } from "lucide-svelte";
-  import { sidebarEnabled } from "$lib/sidebar";
   import { showDocsStore, showChangelogStore } from "$lib/about";
 
   import {
     compareExamIndex1,
     compareExamIndex2,
-    showMenu,
     activeItems,
     showItems,
     showInstruction,
@@ -103,45 +100,20 @@
 
     if (changed) showItems.set(map);
   });
-
-  $effect(() => {
-    sidebarEnabled.set(true);
-    return () => sidebarEnabled.set(false);
-  });
 </script>
 
 <svelte:head>
     <title>{$windowName}</title> 
 </svelte:head>
 
-<main>
-  <div class="content" class:sidebar-open={$showMenu}>
-    {#if $showMenu}
-      <aside class="sidebar" >
-        <div class="sidebar-content">
-          <div class="mode-switch">
-            <button
-              class="mode-btn"
-              class:active={$currentPage !== 'audit'}
-              onclick={() => currentPage.set('questions')}
-            >Questions</button>
-            <button
-              class="mode-btn"
-              class:active={$currentPage === 'audit'}
-              onclick={() => currentPage.set('audit')}
-            >Audit</button>
-          </div>
-          <Settings />
-          <ZipInput onExportPDF={exportToPdf} onExportJSON={exportToJson} />
-        </div>
-      </aside>
-    {/if}
-    
-    <div class="main-area">
-      {#if $currentPage === 'audit'}
-        <!-- Audit View -->
-        <AuditTab />
-      {:else if $currentPage === 'compare' && $multiple && $assessments.length > 1 && $compareExamIndex1 >= 0 && $compareExamIndex2 >= 0}
+<SidebarLayout sidebarLabel="Export settings">
+  {#snippet sidebar()}
+    <Settings />
+    <ZipInput onExportPDF={exportToPdf} onExportJSON={exportToJson} />
+  {/snippet}
+
+  <div class="export-main">
+      {#if $currentPage === 'compare' && $multiple && $assessments.length > 1 && $compareExamIndex1 >= 0 && $compareExamIndex2 >= 0}
         <div class="compare-wrapper">
           <!-- Exam Selector -->
           <div class="compare-selector hide-print">
@@ -297,81 +269,20 @@
           {/if}
         </div>
       {/if}
-    </div>
   </div>
+</SidebarLayout>
 
-  {#if showChangelog}
-    <ChangelogModal onClose={() => showChangelog = false} />
-  {/if}
+{#if showChangelog}
+  <ChangelogModal onClose={() => showChangelog = false} />
+{/if}
 
-  {#if showDocumentation}
-    <DocumentationModal onClose={() => showDocumentation = false} />
-  {/if}
-</main>
+{#if showDocumentation}
+  <DocumentationModal onClose={() => showDocumentation = false} />
+{/if}
 
 <style>
-  .content {
-    display: flex;
-    flex: 1;
-    min-height: calc(100vh - var(--layout-header-height) - var(--header-height) - 40px);
-  }
-
-  .sidebar {
-    position: sticky;
-    top: calc(var(--layout-header-height));
-    height: calc(100vh - var(--layout-header-height));
-    width: var(--sidebar-width);
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    box-shadow: var(--shadow-lg);
-    z-index: 50;
-    overflow-y: auto;
-    scrollbar-gutter: stable;
-  }
-
-  .sidebar-content {
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-  }
-
-  .mode-switch {
-    display: flex;
-    gap: 4px;
-    padding: 4px;
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-  }
-
-  .mode-btn {
-    flex: 1;
-    padding: 6px 10px;
-    background: transparent;
-    border: none;
-    border-radius: var(--radius);
-    color: var(--text-muted);
-    font-size: 13px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: background 0.15s, color 0.15s;
-  }
-
-  .mode-btn:hover {
-    color: var(--text);
-  }
-
-  .mode-btn.active {
-    background: var(--accent);
-    color: var(--accent-foreground);
-  }
-
-  .main-area {
-    flex: 1;
-    padding: 0 16px;
+  .export-main {
     min-width: 0;
-    transition: margin-left 0.3s ease;
   }
 
   .dropzone-center {
@@ -532,14 +443,6 @@
   }
 
   @media print {
-    .sidebar {
-      display: none !important;
-    }
-    
-    .main-area {
-      padding: 0;
-    }
-    
     .questions-container {
       max-width: none;
     }
@@ -588,25 +491,11 @@
     box-shadow: 0 0 0 2px var(--accent-alpha);
   }
 
-  /* Mobile: sidebar drawer + stack comparison + keep tables scrollable. */
+  /* Mobile: stack comparison + keep tables scrollable. */
   @media (max-width: 640px) {
-    .sidebar {
-      position: fixed;
-      left: 0;
-      top: var(--layout-header-height);
-      width: min(86vw, var(--sidebar-width));
-      z-index: 60;
-      box-shadow: var(--shadow-xl);
-      animation: slideInRight 200ms cubic-bezier(0.22, 1, 0.36, 1);
-    }
-    .main-area { padding: 0 12px; }
     .compare-wrapper { flex-direction: column; }
     .compare-selector { flex-direction: column; align-items: stretch; }
     .mapping-table { overflow-x: auto; }
     .exam-select { min-height: 44px; }
-    .mode-btn { min-height: 44px; }
-  }
-  @media (max-width: 640px) and (prefers-reduced-motion: reduce) {
-    .sidebar { animation: none; }
   }
 </style>

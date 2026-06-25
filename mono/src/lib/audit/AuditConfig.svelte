@@ -1,7 +1,8 @@
 <script lang="ts">
-  import { auditConfig } from '../store';
-  import { PRESET_CONFIGS, validateConfig } from '../audit/config';
-  import type { ExcelConfig } from '../audit/types';
+  import { ChevronRight, CircleX } from 'lucide-svelte';
+  import { auditConfig } from './store';
+  import { PRESET_CONFIGS, validateConfig } from './config';
+  import type { ExcelConfig } from './types';
 
   type Props = {
     availableSheets?: string[];
@@ -104,8 +105,6 @@
 </script>
 
 <div class="config-section">
-  <h3>Step 2: Configure Excel Structure</h3>
-
   <!-- Preset Templates -->
   <div class="presets">
     <div style="display: none;">
@@ -200,8 +199,9 @@
   </div>
 
   <!-- Advanced: Column Mapping -->
-  <button class="toggle-btn" onclick={() => (showAdvanced = !showAdvanced)}>
-    {showAdvanced ? '▼' : '▶'} Column Mapping (Advanced)
+  <button class="toggle-btn" onclick={() => (showAdvanced = !showAdvanced)} aria-expanded={showAdvanced}>
+    <span class="chev" class:open={showAdvanced}><ChevronRight size={14} strokeWidth={2} /></span>
+    Column mapping (advanced)
   </button>
 
   {#if showAdvanced}
@@ -328,8 +328,8 @@
   <!-- Validation Errors -->
   {#if configErrors.length > 0}
     <div class="errors">
-      {#each configErrors as error}
-        <div class="error-message">❌ {error}</div>
+      {#each configErrors as error (error)}
+        <div class="error-message"><CircleX size={13} strokeWidth={2} /> {error}</div>
       {/each}
     </div>
   {/if}
@@ -337,20 +337,13 @@
 
 <style>
   .config-section {
-    background: var(--surface);
-    border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    padding: 20px;
-  }
-
-  .config-section h3 {
-    margin-top: 0;
-    margin-bottom: 15px;
-    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
   }
 
   .presets {
-    margin-bottom: 20px;
+    margin-bottom: 0;
   }
 
   .presets label {
@@ -417,8 +410,8 @@
 
   .input-group input:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18);
   }
 
   .input-group select {
@@ -433,8 +426,8 @@
 
   .input-group select:focus {
     outline: none;
-    border-color: var(--accent);
-    box-shadow: 0 0 0 2px rgba(0, 0, 0, 0.1);
+    border-color: var(--brand);
+    box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18);
   }
 
   .input-group small {
@@ -479,18 +472,36 @@
   }
 
   .toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.35rem;
     background: none;
     border: none;
-    color: var(--accent);
-    font-weight: 500;
+    color: var(--text);
+    font-family: var(--font-family);
+    font-weight: 600;
     cursor: pointer;
     padding: 0;
-    font-size: 1em;
-    margin: 15px 0;
+    font-size: 0.85rem;
+    margin: 6px 0;
   }
 
-  .toggle-btn:hover {
-    text-decoration: underline;
+  .toggle-btn:hover { color: var(--brand); }
+  .toggle-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18); border-radius: var(--radius); }
+  .chev { display: inline-flex; color: var(--text-muted); transition: transform 150ms ease; }
+  .chev.open { transform: rotate(90deg); }
+
+  .error-message {
+    display: flex;
+    align-items: center;
+    gap: 0.35rem;
+    color: var(--danger);
+    font-size: 0.85em;
+    margin: 5px 0;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .chev { transition: none; }
   }
 
   .advanced-settings {
@@ -526,21 +537,6 @@
     background: rgba(220, 38, 38, 0.1);
     border: 1px solid var(--danger);
     border-radius: var(--radius);
-  }
-
-  .error-message {
-    color: var(--danger);
-    font-size: 0.9em;
-    margin: 5px 0;
-  }
-
-  :global(.dark) .config-section {
-    background: var(--surface);
-    border-color: var(--border);
-  }
-
-  :global(.dark) .config-section h3 {
-    color: var(--text);
   }
 
   :global(.dark) .presets label,

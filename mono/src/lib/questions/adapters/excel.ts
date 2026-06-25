@@ -1,9 +1,9 @@
 import * as XLSX from 'xlsx';
-import { parseExcel } from '$lib/export/audit/excel-parser.js';
-import type { ExcelConfig, ExcelQuestion } from '$lib/export/audit/types.js';
+import { parseExcel } from '$lib/audit/excel-parser.js';
+import type { ExcelConfig, ExcelQuestion } from '$lib/audit/types.js';
 import type { Assessment, AssessmentItem, Section } from '../types.js';
 import type { AssessmentAdapter, AdapterReadOptions, AdapterWriteOptions } from './base.js';
-import { DEFAULT_CONFIG } from '$lib/export/audit/config.js';
+import { DEFAULT_CONFIG } from '$lib/audit/config.js';
 
 const DEFAULT_WRITE_CONFIG: ExcelConfig = DEFAULT_CONFIG;
 
