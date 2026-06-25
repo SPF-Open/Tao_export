@@ -15,6 +15,7 @@ import { bumpContent, getInfo, initMeta, syncSchemaVersion } from './meta.js';
 import { analyze, ingest } from './ingest.js';
 import { facets, search } from './search.js';
 import { getQuestion, getQuestionAssets } from './question.js';
+import { runQuery } from './sql.js';
 
 /**
  * Owns the SQLite WASM instance and serves all library commands. Persistence
@@ -144,6 +145,10 @@ async function handle<C extends LibraryCommand>(
 			return getQuestion(requireDb(), (data as { id: number }).id) as never;
 		case 'question:getAssets':
 			return getQuestionAssets(requireDb(), (data as { id: number }).id) as never;
+		case 'sql:query': {
+			const q = data as { sql: string; limit?: number };
+			return runQuery(requireDb(), q.sql, q.limit) as never;
+		}
 		default:
 			throw new Error(`Unknown command: ${command}`);
 	}

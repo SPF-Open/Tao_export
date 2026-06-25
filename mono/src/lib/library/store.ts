@@ -9,6 +9,7 @@ import type {
 	LibraryQuestion,
 	LibrarySearchFilters,
 	LibrarySearchResponse,
+	LibrarySqlResult,
 	LibraryTestImportSummary
 } from './types.js';
 
@@ -21,7 +22,50 @@ export const busy = writable<boolean>(false);
 /** Last error message, surfaced in the UI. */
 export const lastError = writable<string>('');
 /** Facets for the search filter comboboxes. */
-export const facets = writable<LibraryFacets>({ tests: [], types: [], competencies: [] });
+export const facets = writable<LibraryFacets>({
+	tests: [],
+	types: [],
+	competencies: [],
+	indicators: [],
+	languages: []
+});
+
+/* ------------------------------------------------------------------ */
+/* Shared search state (sidebar filters ↔ main results)                 */
+/* ------------------------------------------------------------------ */
+
+/** Results shown per page in the search results list. */
+export const SEARCH_LIMIT = 20;
+
+export const searchText = writable('');
+export const searchTestId = writable('');
+export const searchType = writable('');
+export const searchCompetency = writable('');
+export const searchIndicator = writable('');
+export const searchLanguage = writable('');
+export const searchPage = writable(0);
+
+/* ------------------------------------------------------------------ */
+/* SQL query console                                                    */
+/* ------------------------------------------------------------------ */
+
+export const sqlResult = writable<LibrarySqlResult | null>(null);
+export const sqlError = writable<string>('');
+export const sqlRunning = writable(false);
+
+/** Runs a read-only SQL query and stores the result (or error) for the modal. */
+export async function runSqlQuery(sql: string): Promise<void> {
+	sqlRunning.set(true);
+	sqlError.set('');
+	try {
+		sqlResult.set(await libraryClient.call('sql:query', { sql }));
+	} catch (err) {
+		sqlError.set(err instanceof Error ? err.message : String(err));
+		sqlResult.set(null);
+	} finally {
+		sqlRunning.set(false);
+	}
+}
 /** Most recent analysis preview (before import). */
 export const importPreview = writable<LibraryTestImportSummary | null>(null);
 /** Most recent search response. */

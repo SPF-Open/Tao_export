@@ -102,9 +102,22 @@ export interface LibrarySearchFilters {
 	testId?: number;
 	competency?: string;
 	indicator?: string;
+	language?: string;
 	type?: ItemType;
 	limit: number;
 	offset: number;
+}
+
+/** Result of a raw, read-only SQL query (the query console). */
+export interface LibrarySqlResult {
+	columns: string[];
+	/** Row values, BLOBs rendered as a short placeholder string. */
+	rows: (string | number | null)[][];
+	/** Total rows produced (may exceed `rows.length` when truncated). */
+	rowCount: number;
+	/** True when more rows existed than the display limit. */
+	truncated: boolean;
+	durationMs: number;
 }
 
 /** A single search hit (summary form). */
@@ -132,6 +145,8 @@ export interface LibraryFacets {
 	tests: { id: number; title: string }[];
 	types: ItemType[];
 	competencies: { code: string; label: string }[];
+	indicators: string[];
+	languages: string[];
 }
 
 /* ------------------------------------------------------------------ */
@@ -189,6 +204,7 @@ export interface LibraryCommandMap {
 	'search:facets': { req: Record<string, never>; res: LibraryFacets };
 	'question:get': { req: { id: number }; res: LibraryQuestion };
 	'question:getAssets': { req: { id: number }; res: LibraryAssetBlob[] };
+	'sql:query': { req: { sql: string; limit?: number }; res: LibrarySqlResult };
 }
 
 /** An asset's raw bytes, returned for rendering question images. */

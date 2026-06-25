@@ -62,6 +62,10 @@ function structuredFilters(filters: LibrarySearchFilters): WhereParts {
 		);
 		binds.push(filters.indicator);
 	}
+	if (filters.language) {
+		clauses.push('q.language = ?');
+		binds.push(filters.language);
+	}
 	return { clauses, binds };
 }
 
@@ -143,5 +147,18 @@ export function facets(db: Database): LibraryFacets {
 		)
 		.map((r) => ({ code: String(r.code ?? ''), label: String(r.label ?? '') }));
 
-	return { tests, types, competencies };
+	const indicators = db
+		.selectValues(
+			`SELECT DISTINCT indicator FROM question_competencies
+				WHERE indicator <> '' ORDER BY indicator`
+		)
+		.map((v) => String(v));
+
+	const languages = db
+		.selectValues(
+			`SELECT DISTINCT language FROM questions WHERE language <> '' ORDER BY language`
+		)
+		.map((v) => String(v));
+
+	return { tests, types, competencies, indicators, languages };
 }
