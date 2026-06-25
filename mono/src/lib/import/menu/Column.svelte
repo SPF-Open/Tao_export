@@ -65,20 +65,6 @@
     gap: 8px;
   }
 
-  .hint {
-    margin: 4px 0 0 0;
-    font-size: 11px;
-    font-weight: 600;
-    letter-spacing: 0.04em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-  }
-
-  .divider {
-    border-top: 1px solid var(--border);
-    margin: 4px 0;
-  }
-
   .required-row {
     display: flex;
     gap: 8px;

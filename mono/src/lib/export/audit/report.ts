@@ -532,11 +532,14 @@ export function buildCSV(report: AuditReport): string {
 
   // Unmatched
   for (const q of report.unmatched.excel) {
-    rows.push(`Unmatched,BLOQUANT,"${q.prompt.substring(0, 50)}","","No match found in QTI","","",`);
+    const title = 'title' in q.question && q.question.title ? q.question.title : q.question.prompt;
+    rows.push(`Unmatched,BLOQUANT,"${title.substring(0, 50)}","","No match found in QTI","","",`);
   }
 
   for (const q of report.unmatched.qti) {
-    rows.push(`Unmatched,INFO,"${q.prompt.substring(0, 50)}","${q.id || ''}","No match found in Excel","","",`);
+    const title = 'title' in q.question && q.question.title ? q.question.title : q.question.prompt;
+    const id = 'id' in q.question ? q.question.id || '' : '';
+    rows.push(`Unmatched,INFO,"${title.substring(0, 50)}","${id}","No match found in Excel","","",`);
   }
 
   return rows.join('\n');

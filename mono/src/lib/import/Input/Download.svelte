@@ -21,9 +21,11 @@
   import Button from "$lib/ui/Button.svelte";
   import { FilesIcon } from "lucide-svelte";
 
-  let linkFile: HTMLAnchorElement = $state();
+  let linkFile: HTMLAnchorElement | undefined = $state();
 
   const onClick = () => {
+    if (!$workbook) return;
+
     const fileName = $name;
     const sheet = Question.parseSheet(
       $workbook.Sheets[$currentSheet],
@@ -45,9 +47,11 @@
         const blob = new Blob([CSVString], { type: "text/csv;charset=utf-8," });
         const objUrl = URL.createObjectURL(blob);
 
-        linkFile.href = objUrl;
-        linkFile.download = fileName + " - " + $langOutput;
-        linkFile.click();
+        if (linkFile) {
+          linkFile.href = objUrl;
+          linkFile.download = fileName + " - " + $langOutput;
+          linkFile.click();
+        }
         break;
       }
       case "pdf": {
@@ -101,9 +105,7 @@
   };
 </script>
 
-<!-- svelte-ignore a11y_missing_attribute -->
-<!-- svelte-ignore a11y_missing_content -->
-<a bind:this={linkFile} download></a>
+<a bind:this={linkFile} href="about:blank" download aria-label="Download export" tabindex="-1"></a>
 <Button type="info" {onClick}>
   <div class="button">
   <FilesIcon size={18} />
@@ -121,8 +123,5 @@
     align-items: center;
     gap: 0.6rem;
     font-size: 1rem;
-  }
-  img {
-    height: 30px;
   }
 </style>

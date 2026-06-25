@@ -1,7 +1,7 @@
 <script lang="ts">
   import { QCM } from "../helper/question";
 
-  export let QCMs: QCM[] = [];
+  let { QCMs = [] }: { QCMs?: QCM[] } = $props();
 </script>
 
 <table>

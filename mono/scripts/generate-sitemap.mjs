@@ -9,6 +9,9 @@ const pagePattern = /^\+page\.(svelte|svx|md|js|ts)$/;
 
 const defaultBaseUrl = 'https://tao.lv0.eu';
 
+/**
+ * @param {string} value
+ */
 function escapeXml(value) {
 	return value
 		.replaceAll('&', '&amp;')
@@ -18,6 +21,10 @@ function escapeXml(value) {
 		.replaceAll("'", '&apos;');
 }
 
+/**
+ * @param {string} pageFile
+ * @returns {string | null}
+ */
 function toRoutePath(pageFile) {
 	const routeDir = relative(routesDir, dirname(pageFile));
 
@@ -36,12 +43,16 @@ function toRoutePath(pageFile) {
 	return `/${segments.join('/')}`;
 }
 
+/**
+ * @param {string} dir
+ * @returns {string[]}
+ */
 function findPages(dir) {
 	if (!existsSync(dir)) {
 		return [];
 	}
 
-	return readdirSync(dir).flatMap((entry) => {
+	return readdirSync(dir).flatMap(/** @returns {string[]} */ (entry) => {
 		const path = join(dir, entry);
 		const stats = statSync(path);
 
@@ -53,12 +64,23 @@ function findPages(dir) {
 	});
 }
 
+/**
+ * @param {string | null} route
+ * @returns {route is string}
+ */
+function isRoute(route) {
+	return Boolean(route);
+}
+
+/**
+ * @param {{ baseUrl?: string, lastmod?: string }} [options]
+ */
 export function generateSitemap({
 	baseUrl = process.env.SITEMAP_BASE_URL ?? defaultBaseUrl,
 	lastmod = new Date().toISOString().slice(0, 10)
 } = {}) {
 	const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
-	const routes = [...new Set(findPages(routesDir).map(toRoutePath).filter(Boolean))].sort((a, b) => {
+	const routes = [...new Set(findPages(routesDir).map(toRoutePath).filter(isRoute))].sort((a, b) => {
 		if (a === '/') return -1;
 		if (b === '/') return 1;
 

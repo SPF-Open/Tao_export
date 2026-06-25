@@ -1,5 +1,6 @@
 <script lang="ts">
   import { writable } from "svelte/store";
+  import type { Writable } from "svelte/store";
 
   import { Day, Size, formatedDate, weekOfTheDay } from "./Calendar.helper";
   import DayMenu from "./DayMenu.svelte";
@@ -10,8 +11,8 @@
   
   interface Props {
     // Stores
-    date?: any;
-    dateString?: any;
+    date?: Writable<Date>;
+    dateString?: Writable<string>;
   }
 
   let { date = writable(new Date()), dateString = writable("") }: Props = $props();
@@ -26,24 +27,28 @@
   let showNonCurrentMonth = $state(false);
 
   // When we update the date with datepicker
-  dateString.subscribe((d) => {
-    const dateStringTemp = $date.toISOString().split("T")[0];
-    if (d && dateStringTemp !== $dateString) {
-      date.update((_) => new Date(d));
-    }
+  $effect(() => {
+    return dateString.subscribe((d: string) => {
+      const dateStringTemp = $date.toISOString().split("T")[0];
+      if (d && dateStringTemp !== $dateString) {
+        date.update(() => new Date(d));
+      }
+    });
   });
 
-  date.subscribe((d) => {
-    const dateStringTemp = $date.toISOString().split("T")[0];
-    if (dateStringTemp !== $dateString) {
-      dateString.update((_) => dateStringTemp);
-      console.log(dateStringTemp);
-    }
-    days = Day.from(d);
+  $effect(() => {
+    return date.subscribe((d: Date) => {
+      const dateStringTemp = $date.toISOString().split("T")[0];
+      if (dateStringTemp !== $dateString) {
+        dateString.update(() => dateStringTemp);
+        console.log(dateStringTemp);
+      }
+      days = Day.from(d);
+    });
   });
 
   const changeMonth = (offset: number) => {
-    date.update((d) => new Date(d.getFullYear(), d.getMonth() + offset, 15));
+    date.update((d: Date) => new Date(d.getFullYear(), d.getMonth() + offset, 15));
   };
 
   const onDayClick = (day: Day, force = true) => {
@@ -95,11 +100,15 @@
           <div class="weekday cell {size}">{day}</div>
         {/each}
         {#each days as day}
-          <!-- svelte-ignore a11y_click_events_have_key_events -->
           <div
             class="day cell {size}"
             class:currentMonth={day.isCurrentMonth || showNonCurrentMonth}
+            role="button"
+            tabindex="0"
             onclick={() => onDayClick(day)}
+            onkeydown={(event) => {
+              if (event.key === "Enter" || event.key === " ") onDayClick(day);
+            }}
             style="background:{day.bg};"
           >
             <div class="innerCell" style="border-color:{day.bd}">

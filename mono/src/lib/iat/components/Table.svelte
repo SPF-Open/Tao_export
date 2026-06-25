@@ -1,5 +1,9 @@
 <script lang="ts">
-  import DynamicTable from "./DynamicTable.svelte";
-  import type { PageInfo } from "../lib/store";
+  import type { PageInfo } from "$lib/iat/store";
 
+  let { pagesData }: { pagesData?: Record<number, PageInfo> } = $props();
 </script>
+
+{#if pagesData}
+  <!-- Kept as a compatibility wrapper for older imports. -->
+{/if}

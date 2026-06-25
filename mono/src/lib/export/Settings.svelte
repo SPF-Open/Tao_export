@@ -36,7 +36,7 @@
   } from "lucide-svelte";
   import Tables from "./Tables.svelte";
 
-  // Load section state from localStorage
+  // Load section sectionState from localStorage
   function loadSectionState() {
     if (typeof localStorage === "undefined")
       return {
@@ -76,16 +76,16 @@
     };
   }
 
-  let state = $state(loadSectionState());
+  let sectionState = $state(loadSectionState());
 
-  // Save section state to localStorage
+  // Save section sectionState to localStorage
   $effect(() => {
     if (typeof localStorage !== "undefined") {
-      localStorage.setItem("settings-panels", JSON.stringify(state));
+      localStorage.setItem("settings-panels", JSON.stringify(sectionState));
     }
   });
 
-  // Question list state
+  // Question list sectionState
   let questionListChecked = $state(true);
   let questionListText = $state("");
   let questionListContainer: HTMLUListElement | null = $state(null);
@@ -155,17 +155,17 @@
   <div class="settings-section">
     <button
       class="section-header"
-      onclick={() => (state.general = !state.general)}
+      onclick={() => (sectionState.general = !sectionState.general)}
     >
       <div class="section-title">
         <Settings size={16} />
         <span>General</span>
       </div>
-      <div class="section-toggle" class:open={state.general}>
+      <div class="section-toggle" class:open={sectionState.general}>
         <ChevronDown size={12} />
       </div>
     </button>
-    {#if state.general}
+    {#if sectionState.general}
       <div class="section-content" transition:slide={{ duration: 200 }}>
         <div class="setting-row">
           <span class="setting-label">
@@ -189,17 +189,17 @@
   <div class="settings-section">
     <button
       class="section-header"
-      onclick={() => (state.paperTest = !state.paperTest)}
+      onclick={() => (sectionState.paperTest = !sectionState.paperTest)}
     >
       <div class="section-title">
         <Shuffle size={16} />
         <span>Paper Test</span>
       </div>
-      <div class="section-toggle" class:open={state.paperTest}>
+      <div class="section-toggle" class:open={sectionState.paperTest}>
         <ChevronDown size={12} />
       </div>
     </button>
-    {#if state.paperTest}
+    {#if sectionState.paperTest}
       <div class="section-content" transition:slide={{ duration: 200 }}>
         <div class="setting-row">
           <span class="setting-label">
@@ -237,17 +237,17 @@
   <div class="settings-section">
     <button
       class="section-header"
-      onclick={() => (state.advanced = !state.advanced)}
+      onclick={() => (sectionState.advanced = !sectionState.advanced)}
     >
       <div class="section-title">
         <Settings size={16} />
         <span>Advanced</span>
       </div>
-      <div class="section-toggle" class:open={state.advanced}>
+      <div class="section-toggle" class:open={sectionState.advanced}>
         <ChevronDown size={12} />
       </div>
     </button>
-    {#if state.advanced}
+    {#if sectionState.advanced}
       <div class="section-content" transition:slide={{ duration: 200 }}>
         <div class="setting-row">
           <span class="setting-label">
@@ -295,17 +295,17 @@
     <div class="settings-section">
       <button
         class="section-header"
-        onclick={() => (state.filtering = !state.filtering)}
+        onclick={() => (sectionState.filtering = !sectionState.filtering)}
       >
         <div class="section-title">
           <List size={16} />
           <span>Question Filtering</span>
         </div>
-        <div class="section-toggle" class:open={state.filtering}>
+        <div class="section-toggle" class:open={sectionState.filtering}>
           <ChevronDown size={12} />
         </div>
       </button>
-      {#if state.filtering}
+      {#if sectionState.filtering}
         <div
           class="section-content question-list-section"
           transition:slide={{ duration: 200 }}
@@ -454,43 +454,6 @@
     min-height: 0;
   }
 
-  .question-stats {
-    display: flex;
-    gap: 10px;
-    padding: 8px;
-    background: var(--surface);
-    border-radius: var(--radius);
-    flex-shrink: 0;
-  }
-
-  .stat {
-    display: flex;
-    align-items: center;
-    gap: 4px;
-    font-size: 11px;
-    color: var(--text-muted);
-    flex: 1;
-  }
-
-  .stat-value {
-    font-weight: 600;
-    color: var(--text);
-    font-size: 12px;
-  }
-
-  .stat-label {
-    font-weight: 500;
-    font-size: 10px;
-  }
-
-  .stat.qo :global(svg) {
-    color: #8b5cf6;
-  }
-
-  .stat.qcm :global(svg) {
-    color: #10b981;
-  }
-
   .question-list-header {
     padding: 6px 0;
     border-bottom: 1px solid var(--border);
@@ -558,47 +521,4 @@
     color: var(--text);
   }
 
-  .export-format {
-    display: flex;
-    gap: 12px;
-    align-items: center;
-  }
-
-  .format-option {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    cursor: pointer;
-    font-size: 13px;
-    color: var(--text);
-  }
-
-  .format-option input[type="radio"] {
-    width: 14px;
-    height: 14px;
-    cursor: pointer;
-    accent-color: var(--accent);
-  }
-
-  .export-button {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 10px;
-    background: var(--accent);
-    color: var(--accent-text, white);
-    border: none;
-    border-radius: var(--radius);
-    font-size: 13px;
-    font-weight: 600;
-    cursor: pointer;
-    transition: opacity 0.2s;
-    margin-top: 8px;
-  }
-
-  .export-button:hover {
-    opacity: 0.9;
-  }
 </style>

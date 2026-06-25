@@ -13,9 +13,9 @@
   <div class="alt-grid">
     <div class="text-cell"><span class="label">Text</span><span>{alternative.text}</span></div>
     <div><span class="label">%</span><span>{alternative.pct}%</span></div>
-    <div><span class="label">Answers</span><span>{alternative.nAnswers} / {alternative.total}</span></div>
-    <div><span class="label">D-Idx Comp</span><span>{alternative.d_index_comp}</span></div>
-    <div><span class="label">D-Idx Test</span><span>{alternative.d_index_test}</span></div>
+    <div><span class="label">Answers</span><span>{alternative.nAnswers} / {alternative.nCandidates}</span></div>
+    <div><span class="label">D-Idx Comp</span><span>{alternative.discr_comp}</span></div>
+    <div><span class="label">D-Idx Test</span><span>{alternative.discr_test}</span></div>
   </div>
 </Card>
 

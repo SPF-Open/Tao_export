@@ -16,7 +16,7 @@
   } }: Props = $props();
 </script>
 
-<div class="menu" onclick={stopPropagation(bubble('click'))} onkeypress={onEnter}>
+<div class="menu" role="menu" tabindex="-1" onclick={stopPropagation(bubble('click'))} onkeypress={onEnter}>
   <label for="bg">Background</label>
   <input type="color" name="" id="bg" bind:value={day.bg} class="color-input" />
   <label for="border">Border</label>

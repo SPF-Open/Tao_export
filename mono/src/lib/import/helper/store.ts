@@ -1,4 +1,5 @@
 import { derived, writable } from 'svelte/store';
+import type { WorkBook } from 'xlsx';
 
 export enum TemplateColumn {
   FIN = 'FIN',
@@ -83,14 +84,14 @@ export const bindingTemplate: Record<TemplateColumn, BindingTemplateDef> = {
   [TemplateColumn.OTHER]: {
     // Remains unchanged or can be adjusted as needed.
     column: {
-      title: null,
-      prompt: null,
-      correct: null,
+      title: '',
+      prompt: '',
+      correct: '',
     },
     row: {
-      offset: null,
-      alternative: null,
-      skipRow: null,
+      offset: 0,
+      alternative: 0,
+      skipRow: 0,
     },
   },
 };
@@ -98,7 +99,7 @@ export const bindingTemplate: Record<TemplateColumn, BindingTemplateDef> = {
 // file input
 export const file = writable<File | null>(null);
 export const name = writable('TAO');
-export const workbook = writable<null | Workbook>(null);
+export const workbook = writable<null | WorkBook>(null);
 
 // Menu
 export const currentSheet = writable<string>('');
@@ -127,9 +128,9 @@ export const skipRow = writable(0);
 followTemplate.subscribe((value) => {
   const v = bindingTemplate[value]
   if (value === TemplateColumn.OTHER) return;
-  titleColumn.set(v.column.title);
-  promptColumn.set(v.column.prompt);
-  correctColumn.set(v.column.correct);
+  titleColumn.set(v.column.title ?? "");
+  promptColumn.set(v.column.prompt ?? "");
+  correctColumn.set(v.column.correct ?? "");
   competencyColumn.set(v.column.competency ?? "");
   indicatorColumn.set(v.column.indicator ?? "");
   competencyDescrColumn.set(v.column.competencyDescr ?? "");
@@ -153,5 +154,3 @@ export const column_row = derived(
 
 // Pdf
 export const TaoPreviewBind = writable();
-
-
