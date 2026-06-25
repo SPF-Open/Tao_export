@@ -1,5 +1,7 @@
 <script lang="ts">
-  import { Upload } from "lucide-svelte";
+  import { Upload, ChevronDown } from "lucide-svelte";
+  import { slide } from "svelte/transition";
+  import { browser } from "$app/environment";
   import { buildUnsupportedFileMessage, matchesAcceptedType, parseAccept } from "./fileAccept";
   import { pushError } from "./notifications";
 
@@ -27,9 +29,11 @@
   let inputElement: HTMLInputElement;
   let errorMessage = $state("");
   let rejected = $state(false);
+  let showFiles = $state(false);
   let rejectTimer: ReturnType<typeof setTimeout> | undefined;
 
   const acceptedTypes = $derived(parseAccept(accept));
+  const slideDur = browser && window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : 200;
 
   function animateRejection() {
     rejected = false;
@@ -62,6 +66,7 @@
     }
 
     errorMessage = "";
+    showFiles = false;
     const accepted = multiple ? selectedFiles : [selectedFiles[0]];
     file = accepted;
     onfiles?.(accepted);
@@ -121,12 +126,22 @@
     {/if}
     {#if file.length > 0}
       <div class="file-list">
-        <p class="file-count">{file.length} file{file.length !== 1 ? 's' : ''} selected</p>
-        <ul>
-          {#each file as f (f.name)}
-            <li>{f.name}</li>
-          {/each}
-        </ul>
+        <button
+          type="button"
+          class="file-toggle"
+          aria-expanded={showFiles}
+          onclick={() => (showFiles = !showFiles)}
+        >
+          <ChevronDown size={14} strokeWidth={2} class="file-chevron {showFiles ? 'open' : ''}" />
+          <span class="file-count">{file.length} file{file.length !== 1 ? 's' : ''} selected</span>
+        </button>
+        {#if showFiles}
+          <ul transition:slide={{ duration: slideDur }}>
+            {#each file as f (f.name)}
+              <li>{f.name}</li>
+            {/each}
+          </ul>
+        {/if}
       </div>
     {/if}
   </div>
@@ -205,16 +220,46 @@
     text-align: left;
   }
 
-  .file-count {
-    margin: 0 0 4px 0;
+  .file-toggle {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: none;
+    border: none;
+    padding: 2px 4px;
+    margin: 0;
+    cursor: pointer;
     color: var(--text-muted);
+    font-family: var(--font-family);
     font-size: 12px;
+    border-radius: var(--radius);
+  }
+
+  .file-toggle:hover {
+    color: var(--text);
+  }
+
+  .file-toggle:focus-visible {
+    outline: none;
+    box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18);
+  }
+
+  .file-toggle :global(.file-chevron) {
+    transition: transform 200ms ease;
+  }
+
+  .file-toggle :global(.file-chevron.open) {
+    transform: rotate(-180deg);
+  }
+
+  .file-count {
+    margin: 0;
   }
 
   .file-list ul {
     list-style: none;
     padding: 0;
-    margin: 0;
+    margin: 4px 0 0;
   }
 
   .file-list li {
@@ -247,6 +292,10 @@
   @media (prefers-reduced-motion: reduce) {
     .file-input-area.rejected {
       animation: none;
+    }
+
+    .file-toggle :global(.file-chevron) {
+      transition: none;
     }
   }
 </style>
