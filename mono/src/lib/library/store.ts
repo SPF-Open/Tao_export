@@ -1,6 +1,7 @@
-import { writable } from 'svelte/store';
+import { get, writable } from 'svelte/store';
 import { libraryClient } from './client.js';
 import { buildIngestPayload } from './parse/ingestFromZip.js';
+import { pushError } from '$lib/ui/notifications';
 import type {
 	IngestPayload,
 	LibraryDbInfo,
@@ -101,6 +102,139 @@ export async function ingestZip(file: File): Promise<void> {
 	importPreview.set(summary);
 	lastPayload = null;
 	await refreshFacets();
+}
+
+/* ------------------------------------------------------------------ */
+/* Batch ingest queue                                                   */
+/* ------------------------------------------------------------------ */
+
+/** Maximum number of ZIPs that can sit in the ingest queue at once. */
+export const MAX_INGEST_FILES = 100;
+
+export type IngestJobStatus =
+	| 'queued'
+	| 'parsing'
+	| 'importing'
+	| 'success'
+	| 'skipped'
+	| 'failed';
+
+/** One file's lifecycle through the ingest queue. */
+export interface IngestJob {
+	id: string;
+	filename: string;
+	size: number;
+	status: IngestJobStatus;
+	/** 0..1 progress for this file (phase-based). */
+	progress: number;
+	questionCount: number;
+	skippedCount: number;
+	duplicateStatus?: LibraryTestImportSummary['duplicateStatus'];
+	durationMs: number;
+	error: string;
+}
+
+/** Reactive list of all jobs (queued, running and finished). */
+export const ingestJobs = writable<IngestJob[]>([]);
+/** True while the queue is being drained. */
+export const ingestRunning = writable<boolean>(false);
+
+const pendingQueue: { id: string; file: File }[] = [];
+let draining = false;
+
+function patchJob(id: string, patch: Partial<IngestJob>): void {
+	ingestJobs.update((jobs) => jobs.map((j) => (j.id === id ? { ...j, ...patch } : j)));
+}
+
+/**
+ * Adds files to the queue (capped at {@link MAX_INGEST_FILES} total) and starts
+ * draining it if not already running. Returns the number actually queued.
+ */
+export function enqueueIngest(files: File[]): number {
+	if (!files.length) return 0;
+	const current = get(ingestJobs).length;
+	const room = Math.max(0, MAX_INGEST_FILES - current);
+	if (room === 0) {
+		pushError('Queue full', `The ingest queue is limited to ${MAX_INGEST_FILES} files.`);
+		return 0;
+	}
+
+	const accepted = files.slice(0, room);
+	if (files.length > room) {
+		pushError(
+			'Too many files',
+			`Only ${room} of ${files.length} file(s) were queued (max ${MAX_INGEST_FILES}).`
+		);
+	}
+
+	const newJobs: IngestJob[] = accepted.map((file) => {
+		const id = crypto.randomUUID();
+		pendingQueue.push({ id, file });
+		return {
+			id,
+			filename: file.name,
+			size: file.size,
+			status: 'queued',
+			progress: 0,
+			questionCount: 0,
+			skippedCount: 0,
+			durationMs: 0,
+			error: ''
+		};
+	});
+	ingestJobs.update((jobs) => [...jobs, ...newJobs]);
+
+	void drainQueue();
+	return accepted.length;
+}
+
+/** Removes all finished (success/skipped/failed) jobs from the list. */
+export function clearFinishedJobs(): void {
+	ingestJobs.update((jobs) =>
+		jobs.filter((j) => j.status === 'queued' || j.status === 'parsing' || j.status === 'importing')
+	);
+}
+
+async function drainQueue(): Promise<void> {
+	if (draining) return;
+	draining = true;
+	ingestRunning.set(true);
+	try {
+		let item: { id: string; file: File } | undefined;
+		while ((item = pendingQueue.shift())) {
+			const { id, file } = item;
+			try {
+				patchJob(id, { status: 'parsing', progress: 0.15 });
+				const payload = await buildIngestPayload(file);
+				patchJob(id, { status: 'importing', progress: 0.65 });
+				const summary = await libraryClient.call('test:ingestZip', { payload });
+
+				const status: IngestJobStatus =
+					summary.duplicateStatus === 'duplicate' ? 'skipped' : 'success';
+				patchJob(id, {
+					status,
+					progress: 1,
+					questionCount: summary.questionCount,
+					skippedCount: summary.skippedCount,
+					duplicateStatus: summary.duplicateStatus,
+					durationMs: summary.durationMs
+				});
+
+				// Keep the DB panel counts live as the queue progresses.
+				dbInfo.set(await libraryClient.call('db:getInfo', {}));
+			} catch (err) {
+				patchJob(id, {
+					status: 'failed',
+					progress: 1,
+					error: err instanceof Error ? err.message : String(err)
+				});
+			}
+		}
+	} finally {
+		draining = false;
+		ingestRunning.set(false);
+		await refreshFacets();
+	}
 }
 
 export async function runSearch(filters: LibrarySearchFilters): Promise<void> {

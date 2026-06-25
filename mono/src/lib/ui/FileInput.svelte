@@ -9,6 +9,8 @@
     multiple?: boolean;
     disabled?: boolean;
     invalidTitle?: string;
+    /** Called with the accepted files whenever a valid selection is made. */
+    onfiles?: (files: File[]) => void;
     [key: string]: any;
   }
 
@@ -18,6 +20,7 @@
     multiple = false,
     disabled = false,
     invalidTitle = "Unsupported file type",
+    onfiles = undefined,
     ...rest
   } = $props();
 
@@ -59,7 +62,9 @@
     }
 
     errorMessage = "";
-    file = multiple ? selectedFiles : [selectedFiles[0]];
+    const accepted = multiple ? selectedFiles : [selectedFiles[0]];
+    file = accepted;
+    onfiles?.(accepted);
   }
 
   function handleChange(event: Event) {
