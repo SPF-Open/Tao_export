@@ -15,7 +15,7 @@ export function buildMarkdown(report: AuditReport): string {
   sections.push('');
 
   // Summary section
-  sections.push('## 📊 Summary');
+  sections.push('## Summary');
   sections.push('');
   sections.push('| Metric | Value |');
   sections.push('|--------|-------|');
@@ -29,19 +29,19 @@ export function buildMarkdown(report: AuditReport): string {
   sections.push('');
 
   // Issues section
-  sections.push('## ⚠️ Issues Found');
+  sections.push('## Issues Found');
   sections.push('');
   sections.push('| Severity | Count | Status |');
   sections.push('|----------|-------|--------|');
-  sections.push(`| 🔴 Bloquant (Critical) | **${report.summary.bloquants}** | ${report.summary.bloquants > 0 ? '❌ FAIL' : '✅ PASS'} |`);
-  sections.push(`| 🟡 Majeur (Major) | **${report.summary.majeurs}** | ${report.summary.majeurs > 0 ? '⚠️ WARNING' : '✅ PASS'} |`);
-  sections.push(`| 🔵 Mineur (Minor) | **${report.summary.mineurs}** | ℹ️ Info |`);
+  sections.push(`| Bloquant (Critical) | **${report.summary.bloquants}** | ${report.summary.bloquants > 0 ? 'FAIL' : 'PASS'} |`);
+  sections.push(`| Majeur (Major) | **${report.summary.majeurs}** | ${report.summary.majeurs > 0 ? 'WARNING' : 'PASS'} |`);
+  sections.push(`| Mineur (Minor) | **${report.summary.mineurs}** | Info |`);
   sections.push('');
 
   // Critical Issues Detail
   const criticalResults = report.results.filter((r) => r.hasCriticalErrors);
   if (criticalResults.length > 0) {
-    sections.push('## 🔴 Critical Issues (Must Fix)');
+    sections.push('## Critical Issues (Must Fix)');
     sections.push('');
     criticalResults.forEach((result, idx) => {
       const qTitle = result.pair.qti.title || result.pair.qti.prompt.substring(0, 50);
@@ -58,7 +58,7 @@ export function buildMarkdown(report: AuditReport): string {
   // Major Issues Detail
   const majorResults = report.results.filter((r) => r.errors.some((e) => e.severity === 'MAJEUR'));
   if (majorResults.length > 0) {
-    sections.push('## 🟡 Major Issues');
+    sections.push('## Major Issues');
     sections.push('');
     majorResults.slice(0, 10).forEach((result, idx) => {
       const qTitle = result.pair.qti.title || result.pair.qti.prompt.substring(0, 50);
@@ -81,7 +81,7 @@ export function buildMarkdown(report: AuditReport): string {
   // Minor Issues Detail
   const minorResults = report.results.filter((r) => r.errors.some((e) => e.severity === 'MINEUR'));
   if (minorResults.length > 0) {
-    sections.push('## 🔵 Minor Issues');
+    sections.push('## Minor Issues');
     sections.push('');
     minorResults.slice(0, 15).forEach((result, idx) => {
       const qTitle = result.pair.qti.title || result.pair.qti.prompt.substring(0, 50);
@@ -100,7 +100,7 @@ export function buildMarkdown(report: AuditReport): string {
 
   // Unmatched Questions
   if (report.unmatched.excel.length > 0 || report.unmatched.qti.length > 0) {
-    sections.push('## 📭 Unmatched Items');
+    sections.push('## Unmatched Items');
     sections.push('');
 
     if (report.unmatched.excel.length > 0) {
@@ -145,14 +145,14 @@ export function buildMarkdown(report: AuditReport): string {
   }
 
   // Recommendations
-  sections.push('## 💡 Recommendations');
+  sections.push('## Recommendations');
   sections.push('');
   if (report.summary.bloquants > 0) {
     sections.push('**ACTION REQUIRED**: Resolve all critical (Bloquant) issues before deployment.');
   } else if (report.summary.majeurs > 0) {
     sections.push('**RECOMMENDED**: Address major (Majeur) issues to ensure data quality.');
   } else {
-    sections.push('✅ **All checks passed!** No critical issues detected.');
+    sections.push('**All checks passed!** No critical issues detected.');
   }
   sections.push('');
 

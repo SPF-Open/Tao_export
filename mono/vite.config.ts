@@ -27,5 +27,13 @@ export default defineConfig({
     define: {
         PKG: pkg,
         BUILD_DATE: JSON.stringify(new Date().toLocaleDateString("FR-fr", timeOption) + " - " + new Date().toLocaleTimeString("FR-fr", timeOption)),
+    },
+    optimizeDeps: {
+        // sqlite-wasm ships its own .wasm and must not be pre-bundled by esbuild,
+        // otherwise the worker fails to locate sqlite3.wasm at runtime.
+        exclude: ['@sqlite.org/sqlite-wasm']
+    },
+    worker: {
+        format: 'es'
     }
 });

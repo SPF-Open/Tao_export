@@ -85,29 +85,13 @@ export const merge = writable(false);
 export const darkMode = writable(false);
 
 // ============================================================================
-// AUDIT STORES
+// PAGE MODE
 // ============================================================================
 
-import type { AuditReport, ExcelConfig } from '$lib/export/audit/types';
-import { DEFAULT_CONFIG } from '$lib/export/audit/config';
-
-export type PageType = 'questions' | 'audit' | 'compare';
+// Audit now lives at its own /audit route; export switches between the
+// question preview and the side-by-side comparison.
+export type PageType = 'questions' | 'compare';
 export const currentPage = writable<PageType>('questions');
-
-export const auditTab = writable<boolean>(false);
-export const auditLoading = writable<boolean>(false);
-export const auditReport = writable<AuditReport | null>(null);
-export const auditConfig = writable<ExcelConfig>(DEFAULT_CONFIG);
-export const auditFilename = writable<string>('');
-export const auditError = writable<string | null>(null);
-
-export const resetAudit = () => {
-  auditLoading.set(false);
-  auditReport.set(null);
-  auditFilename.set('');
-  auditError.set(null);
-  auditConfig.set(DEFAULT_CONFIG);
-};
 
 // Randomization
 export const randomizeAnswer = writable(false);
@@ -314,17 +298,3 @@ export const resetSettings = () => {
   sort.set(false);
 };
 
-export const auditStats = derived([auditReport], ([$report]) => {
-  if (!$report) {
-    return { total: 0, matched: 0, unmatched: 0, bloquants: 0, majeurs: 0, mineurs: 0, status: 'idle' as const };
-  }
-  return {
-    total: $report.summary.total,
-    matched: $report.summary.matched,
-    unmatched: $report.summary.unmatched,
-    bloquants: $report.summary.bloquants,
-    majeurs: $report.summary.majeurs,
-    mineurs: $report.summary.mineurs,
-    status: $report.summary.bloquants > 0 ? 'fail' : $report.summary.majeurs > 0 ? 'warning' : 'pass' as const,
-  };
-});

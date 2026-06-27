@@ -47,4 +47,12 @@
     cursor: not-allowed;
     background-color: var(--surface);
   }
+
+  /* Larger tap target + 16px font (prevents iOS zoom) on phones. */
+  @media (max-width: 640px) {
+    .text-input {
+      min-height: 44px;
+      font-size: 16px;
+    }
+  }
 </style>

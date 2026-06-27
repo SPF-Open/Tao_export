@@ -10,6 +10,3 @@ export { default as Question } from './template/Question.svelte';
 
 // Utilities
 export * from './helper';
-
-// Sub-modules
-export * from './audit/index';

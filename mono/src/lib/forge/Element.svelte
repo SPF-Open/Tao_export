@@ -64,6 +64,16 @@
     padding: 2rem;
   }
 
+  /* Phones: stop the content box from sizing to a wide child (e.g. the
+     calendar grid) — fill the viewport instead and let the child scroll. */
+  @media (max-width: 640px) {
+    .content {
+      width: auto;
+      max-width: 100%;
+      padding: 1rem;
+    }
+  }
+
   .corner {
     width: 1rem;
     height: 1rem;

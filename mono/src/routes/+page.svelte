@@ -10,6 +10,8 @@
     Download,
     Hammer,
     ClipboardCheck,
+    Library,
+    ScanSearch,
     Route as RouteIcon,
   } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
@@ -89,6 +91,22 @@
       eyebrow: 'Item analysis',
       description: 'Review item difficulty, discrimination, and alternative statistics after an exam session.',
       icon: ClipboardCheck,
+      available: true,
+    },
+    {
+      path: '/library',
+      title: 'Library',
+      eyebrow: 'Question bank',
+      description: 'Build a portable SQLite question database from TAO exports, then search it instantly — all in your browser.',
+      icon: Library,
+      available: true,
+    },
+    {
+      path: '/audit',
+      title: 'Audit',
+      eyebrow: 'Compliance review',
+      description: 'Compare a TAO export against an Excel source: match questions and flag critical, major and minor differences by severity.',
+      icon: ScanSearch,
       available: true,
     },
   ];

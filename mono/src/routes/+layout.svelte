@@ -48,6 +48,7 @@
 		"/import": "import",
 		"/forge": "forge",
 		"/iat": "iat",
+		"/audit": "audit",
 	};
 
 	let appName = $derived(APP_NAMES[page.url.pathname] ?? null);
@@ -55,6 +56,14 @@
 
 	$effect(() => {
 		initializeLicense();
+	});
+
+	// On a page that uses the sidebar, default it open on desktop/tablet but
+	// closed on phones (where it becomes an overlay drawer).
+	$effect(() => {
+		if ($sidebarEnabled && typeof window !== "undefined") {
+			sidebarOpen.set(window.innerWidth > 640);
+		}
 	});
 </script>
 
@@ -73,11 +82,11 @@
 		<nav class="breadcrumb" aria-label="Breadcrumb">
 			<a
 				href="https://lv0.eu"
-				class="bc-link"
+				class="bc-link bc-extern"
 				target="_blank"
 				rel="noopener noreferrer">lv0.eu</a
 			>
-			<span class="bc-sep" aria-hidden="true">/</span>
+			<span class="bc-sep bc-sep-extern" aria-hidden="true">/</span>
 			<a href="/" class="bc-link">tao</a>
 			{#if appName}
 				<span class="bc-sep" aria-hidden="true">/</span>
@@ -191,6 +200,13 @@
 		<LicenseActivation compact />
 	{/snippet}
 </Modal>
+{#if $sidebarEnabled && $sidebarOpen}
+	<button
+		class="sidebar-backdrop hide-print"
+		aria-label="Close menu"
+		onclick={() => sidebarOpen.set(false)}
+	></button>
+{/if}
 <NotificationQueue />
 
 <style>
@@ -240,6 +256,24 @@
 		align-items: center;
 		gap: 6px;
 		font-size: 13px;
+		min-width: 0;
+		overflow: hidden;
+	}
+
+	.bc-link,
+	.bc-current {
+		white-space: nowrap;
+	}
+
+	.sidebar-backdrop {
+		display: none;
+		position: fixed;
+		inset: var(--layout-header-height) 0 0 0;
+		background: rgba(0, 0, 0, 0.45);
+		border: none;
+		z-index: 55;
+		animation: fadeIn 150ms ease;
+		cursor: default;
 	}
 
 	.bc-link {
@@ -369,6 +403,35 @@
 	@keyframes fadeIn {
 		from { opacity: 0; transform: translateY(-3px); }
 		to   { opacity: 1; transform: translateY(0); }
+	}
+
+	@media (max-width: 640px) {
+		.sidebar-backdrop {
+			display: block;
+		}
+		.bc-extern,
+		.bc-sep-extern {
+			display: none;
+		}
+		.about-menu {
+			max-width: calc(100vw - 16px);
+			max-height: 70vh;
+			overflow: auto;
+		}
+		.burger {
+			width: 34px;
+			height: 34px;
+		}
+		.icon-btn {
+			width: 36px;
+			height: 36px;
+		}
+	}
+
+	@media (prefers-reduced-motion: reduce) {
+		.sidebar-backdrop {
+			animation: none;
+		}
 	}
 
 	@media print {

@@ -24,8 +24,7 @@
   } from "$lib/import/helper/store";
   import { QCM, Question } from "$lib/import/helper/question";
   import { qcmsToAssessmentItems } from "$lib/import/helper/toQuestionType";
-  import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
-  import { EmptyState } from "$lib/ui";
+  import { EmptyState, SidebarLayout } from "$lib/ui";
   import { FileSpreadsheet } from "lucide-svelte";
 
   let questions = $state<QCM[]>([]);
@@ -42,11 +41,6 @@
   // "hide answers" toggle (Question.svelte / QCM.svelte read the export store).
   $effect(() => {
     showAnswer.set(!$hideAnswer);
-  });
-
-  $effect(() => {
-    sidebarEnabled.set(true);
-    return () => sidebarEnabled.set(false);
   });
 
   const parseAndShow = () => {
@@ -90,85 +84,43 @@
   <meta name="description" content="Import raw exam data from Excel and normalize it into a TAO export." />
 </svelte:head>
 
-<main>
-  <div class="content" class:sidebar-open={$sidebarOpen}>
-    {#if $sidebarOpen}
-      <aside class="sidebar">
-        <div class="sidebar-content">
-          <Menu />
-        </div>
-      </aside>
-    {/if}
+<SidebarLayout sidebarLabel="Import settings">
+  {#snippet sidebar()}
+    <Menu />
+  {/snippet}
 
-    <div class="main-area">
-      {#if $file}
-        <div class="questions-container">
-          {#each renderItems as item}
-            {@const show = itemVisibility.get(item.id) !== false}
-            <QuestionPreview
-              {item}
-              {show}
-              onToggleShow={(s) => { itemVisibility.set(item.id, s); itemVisibility = new Map(itemVisibility); }}
-            />
-          {/each}
-        </div>
-      {:else}
-        <div class="dropzone-center">
-          <EmptyState
-            icon={FileSpreadsheet}
-            title="Import a question file"
-            description="Upload an Excel workbook to generate a TAO export."
-          >
-            {#snippet children()}
-              <div class="dropzone-inner">
-                <DropZone />
-              </div>
-            {/snippet}
-          </EmptyState>
-        </div>
-      {/if}
-    </div>
+  <div class="import-main">
+    {#if $file}
+      <div class="questions-container">
+        {#each renderItems as item}
+          {@const show = itemVisibility.get(item.id) !== false}
+          <QuestionPreview
+            {item}
+            {show}
+            onToggleShow={(s) => { itemVisibility.set(item.id, s); itemVisibility = new Map(itemVisibility); }}
+          />
+        {/each}
+      </div>
+    {:else}
+      <div class="dropzone-center">
+        <EmptyState
+          icon={FileSpreadsheet}
+          title="Import a question file"
+          description="Upload an Excel workbook to generate a TAO export."
+        >
+          {#snippet children()}
+            <div class="dropzone-inner">
+              <DropZone />
+            </div>
+          {/snippet}
+        </EmptyState>
+      </div>
+    {/if}
   </div>
-</main>
+</SidebarLayout>
 
 <style>
-  main {
-    display: flex;
-    flex-direction: column;
-    min-height: calc(100vh - var(--layout-header-height));
-  }
-
-  .content {
-    display: flex;
-    flex: 1;
-    min-height: calc(100vh - var(--layout-header-height));
-  }
-
-  .sidebar {
-    position: sticky;
-    top: var(--layout-header-height);
-    height: calc(100vh - var(--layout-header-height));
-    width: var(--sidebar-width);
-    background: var(--surface);
-    border-right: 1px solid var(--border);
-    box-shadow: var(--shadow-lg);
-    z-index: 50;
-    overflow-y: auto;
-    scrollbar-gutter: stable;
-    flex-shrink: 0;
-  }
-
-  .sidebar-content {
-    padding: 8px;
-    display: flex;
-    flex-direction: column;
-    gap: 16px;
-    min-height: 100%;
-  }
-
-  .main-area {
-    flex: 1;
-    padding: 16px;
+  .import-main {
     min-width: 0;
     overflow-x: auto;
   }
@@ -193,14 +145,5 @@
 
   .dropzone-inner :global(.files-area) {
     padding: 36px 16px;
-  }
-
-  @media print {
-    .sidebar {
-      display: none !important;
-    }
-    .main-area {
-      padding: 0;
-    }
   }
 </style>

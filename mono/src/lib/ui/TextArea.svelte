@@ -46,4 +46,11 @@
     opacity: 0.5;
     cursor: not-allowed;
   }
+
+  /* 16px font prevents iOS input-zoom on phones. */
+  @media (max-width: 640px) {
+    .textarea {
+      font-size: 16px;
+    }
+  }
 </style>

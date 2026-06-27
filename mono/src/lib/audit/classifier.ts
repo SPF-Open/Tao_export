@@ -132,9 +132,9 @@ export function generateSummary(report: AuditReport): string {
     `- **Unmatched**: Excel: ${report.unmatched.excel.length}, QTI: ${report.unmatched.qti.length}`,
     '',
     '## Issues Found',
-    `- **Bloquants (Critical)**: ${report.summary.bloquants} ⚠️`,
-    `- **Majeurs (Major)**: ${report.summary.majeurs} ⚠️`,
-    `- **Mineurs (Minor)**: ${report.summary.mineurs} ℹ️`,
+    `- **Bloquants (Critical)**: ${report.summary.bloquants}`,
+    `- **Majeurs (Major)**: ${report.summary.majeurs}`,
+    `- **Mineurs (Minor)**: ${report.summary.mineurs}`,
     '',
     '## Statistics',
     `- **Match Rate**: ${(stats.matchRate * 100).toFixed(1)}%`,
@@ -194,14 +194,14 @@ export function createQuickSummary(report: AuditReport): {
   const majeurs = report.summary.majeurs;
 
   let status: 'PASS' | 'WARNING' | 'FAIL' = 'PASS';
-  let recommendation = '✅ All checks passed. Data is consistent.';
+  let recommendation = 'All checks passed. Data is consistent.';
 
   if (bloquants > 0) {
     status = 'FAIL';
-    recommendation = `❌ ${bloquants} critical issue(s) found. Must be resolved before deployment.`;
+    recommendation = `${bloquants} critical issue(s) found. Must be resolved before deployment.`;
   } else if (majeurs > 0) {
     status = 'WARNING';
-    recommendation = `⚠️ ${majeurs} major issue(s) found. Review and address before going live.`;
+    recommendation = `${majeurs} major issue(s) found. Review and address before going live.`;
   }
 
   return {
