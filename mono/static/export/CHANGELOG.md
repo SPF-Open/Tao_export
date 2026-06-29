@@ -1,5 +1,12 @@
 ## Changelog
 
+### 2.3.0
+- Fix : Audit now parses Excel the same way as the Import route
+  - The audit reads the Excel source with the Import parser (`Question.parseSheet`) and templates (FIN / OLD_BOSA / OLD_FIN) instead of a separate parser, so a file that imports cleanly now audits cleanly
+  - Questions are matched by order/position (the TAO export is generated from the Excel, so they share order and count) instead of fuzzy text similarity — far more reliable matching
+  - Unmatched questions and Excel↔QTI count mismatches are now treated as critical (Bloquant) and fail the audit, instead of being shown as a soft warning
+  - Replaced the audit's match-threshold slider and bespoke column config with an Import-style template picker
+
 ### 2.2.0
 - Feat : Password-protected, encrypted library export
   - Set, change, or remove a password in the Database panel

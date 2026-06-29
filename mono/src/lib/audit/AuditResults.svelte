@@ -35,9 +35,9 @@
   const stats = $derived(calculateStatistics(report));
 
   const status = $derived(
-    report.summary.bloquants > 0
+    report.summary.bloquants > 0 || report.summary.unmatched > 0
       ? "fail"
-      : report.summary.majeurs > 0 || report.summary.unmatched > 0
+      : report.summary.majeurs > 0
         ? "warning"
         : "pass",
   );
@@ -72,9 +72,9 @@
       {:else}<CircleCheck size={18} strokeWidth={1.9} />{/if}
     </span>
     <span class="banner-text">
-      {#if report.summary.bloquants > 0}Critical issues found
+      {#if report.summary.unmatched > 0}{report.summary.unmatched} unmatched question(s) — count/order mismatch
+      {:else if report.summary.bloquants > 0}Critical issues found
       {:else if report.summary.majeurs > 0}Major issues found
-      {:else if report.summary.unmatched > 0}Unmatched items found
       {:else}All checks passed{/if}
     </span>
     <span class="banner-time">{new Date(report.timestamp).toLocaleString()}</span>

@@ -157,7 +157,7 @@
               <div class="answer-text">
                 {#if i < pair.excel.answers.length}
                   <HighlightedText
-                    text={pair.excel.answers[i]}
+                    text={pair.excel.answers[i].text}
                     diffs={answerError?.detail?.excelDiff}
                   />
                 {:else}

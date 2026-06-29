@@ -84,13 +84,13 @@ export function compare(
   }
 
   // Check question type mismatch
-  if (pair.qti.type && pair.excel.metadata.type && pair.qti.type !== pair.excel.metadata.type) {
+  if (pair.qti.type && pair.excel.type && pair.qti.type !== pair.excel.type) {
     errors.push({
       type: 'type_mismatch',
       severity: 'MAJEUR',
       detail: {
         field: 'type',
-        excel: pair.excel.metadata.type,
+        excel: pair.excel.type,
         qti: pair.qti.type,
       },
     });
@@ -123,7 +123,7 @@ function compareAnswers(pair: MatchedPair, options: NormalizationOptions): Compa
   // Compare answer texts (position by position)
   const minLen = Math.min(excelAnswers.length, qtiAnswers.length);
   for (let i = 0; i < minLen; i++) {
-    const excelText = normalize(excelAnswers[i], options);
+    const excelText = normalize(excelAnswers[i].text, options);
     const qtiText = normalize(qtiAnswers[i].text, options);
 
     if (excelText !== qtiText) {
@@ -143,8 +143,7 @@ function compareAnswers(pair: MatchedPair, options: NormalizationOptions): Compa
   }
 
   // Check if correct answer position matches
-  // Excel's correctAnswerIndex points to the correct answer position
-  const excelCorrectPos = pair.excel.correctAnswerIndex;
+  const excelCorrectPos = excelAnswers.findIndex((a) => a.correct);
   const qtiCorrectPos = qtiAnswers.findIndex((a) => a.correct);
 
   if (excelCorrectPos !== qtiCorrectPos) {
@@ -179,40 +178,6 @@ function compareAnswers(pair: MatchedPair, options: NormalizationOptions): Compa
         qti: correctCount,
       },
     });
-  }
-
-  return errors;
-}
-
-/**
- * Compare sequences of matched pairs to detect order mismatches
- * Returns errors for each pair that has incorrect order
- */
-export function compareSequence(
-  pairs: MatchedPair[],
-  excelOrder: number[],
-  qtiOrder: number[]
-): ComparisonError[] {
-  const errors: ComparisonError[] = [];
-
-  // Check if order is preserved or randomized
-  for (let i = 0; i < pairs.length; i++) {
-    const pair = pairs[i];
-    const expectedIndex = excelOrder.indexOf(pair.excel.rowIndex);
-    const actualIndex = qtiOrder.indexOf(i);
-
-    if (expectedIndex !== actualIndex) {
-      errors.push({
-        type: 'question_order_mismatch',
-        severity: 'MAJEUR',
-        detail: {
-          field: 'order',
-          index: i,
-          excel: expectedIndex,
-          qti: actualIndex,
-        },
-      });
-    }
   }
 
   return errors;

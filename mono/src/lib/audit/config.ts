@@ -1,3 +1,7 @@
+// NOTE: The /audit route no longer uses this config — it parses Excel via the
+// Import pipeline (`fromExcel.ts` + `bindingTemplate`). These `ExcelConfig`
+// presets remain in use by library ingest (`lib/library/parse/ingestFromExcel.ts`)
+// and the Excel adapter (`lib/questions/adapters/excel.ts`).
 import type { ExcelConfig } from './types';
 
 export const DEFAULT_CONFIG: ExcelConfig = {
