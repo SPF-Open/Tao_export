@@ -39,8 +39,10 @@ export function qcmToAssessmentItem(qcm: QCM, index: number): AssessmentItem {
     ],
     scoring: { maxScore: options.length - 1, rules },
     metadata: {
-      competency: qcm.competency ? String(qcm.competency.v ?? '') : undefined,
-      indicator: qcm.indicator ? String(qcm.indicator.v ?? '') : undefined,
+      competency: plainText(qcm.competency),
+      indicator: plainText(qcm.indicator),
+      competencyDescr: plainText(qcm.competencyDescr),
+      masteryDescr: plainText(qcm.masteryDescr),
     }
   };
 }
