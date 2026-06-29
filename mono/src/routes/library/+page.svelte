@@ -22,7 +22,7 @@
 
   const subtitles: Record<Tab, string> = {
     db: "Create, open and export your portable .taodb question library.",
-    ingest: "Import TAO QTI .zip exports — up to 100 at a time.",
+    ingest: "Import TAO .zip exports, Excel files, or ZIP enriched with Excel competencies.",
     search: "Search the question bank instantly; refine with the filters on the left.",
   };
 
@@ -78,7 +78,7 @@
     {:else if tab === "db"}
       <p class="side-hint">Manage your library file on the right. Everything stays in your browser.</p>
     {:else}
-      <p class="side-hint">Drop TAO <code>.zip</code> exports on the right; they import through a queue.</p>
+      <p class="side-hint">Import TAO <code>.zip</code> exports, <code>.xlsx</code> Excel files, or both together to enrich competencies.</p>
     {/if}
 
     <div class="divider"></div>

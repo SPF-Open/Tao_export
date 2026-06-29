@@ -1,5 +1,13 @@
 ## Changelog
 
+### 2.1.0
+- Feat : Excel import support in the Library route
+  - Import questions directly from Excel files (Excel-only mode)
+  - Import TAO ZIP exports enriched with competency data from a matching Excel file (ZIP + Excel merged mode)
+  - Column picker (ExcelColumnConfig) embedded in the Import tab with preset selector, answer layout toggle, and per-column letter inputs
+  - Source badges on import job rows to distinguish ZIP, Excel, and merged imports
+  - Queue supports all three sources via a builder-closure pattern — no new worker commands required
+
 ### 1.7.1
 - Fix : Excel sheet selection dropdown now works properly
   - Fixed reactive state binding for availableSheets and selectedSheet in AuditTab
