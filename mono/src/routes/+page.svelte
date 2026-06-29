@@ -9,6 +9,7 @@
     Upload,
     Download,
     Hammer,
+    Bold,
     ClipboardCheck,
     Library,
     ScanSearch,
@@ -83,6 +84,14 @@
       eyebrow: 'ZIP to PDF/JSON',
       description: 'Load ZIP exam archives, configure settings, preview questions and answers, and export formatted result tables.',
       icon: Download,
+      available: true,
+    },
+    {
+      path: '/format',
+      title: 'Format',
+      eyebrow: 'Bold prompts',
+      description: 'Upload a TAO QTI export and get the same ZIP back with every question prompt wrapped in bold, ready to re-import.',
+      icon: Bold,
       available: true,
     },
     {

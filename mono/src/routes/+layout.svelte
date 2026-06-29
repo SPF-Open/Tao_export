@@ -47,6 +47,7 @@
 		"/export": "export",
 		"/import": "import",
 		"/forge": "forge",
+		"/format": "format",
 		"/iat": "iat",
 		"/audit": "audit",
 	};

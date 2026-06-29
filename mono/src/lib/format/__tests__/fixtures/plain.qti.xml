@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p2" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p2 http://www.imsglobal.org/xsd/qti/qtiv2p2/imsqti_v2p2.xsd" identifier="i6011423ba1e83975c19a3f96e48f662" title="MKV 01" label="MKV 01" xml:lang="nl-NL" adaptive="false" timeDependent="false" toolName="TAO" toolVersion="2024.11 LTS">
+  <responseDeclaration identifier="RESPONSE" cardinality="single" baseType="identifier">
+    <correctResponse>
+      <value><![CDATA[choice_1]]></value>
+    </correctResponse>
+    <mapping defaultValue="0">
+      <mapEntry mapKey="choice_1" mappedValue="3"/>
+      <mapEntry mapKey="choice_2" mappedValue="-1"/>
+      <mapEntry mapKey="choice_3" mappedValue="-1"/>
+      <mapEntry mapKey="choice_4" mappedValue="-1"/>
+    </mapping>
+  </responseDeclaration>
+  <outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float" normalMaximum="3"/>
+  <outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float">
+    <defaultValue>
+      <value>3</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <itemBody>
+    <div class="grid-row">
+      <div class="col-12">
+        <choiceInteraction responseIdentifier="RESPONSE" shuffle="true" maxChoices="1" minChoices="0" orientation="vertical">
+          <prompt>In welke van de onderstaande gevallen moet de Algemene Administratie van de Douane en Accijnzen (AADA) NIET het recht om gehoord toepassen als ze een beschikking neemt?</prompt>
+          <simpleChoice identifier="choice_1" fixed="false" showHide="show">Wanneer er een beschikking genomen wordt in verband met het verlenen van een Bindende Tarief Inlichting.</simpleChoice>
+          <simpleChoice identifier="choice_2" fixed="false" showHide="show">Wanneer zij een beschikking neemt in verband met een aanvraag tot terugbetaling van invoerrechten.</simpleChoice>
+          <simpleChoice identifier="choice_3" fixed="false" showHide="show">Wanneer zij een beschikking neemt in verband de oorsprong van de goederen en de hiermee verband houdende invoerrechten.</simpleChoice>
+          <simpleChoice identifier="choice_4" fixed="false" showHide="show">Wanneer zij een beschikking neemt tot het weigeren van een vergunning voor een douane-entrepot.</simpleChoice>
+        </choiceInteraction>
+      </div>
+    </div>
+  </itemBody>
+  <responseProcessing template="http://www.imsglobal.org/question/qti_v2p2/rptemplates/map_response"/>
+</assessmentItem>
