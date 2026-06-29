@@ -7,12 +7,14 @@
   import { runAudit } from "$lib/audit/index";
   import { getExcelSheets } from "$lib/audit/excel-parser";
   import { assessmentItemsToQuestions } from "$lib/audit/fromAssessment";
+  import { bindingFromTemplate } from "$lib/audit/fromExcel";
   import AuditConfig from "$lib/audit/AuditConfig.svelte";
   import AuditResults from "$lib/audit/AuditResults.svelte";
   import {
     auditItems,
     auditZipName,
-    auditConfig,
+    auditTemplate,
+    auditIgnoreTitle,
     auditFilename,
     auditReport,
     auditLoading,
@@ -23,7 +25,6 @@
   let excelFile = $state<File | null>(null);
   let sheets = $state<string[]>([]);
   let selectedSheet = $state("");
-  let threshold = $state(0.95);
 
   const ready = $derived($auditItems.length > 0 && excelFile !== null && selectedSheet !== "");
 
@@ -74,9 +75,9 @@
         return;
       }
       const buffer = await excelFile.arrayBuffer();
-      const result = await runAudit(buffer, questions, get(auditConfig), {
-        threshold,
+      const result = await runAudit(buffer, questions, bindingFromTemplate(get(auditTemplate)), {
         sheetName: selectedSheet,
+        ignoreTitleMismatch: get(auditIgnoreTitle),
       });
       if (result.success && result.report) auditReport.set(result.report);
       else auditError.set(result.error ?? "Unknown error during audit.");
@@ -92,7 +93,6 @@
     excelFile = null;
     sheets = [];
     selectedSheet = "";
-    threshold = 0.95;
   }
 
   function clearZip() {
@@ -144,12 +144,6 @@
 
     {#if $auditFilename}
       <AuditConfig />
-
-      <div class="field">
-        <label class="field-label" for="threshold">Match threshold — {(threshold * 100).toFixed(0)}%</label>
-        <input id="threshold" type="range" min="0.5" max="1" step="0.05" bind:value={threshold} />
-        <small>Higher = fewer but more confident matches.</small>
-      </div>
     {/if}
 
     <div class="actions">
@@ -191,7 +185,6 @@
 
   .field { display: flex; flex-direction: column; gap: 0.4rem; }
   .field-label { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }
-  .field small { font-size: 0.74rem; color: var(--text-muted); }
 
   .badge {
     display: flex; align-items: center; gap: 0.5rem;
@@ -202,8 +195,6 @@
   .badge-count { font-size: 0.72rem; font-weight: 700; color: var(--brand); background: rgba(var(--brand-rgb), 0.1); padding: 1px 7px; border-radius: 999px; }
   .badge-clear { display: inline-flex; background: none; border: none; color: var(--text-muted); cursor: pointer; padding: 2px; border-radius: var(--radius); }
   .badge-clear:hover { color: var(--danger); }
-
-  #threshold { width: 100%; accent-color: var(--brand); }
 
   .actions { display: flex; flex-direction: column; gap: 0.5rem; margin-top: auto; padding-top: 0.5rem; }
   .ghost {

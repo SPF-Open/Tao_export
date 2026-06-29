@@ -53,12 +53,17 @@ export function buildReport(
   });
   const duplicateTitles = Object.values(titleCounts).filter((count) => count > 1).length;
 
+  // An unmatched question (on either side) is a critical failure: these are
+  // compliance-critical comparisons, so "no match" must never read as OK. Fold
+  // the unmatched count into the BLOQUANT total so the audit fails.
+  const unmatchedCount = unmatchedExcel.length + unmatchedQTI.length;
+
   return {
     summary: {
       total: pairs.length,
       matched: pairs.length,
-      unmatched: unmatchedExcel.length + unmatchedQTI.length,
-      bloquants: errorCounts.BLOQUANT,
+      unmatched: unmatchedCount,
+      bloquants: errorCounts.BLOQUANT + unmatchedCount,
       majeurs: errorCounts.MAJEUR,
       mineurs: errorCounts.MINEUR,
       duplicateTitles,
@@ -192,11 +197,15 @@ export function createQuickSummary(report: AuditReport): {
 } {
   const bloquants = report.summary.bloquants;
   const majeurs = report.summary.majeurs;
+  const unmatched = report.summary.unmatched;
 
   let status: 'PASS' | 'WARNING' | 'FAIL' = 'PASS';
   let recommendation = 'All checks passed. Data is consistent.';
 
-  if (bloquants > 0) {
+  if (unmatched > 0) {
+    status = 'FAIL';
+    recommendation = `${unmatched} question(s) could not be matched (count/order mismatch between Excel and QTI). These are treated as critical and must be resolved.`;
+  } else if (bloquants > 0) {
     status = 'FAIL';
     recommendation = `${bloquants} critical issue(s) found. Must be resolved before deployment.`;
   } else if (majeurs > 0) {

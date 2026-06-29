@@ -1,22 +1,29 @@
-import type { ExcelConfig, AuditReport, ExcelQuestion, QTIQuestion } from './types';
-import { parseExcel } from './excel-parser';
-import { matchQuestions } from './matcher';
+import type { AuditReport, QTIQuestion } from './types';
+import { parseExcelToAssessmentItems, type ExcelBinding } from './fromExcel';
+import { assessmentItemsToQuestions } from './fromAssessment';
+import { matchPositional } from './matcher';
 import { compare } from './comparator';
 import { buildReport } from './classifier';
 import type { NormalizationOptions } from './types';
 
 /**
- * Main audit orchestrator
- * Runs the complete pipeline: parse → match → compare → classify → report
+ * Main audit orchestrator.
+ * Runs the complete pipeline: parse → match → compare → classify → report.
+ *
+ * Both sides are parsed with the canonical app parsers: the Excel side via the
+ * Import pipeline (`parseExcelToAssessmentItems`) and the QTI side via QtiAdapter
+ * (already converted to `qtiQuestions` by the caller). Matching is positional —
+ * the TAO export is generated from the Excel, so the two lists share order and
+ * count, and any drift surfaces as critical unmatched items.
  */
 export async function runAudit(
   excelBuffer: ArrayBuffer,
   qtiQuestions: QTIQuestion[],
-  config: ExcelConfig,
+  binding: ExcelBinding,
   options?: {
-    threshold?: number;
     normOptions?: Partial<NormalizationOptions>;
     sheetName?: string;
+    ignoreTitleMismatch?: boolean;
   }
 ): Promise<{
   success: boolean;
@@ -27,12 +34,16 @@ export async function runAudit(
   const warnings: string[] = [];
 
   try {
-    // Step 1: Parse Excel
-    console.log('[Audit] Step 1: Parsing Excel file...');
-    let excelQuestions: ExcelQuestion[];
+    // Step 1: Parse Excel with the Import pipeline, then normalize to QTIQuestion.
+    console.log('[Audit] Step 1: Parsing Excel file (Import pipeline)...');
+    let excelQuestions: QTIQuestion[];
 
     try {
-      excelQuestions = await parseExcel(excelBuffer, config, options?.sheetName);
+      const excelItems = parseExcelToAssessmentItems(excelBuffer, binding, options?.sheetName);
+      excelQuestions = assessmentItemsToQuestions(excelItems).map((q, i) => ({
+        ...q,
+        metadata: { ...q.metadata, excelRow: i + 1 },
+      }));
     } catch (error) {
       return {
         success: false,
@@ -47,56 +58,40 @@ export async function runAudit(
       };
     }
 
-    console.log(`[Audit] Found ${excelQuestions.length} questions in Excel`);
-    
-    // Debug: Log first question details
-    if (excelQuestions.length > 0) {
-      const first = excelQuestions[0];
-      console.log('[Audit] First Excel question:', {
-        rowIndex: first.rowIndex,
-        excelRow: first.metadata.excelRow,
-        title: first.title?.substring(0, 50),
-        prompt: first.prompt.substring(0, 80),
-        answers: first.answers.length,
-        correctAnswerIndex: first.correctAnswerIndex,
-      });
-    }
+    console.log(`[Audit] Found ${excelQuestions.length} Excel questions, ${qtiQuestions.length} QTI questions`);
 
-    // Step 2: Match questions
-    console.log('[Audit] Step 2: Matching Excel questions to QTI...');
-    const threshold = options?.threshold ?? 0.85;
-    const { pairs, unmatchedExcel, unmatchedQTI } = matchQuestions(
+    // Step 2: Positional matching (order-based).
+    console.log('[Audit] Step 2: Matching Excel questions to QTI (positional)...');
+    const { pairs, unmatchedExcel, unmatchedQTI } = matchPositional(
       excelQuestions,
       qtiQuestions,
-      threshold,
       options?.normOptions,
-      { ignoreTitleMismatch: config.ignoreTitleMismatch }
+      { ignoreTitleMismatch: options?.ignoreTitleMismatch }
     );
 
-    console.log(`[Audit] Matched ${pairs.length} pairs`);
-    if (unmatchedExcel.length > 0) {
-      warnings.push(`${unmatchedExcel.length} Excel questions had no match (similarity < ${threshold})`);
-    }
-    if (unmatchedQTI.length > 0) {
-      warnings.push(`${unmatchedQTI.length} QTI questions were not matched to Excel`);
+    if (excelQuestions.length !== qtiQuestions.length) {
+      warnings.push(
+        `Question count mismatch — Excel: ${excelQuestions.length}, QTI: ${qtiQuestions.length}. ${unmatchedExcel.length + unmatchedQTI.length} question(s) could not be paired.`
+      );
     }
 
-    // Step 3: Compare each pair
+    // Step 3: Compare each matched pair.
     console.log('[Audit] Step 3: Comparing matched pairs...');
     const results = pairs.map((pair) => ({
       pair,
       errors: compare(pair, {
         ...options?.normOptions,
-        ignoreTitleMismatch: config.ignoreTitleMismatch,
+        ignoreTitleMismatch: options?.ignoreTitleMismatch,
       }),
     }));
 
-    // Step 4: Build report
+    // Step 4: Build report (unmatched items are folded into the critical count).
     console.log('[Audit] Step 4: Building report...');
     const report = buildReport(pairs, results, unmatchedExcel, unmatchedQTI);
 
     console.log('[Audit] Audit complete:', {
       matched: report.summary.matched,
+      unmatched: report.summary.unmatched,
       bloquants: report.summary.bloquants,
       majeurs: report.summary.majeurs,
       mineurs: report.summary.mineurs,

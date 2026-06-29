@@ -539,7 +539,7 @@ export function buildCSV(report: AuditReport): string {
   for (const q of report.unmatched.qti) {
     const title = 'title' in q.question && q.question.title ? q.question.title : q.question.prompt;
     const id = 'id' in q.question ? q.question.id || '' : '';
-    rows.push(`Unmatched,INFO,"${title.substring(0, 50)}","${id}","No match found in Excel","","",`);
+    rows.push(`Unmatched,BLOQUANT,"${title.substring(0, 50)}","${id}","No match found in Excel","","",`);
   }
 
   return rows.join('\n');

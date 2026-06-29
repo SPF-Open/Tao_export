@@ -48,7 +48,10 @@ export interface QTIAnswer {
 }
 
 export interface MatchedPair {
-  excel: ExcelQuestion;
+  // Both sides are normalized to `QTIQuestion`: the QTI side via QtiAdapter and
+  // the Excel side via the Import pipeline (see `fromExcel.ts`). `excel` is the
+  // Excel-derived question.
+  excel: QTIQuestion;
   qti: QTIQuestion;
   score: number;
 }
@@ -64,6 +67,7 @@ export interface ComparisonError {
     | 'correct_answer_position_mismatch'
     | 'randomization_flag_mismatch'
     | 'question_order_mismatch'
+    | 'count_mismatch'
     | 'type_mismatch';
   severity: 'BLOQUANT' | 'MAJEUR' | 'MINEUR';
   detail?: {
@@ -134,7 +138,7 @@ export interface ScoringDetails {
  * Shows why it didn't match and helps detect copy-paste errors
  */
 export interface CloseMatch {
-  question: QTIQuestion | ExcelQuestion;
+  question: QTIQuestion;
   score: number;
   scoring: ScoringDetails;
   isCopyPasteError?: boolean;
@@ -145,7 +149,7 @@ export interface CloseMatch {
  * Enhanced unmatched item with close matches and quality indicators
  */
 export interface UnmatchedItem {
-  question: ExcelQuestion | QTIQuestion;
+  question: QTIQuestion;
   closeMatches: CloseMatch[];
   isDuplicate?: boolean;
   duplicateOf?: string | number;
