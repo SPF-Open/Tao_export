@@ -1,5 +1,13 @@
 ## Changelog
 
+### 2.2.0
+- Feat : Password-protected, encrypted library export
+  - Set, change, or remove a password in the Database panel
+  - Exported `.taodb` files are encrypted with AES-GCM (PBKDF2-derived key) — unreadable without the password
+  - Opening an encrypted library prompts for the password; wrong passwords are rejected
+  - Plaintext `.taodb` files still open as before (backward compatible)
+  - Encryption protects the exported file; the in-browser working copy stays unencrypted
+
 ### 2.1.0
 - Feat : Excel import support in the Library route
   - Import questions directly from Excel files (Excel-only mode)

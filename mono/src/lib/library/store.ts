@@ -5,6 +5,7 @@ import { buildIngestPayloadFromExcel } from './parse/ingestFromExcel.js';
 import { mergeExcelIntoPayload } from './parse/mergeExcel.js';
 import { parseExcel } from '$lib/audit/excel-parser.js';
 import type { ExcelConfig } from '$lib/audit/types.js';
+import { decryptDb, encryptDb, isEncryptedBytes } from './crypto.js';
 import { pushError } from '$lib/ui/notifications';
 import type {
 	IngestPayload,
@@ -33,6 +34,31 @@ export const facets = writable<LibraryFacets>({
 	indicators: [],
 	languages: []
 });
+
+/* ------------------------------------------------------------------ */
+/* Database password (encrypts the exported .taodb file)                */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Session password used to encrypt exports and decrypt opened files. Held only
+ * in memory — never written to the DB, OPFS, or localStorage. Cleared on
+ * refresh, create, or when the user opens/removes it.
+ */
+let sessionPassword: string | null = null;
+/** Whether a password is currently set — drives the lock UI in the DB panel. */
+export const dbHasPassword = writable<boolean>(false);
+
+/** Sets (or changes) the session password used to encrypt exports. */
+export function setDbPassword(pw: string): void {
+	sessionPassword = pw;
+	dbHasPassword.set(true);
+}
+
+/** Removes the session password — subsequent exports are written in plaintext. */
+export function removeDbPassword(): void {
+	sessionPassword = null;
+	dbHasPassword.set(false);
+}
 
 /* ------------------------------------------------------------------ */
 /* Shared search state (sidebar filters ↔ main results)                 */
@@ -99,6 +125,8 @@ async function run<T>(fn: () => Promise<T>): Promise<T | null> {
 export async function createDb(): Promise<void> {
 	const info = await run(() => libraryClient.call('db:create', { appVersion: appVersion() }));
 	if (info) {
+		// A fresh library has no password until the user sets one.
+		removeDbPassword();
 		dbInfo.set(info);
 		await refreshFacets();
 	}
@@ -116,21 +144,46 @@ export async function restoreDb(): Promise<void> {
 	}
 }
 
-export async function openDb(file: File): Promise<void> {
+/**
+ * Opens a `.taodb` file. Encrypted files (detected by their container magic)
+ * are decrypted on the main thread with `password` before the plaintext image
+ * is handed to the worker; plaintext files open directly. On a successful
+ * encrypted open the password becomes the session password so a later export
+ * re-encrypts with it automatically.
+ *
+ * Throws a friendly error (caught by the panel) on a wrong/missing password.
+ */
+export async function openDb(file: File, password?: string): Promise<boolean> {
+	let wasEncrypted = false;
 	const info = await run(async () => {
-		const bytes = new Uint8Array(await file.arrayBuffer());
+		let bytes = new Uint8Array(await file.arrayBuffer());
+		if (isEncryptedBytes(bytes)) {
+			wasEncrypted = true;
+			if (!password) throw new Error('This library is encrypted. Enter its password to open it.');
+			bytes = await decryptDb(bytes, password);
+		}
 		return libraryClient.call('db:open', { bytes }, [bytes.buffer]);
 	});
-	if (info) {
-		dbInfo.set(info);
-		await refreshFacets();
-	}
+	if (!info) return false;
+	// Reflect the opened file's encryption state in the session so a later
+	// export re-encrypts with the same password (or stays plaintext).
+	if (wasEncrypted && password) setDbPassword(password);
+	else removeDbPassword();
+	dbInfo.set(info);
+	await refreshFacets();
+	return true;
 }
 
+/**
+ * Exports the database. When a session password is set the SQLite image is
+ * encrypted (PBKDF2 → AES-GCM) before download, so the `.taodb` file on disk is
+ * unreadable without the password. Without a password it exports plaintext.
+ */
 export async function exportDb(filename = 'library.taodb'): Promise<void> {
 	await run(async () => {
 		const { bytes } = await libraryClient.call('db:export', {});
-		downloadBytes(bytes, filename);
+		const out = sessionPassword ? await encryptDb(bytes, sessionPassword) : bytes;
+		downloadBytes(out, filename);
 	});
 }
 
