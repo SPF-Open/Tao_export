@@ -7,6 +7,43 @@
 
 ---
 
+## Changelog & Versioning — Required for Every Change
+
+**Every fix, new feature, refactor, or improvement must include all three steps below before committing:**
+
+### 1. Update the Changelog
+
+File: `mono/static/export/CHANGELOG.md`
+
+Add a new entry at the **top** of the file (under the `## Changelog` heading) following the existing format:
+
+```md
+### <new-version>
+- <Type> : <Short description>
+  - <Detail if needed>
+```
+
+Types: `Feat`, `Fix`, `Refactor`, `Improve`, `Change`, `Remove`.
+
+The changelog is served as `/export/CHANGELOG.md` and rendered in the **ChangelogModal** (`src/lib/export/ChangelogModal.svelte`), which is accessible from the **top navigation bar** via a dedicated button. Keep entries clear and user-facing.
+
+### 2. Bump the Version
+
+File: `mono/package.json` — update the `"version"` field.
+
+Follow **semver**:
+- `patch` (x.y.**Z**) — bug fixes, minor copy/style tweaks
+- `minor` (x.**Y**.0) — new features, non-breaking improvements
+- `major` (**X**.0.0) — breaking changes, major redesigns
+
+The new version in `package.json` must match the heading added in the changelog.
+
+### 3. Commit
+
+Create a git commit that includes the code change, the changelog update, and the version bump together. Use a concise commit message describing the change (e.g. `fix: excel sheet selector reactive state`, `feat: export format selector`).
+
+---
+
 ## Design System ("TAO" visual language)
 
 Apply this language to every page/route so the site stays cohesive. The landing

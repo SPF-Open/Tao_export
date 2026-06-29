@@ -3,6 +3,7 @@
   import { browser } from "$app/environment";
   import {
     FileArchive,
+    FileSpreadsheet,
     CheckCircle2,
     XCircle,
     CopyX,
@@ -11,6 +12,7 @@
     Trash2,
     Timer,
     ChevronDown,
+    Upload,
   } from "lucide-svelte";
   import { EmptyState, FileInput } from "$lib/ui";
   import {
@@ -18,11 +20,41 @@
     ingestJobs,
     ingestRunning,
     enqueueIngest,
+    enqueueIngestFromExcel,
+    enqueueIngestMerged,
     clearFinishedJobs,
     MAX_INGEST_FILES,
     type IngestJob,
     type IngestJobStatus,
   } from "$lib/library/store";
+  import { DEFAULT_CONFIG } from "$lib/audit/config.js";
+  import { getExcelSheets } from "$lib/audit/excel-parser.js";
+  import type { ExcelConfig } from "$lib/audit/types.js";
+  import ExcelColumnConfig from "./ExcelColumnConfig.svelte";
+
+  type ImportMode = "zip" | "merged" | "excel";
+  let importMode = $state<ImportMode>("zip");
+
+  let excelFile = $state<File | null>(null);
+  let zipFileMerge = $state<File | null>(null);
+  let excelConfig = $state<ExcelConfig>({
+    ...DEFAULT_CONFIG,
+    columns: { ...DEFAULT_CONFIG.columns },
+  });
+  let selectedSheet = $state("");
+  let sheetNames = $state<string[]>([]);
+
+  $effect(() => {
+    if (!excelFile) {
+      sheetNames = [];
+      selectedSheet = "";
+      return;
+    }
+    excelFile.arrayBuffer().then((buf) => {
+      sheetNames = getExcelSheets(buf);
+      selectedSheet = sheetNames[0] ?? "";
+    });
+  });
 
   const reduceMotion = browser && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
   const slideDur = reduceMotion ? 0 : 200;
@@ -84,8 +116,107 @@
       description="Create or open a library in the Database tab before importing TAO exports."
     />
   {:else}
-    <FileInput accept=".zip" multiple invalidTitle="Unsupported file" onfiles={enqueueIngest} />
-    <p class="hint">Drop up to {MAX_INGEST_FILES} TAO <code>.zip</code> exports — they import one by one.</p>
+    <!-- Mode tabs -->
+    <div class="mode-tabs" role="tablist" aria-label="Import mode">
+      <button
+        role="tab"
+        class="tab-btn"
+        class:active={importMode === "zip"}
+        aria-selected={importMode === "zip"}
+        onclick={() => (importMode = "zip")}
+      >
+        <FileArchive size={14} strokeWidth={1.75} /> ZIP
+      </button>
+      <button
+        role="tab"
+        class="tab-btn"
+        class:active={importMode === "merged"}
+        aria-selected={importMode === "merged"}
+        onclick={() => (importMode = "merged")}
+      >
+        <Upload size={14} strokeWidth={1.75} /> ZIP + Excel
+      </button>
+      <button
+        role="tab"
+        class="tab-btn"
+        class:active={importMode === "excel"}
+        aria-selected={importMode === "excel"}
+        onclick={() => (importMode = "excel")}
+      >
+        <FileSpreadsheet size={14} strokeWidth={1.75} /> Excel
+      </button>
+    </div>
+
+    {#if importMode === "zip"}
+      <FileInput accept=".zip" multiple invalidTitle="Unsupported file" onfiles={enqueueIngest} />
+      <p class="hint">Drop up to {MAX_INGEST_FILES} TAO <code>.zip</code> exports — they import one by one.</p>
+    {:else if importMode === "merged"}
+      <p class="hint">Drop a TAO <code>.zip</code> and an Excel file — the ZIP provides structure, Excel enriches competencies.</p>
+      <div class="dual-drop">
+        <div class="drop-group">
+          <span class="drop-label">TAO ZIP</span>
+          <FileInput
+            accept=".zip"
+            invalidTitle="ZIP required"
+            onfiles={(files: File[]) => (zipFileMerge = files[0] ?? null)}
+          />
+          {#if zipFileMerge}<p class="file-chip"><FileArchive size={12} /> {zipFileMerge.name}</p>{/if}
+        </div>
+        <div class="drop-group">
+          <span class="drop-label">Excel file</span>
+          <FileInput
+            accept=".xlsx,.xls"
+            invalidTitle="Excel required"
+            onfiles={(files: File[]) => (excelFile = files[0] ?? null)}
+          />
+          {#if excelFile}<p class="file-chip"><FileSpreadsheet size={12} /> {excelFile.name}</p>{/if}
+        </div>
+      </div>
+      {#if excelFile}
+        <ExcelColumnConfig
+          bind:config={excelConfig}
+          bind:sheetNames
+          bind:selectedSheet
+        />
+      {/if}
+      <button
+        class="import-btn"
+        disabled={!zipFileMerge || !excelFile}
+        onclick={() => {
+          if (!zipFileMerge || !excelFile) return;
+          enqueueIngestMerged(zipFileMerge, excelFile, excelConfig, selectedSheet || undefined);
+          zipFileMerge = null;
+          excelFile = null;
+        }}
+      >
+        <Upload size={15} strokeWidth={1.75} /> Import merged
+      </button>
+    {:else}
+      <p class="hint">Drop an Excel file to import questions directly into the library.</p>
+      <FileInput
+        accept=".xlsx,.xls"
+        invalidTitle="Excel required"
+        onfiles={(files: File[]) => (excelFile = files[0] ?? null)}
+      />
+      {#if excelFile}
+        <p class="file-chip"><FileSpreadsheet size={12} /> {excelFile.name}</p>
+        <ExcelColumnConfig
+          bind:config={excelConfig}
+          bind:sheetNames
+          bind:selectedSheet
+        />
+        <button
+          class="import-btn"
+          onclick={() => {
+            if (!excelFile) return;
+            enqueueIngestFromExcel(excelFile, excelConfig, selectedSheet || undefined);
+            excelFile = null;
+          }}
+        >
+          <Upload size={15} strokeWidth={1.75} /> Import Excel
+        </button>
+      {/if}
+    {/if}
 
     {#if total > 0}
       <!-- Global progress -->
@@ -139,7 +270,10 @@
                 </span>
                 <div class="r-main">
                   <div class="r-line">
-                    <span class="r-name">{job.filename}</span>
+                    <span class="r-name">
+                      {job.filename}
+                      {#if job.source && job.source !== 'zip'}<span class="src-badge">{job.source === 'excel' ? 'Excel' : 'Merged'}</span>{/if}
+                    </span>
                     <span class="r-status">{statusLabel[job.status]}</span>
                   </div>
                   <div class="bar file-bar">
@@ -164,7 +298,10 @@
               {@const Icon = iconFor(job.status)}
               <li class="row mini {job.status}" transition:slide|local={{ duration: slideDur }}>
                 <span class="r-icon {job.status === 'success' ? 'ok' : 'skip'}"><Icon size={14} strokeWidth={2} /></span>
-                <span class="r-name">{job.filename}</span>
+                <span class="r-name">
+                  {job.filename}
+                  {#if job.source && job.source !== 'zip'}<span class="src-badge">{job.source === 'excel' ? 'Excel' : 'Merged'}</span>{/if}
+                </span>
                 <span class="r-meta">
                   {#if job.status === "success"}{job.questionCount} q{:else}duplicate{/if}
                   {#if job.durationMs}<span class="r-time"><Timer size={11} strokeWidth={2} /> {job.durationMs.toFixed(0)}ms</span>{/if}
@@ -258,5 +395,61 @@
     .global-bar.running .bar-fill { animation: none; }
     .spin { animation: none; }
     .completed > summary :global(.chev) { transition: none; }
+  }
+
+  /* Mode tabs */
+  .mode-tabs {
+    display: flex; gap: 2px; padding: 3px;
+    background: var(--surface-elevated); border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+  .tab-btn {
+    display: inline-flex; align-items: center; gap: 0.35rem;
+    flex: 1; justify-content: center;
+    padding: 5px 10px; border: none; border-radius: var(--radius);
+    background: transparent; color: var(--text-muted);
+    font-family: var(--font-family); font-size: 0.82rem; font-weight: 500;
+    cursor: pointer; transition: background 0.15s, color 0.15s;
+  }
+  .tab-btn:hover { color: var(--text); }
+  .tab-btn.active { background: var(--accent); color: var(--accent-foreground); }
+  .tab-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18); }
+
+  /* Dual-drop for ZIP + Excel mode */
+  .dual-drop { display: grid; grid-template-columns: 1fr 1fr; gap: 0.75rem; }
+  .drop-group { display: flex; flex-direction: column; gap: 0.4rem; }
+  .drop-label { font-size: 0.75rem; font-weight: 600; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.04em; }
+
+  /* File chip */
+  .file-chip {
+    display: inline-flex; align-items: center; gap: 0.3rem;
+    margin: 0; font-size: 0.78rem; color: var(--text-muted);
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+
+  /* Import button */
+  .import-btn {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.4rem;
+    align-self: flex-start;
+    padding: 8px 16px; border: none; border-radius: var(--radius);
+    background: var(--accent); color: var(--accent-foreground);
+    font-family: var(--font-family); font-size: 0.86rem; font-weight: 600;
+    cursor: pointer; transition: opacity 0.15s;
+  }
+  .import-btn:hover:not(:disabled) { opacity: 0.88; }
+  .import-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+  .import-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.25); }
+
+  /* Source badge */
+  .src-badge {
+    display: inline-flex; align-items: center;
+    padding: 1px 5px; margin-left: 5px;
+    font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+    border-radius: 999px; border: 1px solid var(--border);
+    color: var(--text-muted); vertical-align: middle;
+  }
+
+  @media (max-width: 480px) {
+    .dual-drop { grid-template-columns: 1fr; }
   }
 </style>
