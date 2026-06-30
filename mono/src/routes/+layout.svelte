@@ -6,10 +6,12 @@
 <script lang="ts">
 	import "./layout.css";
 	import { page } from "$app/state";
-	import { Sun, Moon, Menu, Info, FileText } from "lucide-svelte";
+	import { Sun, Moon, Menu, Info, FileText, Bug, BookOpen, ScrollText } from "lucide-svelte";
+	import { fly } from "svelte/transition";
 	import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
-	import { showDocsStore, showChangelogStore } from "$lib/about";
+	import { getDoc } from "$lib/docs";
 	import NotificationQueue from "$lib/ui/NotificationQueue.svelte";
+	import DebugPanel from "$lib/general/DebugPanel.svelte";
 	import Modal from "$lib/ui/Modal.svelte";
 	import LicenseActivation from "$lib/license/LicenseActivation.svelte";
 	import LicenseGate from "$lib/license/LicenseGate.svelte";
@@ -31,6 +33,21 @@
 			: false,
 	);
 	let showAbout = $state(false);
+	let debugOpen = $state(false);
+
+	// Contextual docs link: on a tool route, deep-link to that tool's doc page;
+	// otherwise point at the docs index.
+	const docSlug = $derived(page.url.pathname.split("/")[1] ?? "");
+	const docsHref = $derived(getDoc(docSlug) ? `/docs/${docSlug}` : "/docs");
+
+	// Disable the drawer slide under reduced-motion (JS transitions aren't gated
+	// by the CSS media query on their own).
+	function debugFly() {
+		const reduce =
+			typeof window !== "undefined" &&
+			window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+		return { x: 320, duration: reduce ? 0 : 180 };
+	}
 
 	$effect(() => {
 		if (darkMode) {
@@ -96,6 +113,23 @@
 		</nav>
 	</div>
 	<div class="header-right">
+		<a class="nav-link" href={docsHref} title="Documentation">
+			<BookOpen size={15} />
+			<span class="nav-link-text">Docs</span>
+		</a>
+		<a class="nav-link" href="/changelog" title="Changelog">
+			<ScrollText size={15} />
+			<span class="nav-link-text">Changelog</span>
+		</a>
+		<button
+			class="icon-btn"
+			onclick={() => (debugOpen = !debugOpen)}
+			aria-label="Debug"
+			aria-pressed={debugOpen}
+			title="Debug"
+		>
+			<Bug size={15} />
+		</button>
 		<div class="about-container">
 			<button
 				class="icon-btn"
@@ -107,25 +141,6 @@
 			</button>
 			{#if showAbout}
 				<div class="about-menu" role="menu">
-					{#if appName === 'export'}
-						<button
-							class="about-menu-item"
-							role="menuitem"
-							onclick={() => { showDocsStore.set(true); showAbout = false; }}
-						>
-							<FileText size={13} />
-							<span>Documentation</span>
-						</button>
-						<button
-							class="about-menu-item"
-							role="menuitem"
-							onclick={() => { showChangelogStore.set(true); showAbout = false; }}
-						>
-							<FileText size={13} />
-							<span>Changelog</span>
-						</button>
-						<div class="about-menu-divider"></div>
-					{/if}
 					<div class="about-menu-info">
 						<div class="info-row">
 							<span class="info-label">Version</span>
@@ -208,6 +223,17 @@
 		onclick={() => sidebarOpen.set(false)}
 	></button>
 {/if}
+
+{#if debugOpen}
+	<button
+		class="debug-backdrop hide-print"
+		aria-label="Close debug panel"
+		onclick={() => (debugOpen = false)}
+	></button>
+	<aside class="debug-drawer hide-print" transition:fly={debugFly()}>
+		<DebugPanel onclose={() => (debugOpen = false)} />
+	</aside>
+{/if}
 <NotificationQueue />
 
 <style>
@@ -277,6 +303,27 @@
 		cursor: default;
 	}
 
+	.debug-backdrop {
+		position: fixed;
+		inset: var(--layout-header-height) 0 0 0;
+		background: rgba(0, 0, 0, 0.45);
+		border: none;
+		z-index: 240;
+		animation: fadeIn 150ms ease;
+		cursor: default;
+	}
+
+	.debug-drawer {
+		position: fixed;
+		top: var(--layout-header-height);
+		right: 0;
+		bottom: 0;
+		width: 360px;
+		max-width: 100vw;
+		z-index: 250;
+		box-shadow: var(--shadow-xl);
+	}
+
 	.bc-link {
 		color: var(--text-muted);
 		text-decoration: none;
@@ -306,6 +353,27 @@
 
 	.about-container {
 		position: relative;
+	}
+
+	.nav-link {
+		display: inline-flex;
+		align-items: center;
+		gap: 6px;
+		height: 28px;
+		padding: 0 9px;
+		border-radius: var(--radius);
+		background: transparent;
+		color: var(--text-muted);
+		font-size: 13px;
+		font-weight: 500;
+		text-decoration: none;
+		transition: background 0.15s, color 0.15s;
+	}
+
+	.nav-link:hover {
+		background: var(--surface);
+		color: var(--text);
+		text-decoration: none;
 	}
 
 	.icon-btn {
@@ -427,10 +495,23 @@
 			width: 36px;
 			height: 36px;
 		}
+		.nav-link-text {
+			display: none;
+		}
+		.nav-link {
+			width: 36px;
+			height: 36px;
+			padding: 0;
+			justify-content: center;
+		}
+		.debug-drawer {
+			width: 100vw;
+		}
 	}
 
 	@media (prefers-reduced-motion: reduce) {
-		.sidebar-backdrop {
+		.sidebar-backdrop,
+		.debug-backdrop {
 			animation: none;
 		}
 	}

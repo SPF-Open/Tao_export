@@ -15,5 +15,6 @@ export { default as DotCanvas } from "./DotCanvas.svelte";
 export { default as PageHeader } from "./PageHeader.svelte";
 export { default as EmptyState } from "./EmptyState.svelte";
 export { default as SidebarLayout } from "./SidebarLayout.svelte";
+export { default as Markdown } from "./Markdown.svelte";
 export { default as NotificationQueue } from "./NotificationQueue.svelte";
 export * from "./notifications";

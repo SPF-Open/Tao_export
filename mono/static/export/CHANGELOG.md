@@ -1,5 +1,12 @@
 ## Changelog
 
+### 2.4.0
+- Feat : Global debug panel, changelog page, and per-tool documentation
+  - The debug panel now opens from a button in the top navigation bar on every route, instead of only on the landing page
+  - New `/changelog` page renders the full version history
+  - New `/docs` section with a dedicated documentation page for each tool (Import, Forge, Export, Format, IAT, Library, Audit), linked from the header
+  - Replaced the export-only documentation/changelog modals with the shared pages
+
 ### 2.3.0
 - Fix : Audit now parses Excel the same way as the Import route
   - The audit reads the Excel source with the Import parser (`Question.parseSheet`) and templates (FIN / OLD_BOSA / OLD_FIN) instead of a separate parser, so a file that imports cleanly now audits cleanly
