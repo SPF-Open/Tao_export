@@ -1,6 +1,7 @@
 <script lang="ts">
   import { onMount } from "svelte";
-  import { goto } from "$app/navigation";
+  import { browser } from "$app/environment";
+  import { goto, replaceState } from "$app/navigation";
   import { fade } from "svelte/transition";
   import { cubicOut } from "svelte/easing";
   import {
@@ -58,6 +59,15 @@
 
   function go(i: number) {
     current = Math.max(0, Math.min(TOTAL - 1, i));
+    // Mirror the active slide in the URL (?slide=N, 1-based) so a reload or a
+    // shared link lands on the same slide. Shallow routing — no navigation.
+    if (browser) {
+      try {
+        replaceState(`?slide=${current + 1}`, {});
+      } catch {
+        // Router not initialised yet — the URL syncs on the next change.
+      }
+    }
   }
   const next = () => go(current + 1);
   const prev = () => go(current - 1);
@@ -175,6 +185,11 @@
   }
 
   onMount(() => {
+    // Restore the slide from ?slide=N on load / reload / shared link.
+    const param = new URLSearchParams(window.location.search).get("slide");
+    const n = param ? parseInt(param, 10) : NaN;
+    if (Number.isFinite(n)) go(n - 1);
+
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
     reduce = mq.matches;
     const onChange = (e: MediaQueryListEvent) => (reduce = e.matches);
@@ -1928,6 +1943,9 @@
     .srow:last-child {
       display: flex;
       flex-direction: column-reverse;
+      /* Override the base `align-items: center` so cards fill the column
+         width like the grid-based top row does. */
+      align-items: stretch;
       gap: 0.5rem;
     }
   }

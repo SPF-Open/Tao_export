@@ -1,5 +1,14 @@
 ## Changelog
 
+### 2.7.4
+- Improve : Presentation deck remembers the current slide in the URL
+  - Each slide updates `?slide=N` (shallow routing, no navigation), so a reload or a shared link lands on the same slide instead of resetting to the cover
+  - Out-of-range or missing values fall back gracefully to a valid slide
+
+### 2.7.3
+- Fix : Pipeline slide — bottom row now fills the full width on mobile
+  - The collapsed serpentine's bottom row switches to a `column-reverse` flex but inherited the base `align-items: center`, shrinking each card to its content width; set `align-items: stretch` so it matches the full-width top row
+
 ### 2.7.2
 - Improve : Problem slide now *shows* the scattered-work chaos
   - The calm chip row is replaced by a jittering heap of overlapping file cards — the four real sources plus version-soup clutter (`bank_v3_FINAL.xlsx`, `draft_v7.pdf`) — with a card tumbling loose, floating Excel-error tags (`#REF!`, `#VALUE!`, `merge conflict`, …), pulsing warning marks and a nervous "panic" shudder over an alarm-tinted halo
