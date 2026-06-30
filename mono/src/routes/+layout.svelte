@@ -6,11 +6,21 @@
 <script lang="ts">
 	import "./layout.css";
 	import { page } from "$app/state";
-	import { Sun, Moon, Menu, Info, FileText, Bug, BookOpen, ScrollText, ChevronDown } from "lucide-svelte";
+	import {
+		Sun,
+		Moon,
+		Menu,
+		Info,
+		FileText,
+		Bug,
+		BookOpen,
+		ScrollText,
+		ChevronDown,
+	} from "lucide-svelte";
 	import { fly, fade } from "svelte/transition";
 	import { goto } from "$app/navigation";
 	import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
-	import { docs, getDoc } from "$lib/docs";
+	import { docs, stackDocs, getDoc } from "$lib/docs";
 	import NotificationQueue from "$lib/ui/NotificationQueue.svelte";
 	import DebugPanel from "$lib/general/DebugPanel.svelte";
 	import Modal from "$lib/ui/Modal.svelte";
@@ -22,7 +32,7 @@
 		initializeLicense,
 		licenseDialogOpen,
 		licenseDisplayName,
-		licenseState
+		licenseState,
 	} from "$lib/license/store";
 	import { formatLicenseExpiry } from "$lib/license/crypto";
 
@@ -36,6 +46,7 @@
 	let showAbout = $state(false);
 	let debugOpen = $state(false);
 	let toolMenuOpen = $state(false);
+	let docMenuOpen = $state(false);
 
 	// Contextual docs link: on a tool route, deep-link to that tool's doc page;
 	// otherwise point at the docs index.
@@ -49,7 +60,15 @@
 			if (!node.contains(e.target as Node)) handler();
 		}
 		document.addEventListener("pointerdown", onPointerDown, true);
-		return { destroy() { document.removeEventListener("pointerdown", onPointerDown, true); } };
+		return {
+			destroy() {
+				document.removeEventListener(
+					"pointerdown",
+					onPointerDown,
+					true,
+				);
+			},
+		};
 	}
 
 	// Disable the drawer slide under reduced-motion (JS transitions aren't gated
@@ -79,18 +98,32 @@
 		"/format": "format",
 		"/library": "library",
 		"/iat": "iat",
-		"/audit": "audit",	
+		"/audit": "audit",
 	};
 
 	let appName = $derived(APP_NAMES[page.url.pathname] ?? null);
 	let protectedRoute = $derived(appName !== null);
 
 	// Slug of the current tool when on a direct tool route (not /docs/*, etc.)
-	const currentToolSlug = $derived(appName ? page.url.pathname.slice(1) : null);
+	const currentToolSlug = $derived(
+		appName ? page.url.pathname.slice(1) : null,
+	);
+
+	// Slug of the current doc when on /docs/[slug]
+	const currentDocSlug = $derived(
+		bcSegments[0] === "docs" && bcSegments.length === 2 ? bcSegments[1] : null,
+	);
+
+	const allDocs = $derived([...docs, ...stackDocs]);
 
 	function switchTool(slug: string) {
 		toolMenuOpen = false;
 		goto(`/${slug}`);
+	}
+
+	function switchDoc(slug: string) {
+		docMenuOpen = false;
+		goto(`/docs/${slug}`);
 	}
 
 	$effect(() => {
@@ -151,10 +184,46 @@
 									{@const Icon = d.icon}
 									<button
 										class="tool-menu-item"
-										class:active={d.slug === currentToolSlug}
+										class:active={d.slug ===
+											currentToolSlug}
 										role="option"
-										aria-selected={d.slug === currentToolSlug}
+										aria-selected={d.slug ===
+											currentToolSlug}
 										onclick={() => switchTool(d.slug)}
+									>
+										<Icon size={13} strokeWidth={1.75} />
+										<span>{d.title}</span>
+									</button>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{:else if i === bcSegments.length - 1 && currentDocSlug}
+					<div class="tool-switcher">
+						<button
+							class="bc-tool-btn"
+							onclick={() => (docMenuOpen = !docMenuOpen)}
+							aria-haspopup="listbox"
+							aria-expanded={docMenuOpen}
+						>
+							<span>{seg}</span>
+							<ChevronDown size={11} strokeWidth={2} />
+						</button>
+						{#if docMenuOpen}
+							<div
+								class="tool-menu"
+								role="listbox"
+								aria-label="Switch doc"
+								use:clickOutside={() => (docMenuOpen = false)}
+							>
+								{#each allDocs as d (d.slug)}
+									{@const Icon = d.icon}
+									<button
+										class="tool-menu-item"
+										class:active={d.slug === currentDocSlug}
+										role="option"
+										aria-selected={d.slug === currentDocSlug}
+										onclick={() => switchDoc(d.slug)}
 									>
 										<Icon size={13} strokeWidth={1.75} />
 										<span>{d.title}</span>
@@ -166,7 +235,10 @@
 				{:else if i === bcSegments.length - 1}
 					<span class="bc-current">{seg}</span>
 				{:else}
-					<a href="/{bcSegments.slice(0, i + 1).join('/')}" class="bc-link">{seg}</a>
+					<a
+						href="/{bcSegments.slice(0, i + 1).join('/')}"
+						class="bc-link">{seg}</a
+					>
 				{/if}
 			{/each}
 		</nav>
@@ -199,7 +271,11 @@
 				<Info size={15} />
 			</button>
 			{#if showAbout}
-				<div class="about-menu" role="menu">
+				<div
+					class="about-menu"
+					role="menu"
+					use:clickOutside={() => (showAbout = false)}
+				>
 					<div class="about-menu-info">
 						<div class="info-row">
 							<span class="info-label">Version</span>
@@ -209,14 +285,22 @@
 							<span class="info-label">Build</span>
 							<span class="info-value">{BUILD_DATE}</span>
 						</div>
-						{#if $licenseState.status === 'valid'}
+						{#if $licenseState.status === "valid"}
 							<div class="info-row">
 								<span class="info-label">License</span>
-								<span class="info-value">{licenseDisplayName($licenseState.payload)}</span>
+								<span class="info-value"
+									>{licenseDisplayName(
+										$licenseState.payload,
+									)}</span
+								>
 							</div>
 							<div class="info-row">
 								<span class="info-label">Expires</span>
-								<span class="info-value">{formatLicenseExpiry($licenseState.payload.exp)}</span>
+								<span class="info-value"
+									>{formatLicenseExpiry(
+										$licenseState.payload.exp,
+									)}</span
+								>
 							</div>
 						{/if}
 					</div>
@@ -225,16 +309,26 @@
 						<button
 							class="about-menu-item"
 							role="menuitem"
-							onclick={() => { licenseDialogOpen.set(true); showAbout = false; }}
+							onclick={() => {
+								licenseDialogOpen.set(true);
+								showAbout = false;
+							}}
 						>
 							<FileText size={13} />
-							<span>{$licenseState.status === 'valid' ? 'Change license' : 'Activate license'}</span>
+							<span
+								>{$licenseState.status === "valid"
+									? "Change license"
+									: "Activate license"}</span
+							>
 						</button>
-						{#if $licenseState.status === 'valid'}
+						{#if $licenseState.status === "valid"}
 							<button
 								class="about-menu-item"
 								role="menuitem"
-								onclick={() => { clearLicense(); showAbout = false; }}
+								onclick={() => {
+									clearLicense();
+									showAbout = false;
+								}}
 							>
 								<FileText size={13} />
 								<span>Remove license</span>
@@ -427,7 +521,9 @@
 		font-size: 13px;
 		font-weight: 500;
 		text-decoration: none;
-		transition: background 0.15s, color 0.15s;
+		transition:
+			background 0.15s,
+			color 0.15s;
 	}
 
 	.nav-link:hover {
@@ -447,7 +543,9 @@
 		color: var(--text-muted);
 		border-radius: var(--radius);
 		cursor: pointer;
-		transition: background 0.15s, color 0.15s;
+		transition:
+			background 0.15s,
+			color 0.15s;
 	}
 
 	.icon-btn:hover {
@@ -530,8 +628,14 @@
 	}
 
 	@keyframes fadeIn {
-		from { opacity: 0; transform: translateY(-3px); }
-		to   { opacity: 1; transform: translateY(0); }
+		from {
+			opacity: 0;
+			transform: translateY(-3px);
+		}
+		to {
+			opacity: 1;
+			transform: translateY(0);
+		}
 	}
 
 	@media (max-width: 640px) {
@@ -600,7 +704,9 @@
 		font-family: inherit;
 		cursor: pointer;
 		border-radius: var(--radius);
-		transition: background 0.15s, color 0.15s;
+		transition:
+			background 0.15s,
+			color 0.15s;
 		line-height: 1;
 		height: 22px;
 	}
@@ -648,7 +754,9 @@
 		cursor: pointer;
 		text-align: left;
 		width: 100%;
-		transition: background 0.12s, color 0.12s;
+		transition:
+			background 0.12s,
+			color 0.12s;
 	}
 
 	.tool-menu-item:hover {

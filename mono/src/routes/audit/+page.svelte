@@ -114,8 +114,6 @@
 
 <SidebarLayout sidebarLabel="Audit inputs">
   {#snippet sidebar()}
-    <div class="brand"><ScanSearch size={16} strokeWidth={1.9} /> <span>Audit</span></div>
-
     <div class="field">
       <span class="field-label"><FileArchive size={13} strokeWidth={1.9} /> TAO export (.zip)</span>
       {#if $auditZipName}

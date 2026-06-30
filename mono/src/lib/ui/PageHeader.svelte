@@ -51,6 +51,7 @@
     gap: 1rem;
     flex-wrap: wrap;
     margin-bottom: 1.5rem;
+    margin-top: 0.5rem;
     animation: ph-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
   }
 

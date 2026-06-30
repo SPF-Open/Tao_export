@@ -1,15 +1,6 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
-  import { fly } from "svelte/transition";
-  import { cubicOut } from "svelte/easing";
   import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
-
-  function sidebarFly() {
-    const reduce =
-      typeof window !== "undefined" &&
-      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    return { x: -320, duration: reduce ? 0 : 200, easing: cubicOut };
-  }
 
   interface Props {
     /** Sidebar body (filters, settings, navigation, inputs). */
@@ -30,13 +21,18 @@
 </script>
 
 <div class="content">
-  {#if $sidebarOpen}
-    <aside class="sidebar" aria-label={sidebarLabel} transition:fly={sidebarFly()}>
+  <div class="sidebar-wrapper" class:sidebar-wrapper--open={$sidebarOpen}>
+    <aside
+      class="sidebar"
+      aria-label={sidebarLabel}
+      aria-hidden={!$sidebarOpen}
+      inert={!$sidebarOpen}
+    >
       <div class="sidebar-content">
         {@render sidebar?.()}
       </div>
     </aside>
-  {/if}
+  </div>
 
   <div class="main-area">
     {@render children?.()}
@@ -50,25 +46,37 @@
     min-height: calc(100vh - var(--layout-header-height));
   }
 
-  .sidebar {
+  /* Desktop: sticky wrapper clips to 0 width, transitions open */
+  .sidebar-wrapper {
     position: sticky;
     top: var(--layout-header-height);
+    align-self: flex-start;
     height: calc(100vh - var(--layout-header-height));
+    width: 0;
+    overflow: hidden;
+    flex-shrink: 0;
+    transition: width 220ms cubic-bezier(0.33, 1, 0.68, 1);
+  }
+
+  .sidebar-wrapper--open {
     width: var(--sidebar-width);
+  }
+
+  .sidebar {
+    width: var(--sidebar-width);
+    height: 100%;
     background: var(--surface);
     border-right: 1px solid var(--border);
-    box-shadow: var(--shadow-lg);
     z-index: 50;
     overflow-y: auto;
     scrollbar-gutter: stable;
-    flex-shrink: 0;
   }
 
   .sidebar-content {
-    padding: 10px;
+    padding: 0.6rem;
     display: flex;
     flex-direction: column;
-    gap: 10px;
+    gap: 0.875rem;
     min-height: 100%;
   }
 
@@ -78,23 +86,43 @@
     padding: 0 16px 2rem;
   }
 
-  /* Phones: the sidebar becomes a left overlay drawer above the global backdrop. */
+  /* Phones: translate-based overlay drawer (fixed, not in flex flow) */
   @media (max-width: 640px) {
-    .sidebar {
+    .sidebar-wrapper {
       position: fixed;
       left: 0;
       top: var(--layout-header-height);
       width: min(86vw, var(--sidebar-width));
+      height: calc(100vh - var(--layout-header-height));
+      overflow: visible;
+      transition: transform 220ms cubic-bezier(0.33, 1, 0.68, 1);
+      transform: translateX(-100%);
       z-index: 60;
+    }
+
+    .sidebar-wrapper--open {
+      width: min(86vw, var(--sidebar-width));
+      transform: translateX(0);
+    }
+
+    .sidebar {
+      width: 100%;
       box-shadow: var(--shadow-xl);
     }
+
     .main-area {
       padding: 0 12px 2rem;
     }
   }
 
+  @media (prefers-reduced-motion: reduce) {
+    .sidebar-wrapper {
+      transition-duration: 0ms;
+    }
+  }
+
   @media print {
-    .sidebar {
+    .sidebar-wrapper {
       display: none !important;
     }
     .main-area {

@@ -109,6 +109,7 @@
   }
 
   .prose :global(code) {
+    color: var(--text);
     font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
     font-size: 0.85em;
     background: var(--surface);
