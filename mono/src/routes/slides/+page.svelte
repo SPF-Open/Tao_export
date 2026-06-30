@@ -1,7 +1,8 @@
 <script lang="ts">
   import { onMount } from "svelte";
   import { goto } from "$app/navigation";
-  import { fly, fade } from "svelte/transition";
+  import { fade } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
   import {
     ChevronLeft,
     ChevronRight,
@@ -26,6 +27,10 @@
     ServerOff,
     Users,
     Layers,
+    CloudOff,
+    Sparkles,
+    Cpu,
+    AlertTriangle,
   } from "lucide-svelte";
   import DotCanvas from "$lib/ui/DotCanvas.svelte";
   import { docs } from "$lib/docs";
@@ -36,14 +41,12 @@
     "A guided tour of TAO, the unified exam toolkit: import, build, export, audit and analyse exams end to end — all in the browser.";
 
   // ── Deck state ──────────────────────────────────────────
-  // Short labels drive the progress dots, the counter and the slide count.
   const slides = [
     "Cover",
     "Problem",
     "Vision",
     "Audience",
-    "Modules",
-    "Journey",
+     "Modules",
     "How it works",
     "Strengths",
     "Close",
@@ -61,8 +64,9 @@
 
   const pad = (n: number) => String(n).padStart(2, "0");
 
-  // The exam pipeline, laid out as a serpentine: the top row reads left→right,
-  // turns down on the right, then the bottom row reads right→left.
+  // ── Content data ────────────────────────────────────────
+  // The exam pipeline, laid out as a serpentine: top row left→right, turn down,
+  // bottom row right→left.
   const pipeline = [
     { step: 1, name: "Import", sub: "Excel in", icon: Upload },
     { step: 2, name: "Forge", sub: "Build", icon: Hammer },
@@ -71,10 +75,59 @@
     { step: 5, name: "IAT", sub: "Analyse", icon: ClipboardCheck },
     { step: 6, name: "Library", sub: "Archive", icon: Library },
   ];
-  const topRow = pipeline.slice(0, 3); // 1 → 2 → 3, left to right
-  // Bottom row is placed left-to-right but reads right-to-left (6 ← 5 ← 4),
-  // so Audit (step 4) sits under Export (step 3) for the turn.
+  const topRow = pipeline.slice(0, 3);
   const bottomRow = [pipeline[5], pipeline[4], pipeline[3]];
+
+  // ── The "scattered work" chaos scene ──────────────────────
+  // A messy, overlapping heap of source files — the four real sources plus a
+  // little junk-drawer clutter — jittering as if about to topple.
+  const messCards = [
+    { icon: FileSpreadsheet, label: "Excel banks", rot: -8, z: 5, bad: true },
+    { icon: FileArchive, label: "QTI packages", rot: 5, z: 4 },
+    { icon: FileText, label: "Print PDFs", rot: -4, z: 6, bad: true },
+    { icon: Braces, label: "Result data", rot: 7, z: 4 },
+    { icon: FileSpreadsheet, label: "bank_v3_FINAL.xlsx", rot: 3, z: 2, ghost: true },
+    { icon: FileText, label: "draft_v7.pdf", rot: -6, z: 1, ghost: true },
+  ];
+
+  // Excel-style error glyphs and version-soup, scattered over the heap.
+  const glitchTags = [
+    { t: "#REF!", x: "4%", y: "2%", d: 0 },
+    { t: "v2_final_FINAL", x: "64%", y: "-2%", d: 0.5 },
+    { t: "broken link", x: "80%", y: "44%", d: 1 },
+    { t: "merge conflict", x: "-2%", y: "60%", d: 0.7 },
+    { t: "#VALUE!", x: "46%", y: "72%", d: 1.3 },
+    { t: "missing sheet", x: "28%", y: "-6%", d: 0.2 },
+    { t: "NaN", x: "54%", y: "38%", d: 1.6 },
+  ];
+
+  // Warning triangles pulsing over the pile.
+  const warnMarks = [
+    { x: "18%", y: "16%", d: 0 },
+    { x: "70%", y: "58%", d: 0.6 },
+    { x: "86%", y: "8%", d: 1 },
+  ];
+
+  const visionPoints = [
+    { icon: Layers, text: "The full exam lifecycle in one place" },
+    { icon: CloudOff, text: "100% client-side — zero upload" },
+    { icon: ShieldCheck, text: "Privacy-first by design" },
+    { icon: Sparkles, text: "Calm, premium, distraction-free" },
+  ];
+
+  const roles = [
+    { icon: Users, label: "Authors" },
+    { icon: ShieldCheck, label: "Reviewers / QA" },
+    { icon: FileText, label: "Administrators" },
+    { icon: ChartNoAxesColumn, label: "Item analysts" },
+  ];
+
+  const flowNodes = [
+    { icon: FileArchive, label: "File" },
+    { icon: Cpu, label: "Parse" },
+    { icon: Globe, label: "Render" },
+    { icon: FileText, label: "Export" },
+  ];
 
   const strengths = [
     { icon: Layers, label: "End to end", note: "One tool, whole lifecycle" },
@@ -100,14 +153,26 @@
     },
   ];
 
-  // NOTE: confirm / replace these with the real roadmap before presenting.
-  const roadmap = [
-    { state: "done", label: "Library mode — build exams from the bank" },
-    { state: "done", label: "Forge — templating & scheduling" },
-    { state: "done", label: "Audit — severity-tiered reporting" },
-    { state: "next", label: "Deeper item-analysis metrics" },
-    { state: "next", label: "Broader export & format options" },
-  ];
+  // ── Cursor-reactive cards: spotlight follows the pointer, card tilts toward it.
+  const MAX_TILT = 7;
+  function onCardMove(e: PointerEvent) {
+    const el = e.currentTarget as HTMLElement;
+    const r = el.getBoundingClientRect();
+    const px = e.clientX - r.left;
+    const py = e.clientY - r.top;
+    el.style.setProperty("--mx", `${px}px`);
+    el.style.setProperty("--my", `${py}px`);
+    if (reduce) return;
+    const nx = px / r.width - 0.5;
+    const ny = py / r.height - 0.5;
+    el.style.setProperty("--ry", `${nx * MAX_TILT * 2}deg`);
+    el.style.setProperty("--rx", `${-ny * MAX_TILT * 2}deg`);
+  }
+  function onCardLeave(e: PointerEvent) {
+    const el = e.currentTarget as HTMLElement;
+    el.style.setProperty("--rx", "0deg");
+    el.style.setProperty("--ry", "0deg");
+  }
 
   onMount(() => {
     const mq = window.matchMedia("(prefers-reduced-motion: reduce)");
@@ -153,11 +218,15 @@
     };
   });
 
-  // Svelte transitions aren't covered by the CSS reduced-motion query, so gate
-  // their parameters on the runtime flag.
-  const enter = $derived(
-    reduce ? { duration: 0 } : { y: 22, duration: 460, opacity: 0 },
-  );
+  // Dramatic slide entrance: blur + scale + lift. Gated on reduced motion.
+  function zoom(_node: Element) {
+    return {
+      duration: reduce ? 0 : 540,
+      easing: cubicOut,
+      css: (t: number, u: number) =>
+        `opacity:${t}; transform: translateY(${u * 34}px) scale(${0.94 + 0.06 * t}); filter: blur(${u * 6}px);`,
+    };
+  }
   const leave = $derived(reduce ? { duration: 0 } : { duration: 200 });
 </script>
 
@@ -188,6 +257,30 @@
 
 <DotCanvas glow={90} />
 <div class="halo" aria-hidden="true"></div>
+
+<!-- TAO logomark (ringed triad). The ring slowly spins. -->
+{#snippet logomark(size: number)}
+  <svg viewBox="0 0 32 32" width={size} height={size} fill="none">
+    <circle
+      class="ring"
+      cx="16"
+      cy="16"
+      r="13"
+      stroke="currentColor"
+      stroke-width="1.4"
+      opacity="0.35"
+    />
+    <circle cx="16" cy="8.5" r="2.1" fill="currentColor" />
+    <circle cx="22.5" cy="19.5" r="2.1" fill="currentColor" opacity="0.65" />
+    <circle cx="9.5" cy="19.5" r="2.1" fill="currentColor" opacity="0.65" />
+    <path
+      d="M16 8.5 L22.5 19.5 L9.5 19.5 Z"
+      stroke="currentColor"
+      stroke-width="1.2"
+      opacity="0.5"
+    />
+  </svg>
+{/snippet}
 
 <!-- A single pipeline node card -->
 {#snippet pnode(item: (typeof pipeline)[number])}
@@ -245,51 +338,21 @@
         class="slide"
         aria-roledescription="slide"
         aria-label={`${current + 1} of ${TOTAL}: ${slides[current]}`}
-        in:fly={enter}
+        in:zoom
         out:fade={leave}
       >
         {#if current === 0}
           <!-- 1 · Cover -->
           <div class="slide-body center cover">
             <div class="brand r" style="--i:0">
-              <span class="logomark" aria-hidden="true">
-                <svg viewBox="0 0 32 32" width="30" height="30" fill="none">
-                  <circle
-                    cx="16"
-                    cy="16"
-                    r="13"
-                    stroke="currentColor"
-                    stroke-width="1.4"
-                    opacity="0.35"
-                  />
-                  <circle cx="16" cy="8.5" r="2.1" fill="currentColor" />
-                  <circle
-                    cx="22.5"
-                    cy="19.5"
-                    r="2.1"
-                    fill="currentColor"
-                    opacity="0.65"
-                  />
-                  <circle
-                    cx="9.5"
-                    cy="19.5"
-                    r="2.1"
-                    fill="currentColor"
-                    opacity="0.65"
-                  />
-                  <path
-                    d="M16 8.5 L22.5 19.5 L9.5 19.5 Z"
-                    stroke="currentColor"
-                    stroke-width="1.2"
-                    opacity="0.5"
-                  />
-                </svg>
-              </span>
-              <h1 class="wordmark">TAO</h1>
+              <span class="logomark spin" aria-hidden="true"
+                >{@render logomark(30)}</span
+              >
+              <h1 class="wordmark" data-text="TAO">TAO</h1>
             </div>
             <p class="lead r" style="--i:1">Exams, end to end.</p>
-            <p class="sub r" style="--i:2">A unified exam toolkit</p>
-            <p class="hint r" style="--i:3">press <kbd>→</kbd> to start</p>
+            <p class="sub r" style="--i:3">A unified exam toolkit</p>
+            <p class="hint r" style="--i:4">press <kbd>→</kbd> to start</p>
           </div>
         {:else if current === 1}
           <!-- 2 · Problem -->
@@ -300,97 +363,119 @@
               Building, reviewing and analysing exams means juggling Excel, the
               TAO platform, PDFs and spreadsheets — across disconnected tools.
             </p>
-            <div class="chips r" style="--i:3">
-              <span class="chip" style="--rot:-5deg"
-                ><FileSpreadsheet size={16} /> Excel banks</span
-              >
-              <span class="chip" style="--rot:4deg"
-                ><FileArchive size={16} /> QTI packages</span
-              >
-              <span class="chip" style="--rot:-3deg"
-                ><FileText size={16} /> Print PDFs</span
-              >
-              <span class="chip" style="--rot:6deg"
-                ><Braces size={16} /> Result data</span
-              >
-              <span class="chip muted" style="--rot:-2deg"
-                >…by eye, no single home</span
-              >
+
+            <!-- The mess: a jittering heap of files, errors and version-soup. -->
+            <div class="chaos" aria-hidden="true">
+              <div class="pile">
+                <div class="pile-halo"></div>
+
+                <div class="heap">
+                  {#each messCards as c, i}
+                    {@const Icon = c.icon}
+                    <div
+                      class="paper"
+                      class:ghost={c.ghost}
+                      style="--rot:{c.rot}deg; --z:{c.z}; --d:{i * 90}ms"
+                    >
+                      <span class="paper-icon"
+                        ><Icon size={17} strokeWidth={1.75} /></span
+                      >
+                      <span class="paper-name">{c.label}</span>
+                      {#if c.bad}
+                        <span class="paper-badge"
+                          ><AlertTriangle size={12} strokeWidth={2.6} /></span
+                        >
+                      {/if}
+                    </div>
+                  {/each}
+
+                  <!-- One card breaks loose and tumbles out of the pile. -->
+                  <div class="paper falling">
+                    <span class="paper-icon"
+                      ><FileText size={17} strokeWidth={1.75} /></span
+                    >
+                    <span class="paper-name">results_old.csv</span>
+                  </div>
+                </div>
+
+                {#each glitchTags as g}
+                  <span class="glitch" style="left:{g.x}; top:{g.y}; --d:{g.d}s"
+                    >{g.t}</span
+                  >
+                {/each}
+
+                {#each warnMarks as w}
+                  <span class="warnmark" style="left:{w.x}; top:{w.y}; --d:{w.d}s"
+                    ><AlertTriangle size={16} strokeWidth={2.6} /></span
+                  >
+                {/each}
+              </div>
             </div>
+
+            <p class="aside r" style="--i:6">
+              …stitched together by eye, with no single home.
+            </p>
           </div>
         {:else if current === 2}
           <!-- 3 · Vision -->
-          <div class="slide-body">
+          <div class="slide-body wide">
             <span class="eyebrow r" style="--i:0">The vision</span>
             <h2 class="title r" style="--i:1">One quiet workspace</h2>
             <p class="message r" style="--i:2">
               Import, build, export, audit and analyse exams from a single
               browser-based workspace — nothing leaves the machine.
             </p>
-            <ul class="points r" style="--i:3">
-              <li>The full exam lifecycle in one place</li>
-              <li>100% client-side — zero upload</li>
-              <li>Privacy-first by design</li>
-              <li>Calm, premium, distraction-free</li>
-            </ul>
+            <div class="vgrid">
+              {#each visionPoints as p, i}
+                {@const Icon = p.icon}
+                <div class="in" style="--d:{300 + i * 80}ms">
+                  <!-- svelte-ignore a11y_no_static_element_interactions -->
+                  <div
+                    class="fx vcard"
+                    onpointermove={onCardMove}
+                    onpointerleave={onCardLeave}
+                  >
+                    <span class="vcard-icon"
+                      ><Icon size={20} strokeWidth={1.75} /></span
+                    >
+                    <span class="vcard-text">{p.text}</span>
+                  </div>
+                </div>
+              {/each}
+            </div>
           </div>
         {:else if current === 3}
           <!-- 4 · Audience -->
-          <div class="slide-body">
+          <div class="slide-body wide">
             <span class="eyebrow r" style="--i:0">Who it's for</span>
             <h2 class="title r" style="--i:1">Built for the test team</h2>
             <p class="message r" style="--i:2">
               Made specifically for the SPF Finances testing team and the people
               around the exam cycle.
             </p>
-            <div class="roles r" style="--i:3">
-              <div class="role">
-                <Users size={18} strokeWidth={1.75} /><span>Authors</span>
-              </div>
-              <div class="role">
-                <ShieldCheck size={18} strokeWidth={1.75} /><span
-                  >Reviewers / QA</span
-                >
-              </div>
-              <div class="role">
-                <FileText size={18} strokeWidth={1.75} /><span
-                  >Administrators</span
-                >
-              </div>
-              <div class="role">
-                <ChartNoAxesColumn size={18} strokeWidth={1.75} /><span
-                  >Item analysts</span
-                >
-              </div>
-            </div>
-            <p class="aside r" style="--i:4">
-              Multilingual context — FR · NL · DE
-            </p>
-          </div>
-        {:else if current === 4}
-          <!-- 5 · Modules -->
-          <div class="slide-body">
-            <span class="eyebrow r" style="--i:0">The toolkit</span>
-            <h2 class="title r" style="--i:1">Seven modules, one toolkit</h2>
-            <p class="message r" style="--i:2">
-              Each module owns one job in the exam lifecycle.
-            </p>
-            <div class="modules r" style="--i:3">
-              {#each docs as d (d.slug)}
-                {@const Icon = d.icon}
-                <div class="module">
-                  <span class="module-icon"
-                    ><Icon size={18} strokeWidth={1.75} /></span
+            <div class="roles">
+              {#each roles as role, i}
+                {@const Icon = role.icon}
+                <div class="in" style="--d:{300 + i * 80}ms">
+                  <!-- svelte-ignore a11y_no_static_element_interactions -->
+                  <div
+                    class="fx role"
+                    onpointermove={onCardMove}
+                    onpointerleave={onCardLeave}
                   >
-                  <div class="module-text">
-                    <span class="module-eyebrow">{d.eyebrow}</span>
-                    <span class="module-name">{d.title}</span>
+                    <span class="role-icon"
+                      ><Icon size={22} strokeWidth={1.75} /></span
+                    >
+                    <span>{role.label}</span>
                   </div>
                 </div>
               {/each}
             </div>
+            <p class="aside r" style="--i:6">
+              Multilingual context — FR · NL · DE
+            </p>
           </div>
-        {:else if current === 5}
+        {:else if current === 4}
           <!-- 6 · Journey -->
           <div class="slide-body wide">
             <span class="eyebrow r" style="--i:0">The path</span>
@@ -406,98 +491,98 @@
               pace.
             </p>
           </div>
-        {:else if current === 6}
+        {:else if current === 5}
           <!-- 7 · How it works -->
-          <div class="slide-body">
+          <div class="slide-body wide">
             <span class="eyebrow r" style="--i:0">Under the hood</span>
             <h2 class="title r" style="--i:1">Everything in the browser</h2>
             <p class="message r" style="--i:2">
               No backend, no database, no upload — the heavy lifting runs
               locally.
             </p>
-            <div class="dataflow r" style="--i:3">
-              <span class="df-node"><FileArchive size={15} /> File</span>
-              <ArrowRight class="df-arrow" size={15} strokeWidth={2} />
-              <span class="df-node">Parse</span>
-              <ArrowRight class="df-arrow" size={15} strokeWidth={2} />
-              <span class="df-node"><Globe size={15} /> Render</span>
-              <ArrowRight class="df-arrow" size={15} strokeWidth={2} />
-              <span class="df-node"><FileText size={15} /> Export</span>
-              <span class="df-node off"><ServerOff size={15} /> No server</span>
+            <div class="dataflow">
+              {#each flowNodes as n, i}
+                {@const Icon = n.icon}
+                <div class="in" style="--d:{300 + i * 90}ms">
+                  <!-- svelte-ignore a11y_no_static_element_interactions -->
+                  <div
+                    class="fx df-node"
+                    onpointermove={onCardMove}
+                    onpointerleave={onCardLeave}
+                  >
+                    <span class="df-icon"
+                      ><Icon size={18} strokeWidth={1.75} /></span
+                    >
+                    <span>{n.label}</span>
+                  </div>
+                </div>
+                {#if i < flowNodes.length - 1}
+                  <span
+                    class="df-arrow-wrap"
+                    style="--d:{340 + i * 90}ms"
+                    aria-hidden="true"
+                  >
+                    <ArrowRight size={20} strokeWidth={2.4} />
+                  </span>
+                {/if}
+              {/each}
+              <div class="in" style="--d:{300 + flowNodes.length * 90}ms">
+                <div class="df-node off">
+                  <ServerOff size={18} strokeWidth={1.75} /> No server
+                </div>
+              </div>
             </div>
-            <ul class="points tight r" style="--i:4">
+            <ul class="points tight r" style="--i:6">
               <li>ZIP parsing &amp; Excel reading in-page</li>
               <li>Full SQLite in the browser for the Library</li>
               <li>PDF via print · JSON · encrypted <code>.taodb</code></li>
               <li>Works offline after first load</li>
             </ul>
           </div>
-        {:else if current === 7}
+        {:else if current === 6}
           <!-- 8 · Strengths -->
-          <div class="slide-body">
+          <div class="slide-body wide">
             <span class="eyebrow r" style="--i:0">Why it stands out</span>
             <h2 class="title r" style="--i:1">Few tools do all of this</h2>
             <p class="message r" style="--i:2">
               Cover the whole lifecycle and keep data on-device.
             </p>
-            <div class="strengths r" style="--i:3">
-              {#each strengths as s}
+            <div class="strengths">
+              {#each strengths as s, i}
                 {@const Icon = s.icon}
-                <div class="strength">
-                  <span class="strength-icon"
-                    ><Icon size={18} strokeWidth={1.75} /></span
+                <div class="in" style="--d:{280 + i * 70}ms">
+                  <!-- svelte-ignore a11y_no_static_element_interactions -->
+                  <div
+                    class="fx strength"
+                    onpointermove={onCardMove}
+                    onpointerleave={onCardLeave}
                   >
-                  <span class="strength-label">{s.label}</span>
-                  <span class="strength-note">{s.note}</span>
+                    <span class="strength-bar"></span>
+                    <span class="strength-icon"
+                      ><Icon size={20} strokeWidth={1.75} /></span
+                    >
+                    <span class="strength-label">{s.label}</span>
+                    <span class="strength-note">{s.note}</span>
+                  </div>
                 </div>
               {/each}
             </div>
           </div>
         {:else}
-          <!-- 11 · Close -->
+          <!-- 9 · Close -->
           <div class="slide-body center cover">
-            <span class="logomark big r" style="--i:0" aria-hidden="true">
-              <svg viewBox="0 0 32 32" width="26" height="26" fill="none">
-                <circle
-                  cx="16"
-                  cy="16"
-                  r="13"
-                  stroke="currentColor"
-                  stroke-width="1.4"
-                  opacity="0.35"
-                />
-                <circle cx="16" cy="8.5" r="2.1" fill="currentColor" />
-                <circle
-                  cx="22.5"
-                  cy="19.5"
-                  r="2.1"
-                  fill="currentColor"
-                  opacity="0.65"
-                />
-                <circle
-                  cx="9.5"
-                  cy="19.5"
-                  r="2.1"
-                  fill="currentColor"
-                  opacity="0.65"
-                />
-                <path
-                  d="M16 8.5 L22.5 19.5 L9.5 19.5 Z"
-                  stroke="currentColor"
-                  stroke-width="1.2"
-                  opacity="0.5"
-                />
-              </svg>
-            </span>
+            <span class="logomark big spin r" style="--i:0" aria-hidden="true"
+              >{@render logomark(26)}</span
+            >
             <h2 class="title r" style="--i:1">Exams, end to end.</h2>
-            <p class="message center-msg r" style="--i:2">
+            <p class="message center-msg r" style="--i:3">
               One workspace for the whole exam lifecycle — quiet, private,
               complete.
             </p>
-            <a class="cta r" style="--i:3" href="/">
+            <a class="cta r" style="--i:4" href="/">
               Open TAO <ArrowUpRight size={17} strokeWidth={2} />
             </a>
-            <p class="hint r" style="--i:4">
+            <p class="hint r" style="--i:5">
               tao.lv0.eu · built for the SPF Finances test team
             </p>
           </div>
@@ -546,6 +631,12 @@
 </main>
 
 <style>
+  @property --beam {
+    syntax: "<angle>";
+    initial-value: 0deg;
+    inherits: false;
+  }
+
   .halo {
     position: fixed;
     top: 30%;
@@ -555,12 +646,23 @@
     transform: translate(-50%, -50%);
     background: radial-gradient(
       circle,
-      rgba(var(--brand-rgb), 0.13),
+      rgba(var(--brand-rgb), 0.14),
       transparent 62%
     );
     filter: blur(46px);
     pointer-events: none;
     z-index: 0;
+    animation: halo-drift 16s ease-in-out infinite;
+  }
+
+  @keyframes halo-drift {
+    0%,
+    100% {
+      transform: translate(-50%, -50%) scale(1);
+    }
+    50% {
+      transform: translate(-46%, -55%) scale(1.14);
+    }
   }
 
   .deck {
@@ -582,7 +684,8 @@
     inset: 0;
     display: grid;
     place-items: center;
-    padding: clamp(1.5rem, 5vw, 4rem);
+    padding: clamp(1.25rem, 5vw, 4rem);
+    overflow: auto;
   }
 
   .slide-body {
@@ -592,7 +695,7 @@
   }
 
   .slide-body.wide {
-    max-width: 1040px;
+    max-width: 1060px;
   }
 
   .slide-body.center {
@@ -604,7 +707,9 @@
 
   /* ── Shared type scale ─────────────────────────────────── */
   .eyebrow {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
     color: var(--brand);
     font-size: 0.74rem;
     font-weight: 700;
@@ -613,13 +718,64 @@
     margin-bottom: 0.9rem;
   }
 
+  .eyebrow::before {
+    content: "";
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--brand);
+    box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0.5);
+    animation: pulse 2.4s ease-out infinite;
+  }
+
+  @keyframes pulse {
+    0% {
+      box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0.5);
+    }
+    70% {
+      box-shadow: 0 0 0 7px rgba(var(--brand-rgb), 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0);
+    }
+  }
+
   .title {
+    position: relative;
     margin: 0;
+    padding-bottom: 0.55rem;
     color: var(--text);
-    font-size: clamp(1.8rem, 4.6vw, 3rem);
+    font-size: clamp(1.9rem, 4.8vw, 3.1rem);
     font-weight: 700;
     letter-spacing: -0.03em;
     line-height: 1.05;
+  }
+
+  .title::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    bottom: 0;
+    height: 3px;
+    width: 0;
+    border-radius: 3px;
+    background: linear-gradient(
+      90deg,
+      var(--brand),
+      rgba(var(--brand-rgb), 0.15)
+    );
+    animation: underline 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
+  }
+
+  .center .title::after {
+    left: 50%;
+    transform: translateX(-50%);
+  }
+
+  @keyframes underline {
+    to {
+      width: 3.4rem;
+    }
   }
 
   .message {
@@ -639,6 +795,59 @@
     color: var(--text-muted);
     font-size: 0.9rem;
     margin: 1.4rem 0 0;
+  }
+
+  /* ── Flowing wave line ─────────────────────────────────── */
+  .wave {
+    width: min(100%, 620px);
+    height: 46px;
+    margin: 1.4rem 0 0;
+  }
+
+  .center .wave {
+    margin-left: auto;
+    margin-right: auto;
+  }
+
+  .wave svg {
+    width: 100%;
+    height: 100%;
+    overflow: visible;
+    animation: wave-breathe 4.5s ease-in-out infinite;
+  }
+
+  .wave-path {
+    fill: none;
+    stroke: rgba(var(--brand-rgb), 0.55);
+    stroke-width: 2.4;
+    stroke-linecap: round;
+    stroke-dasharray: 10 14;
+    filter: drop-shadow(0 0 6px rgba(var(--brand-rgb), 0.45));
+    animation: wave-flow 1.1s linear infinite;
+  }
+
+  .wave.broken .wave-path {
+    stroke: var(--border-strong);
+    stroke-dasharray: 3 20;
+    filter: none;
+    opacity: 0.7;
+    animation-duration: 2.4s;
+  }
+
+  @keyframes wave-flow {
+    to {
+      stroke-dashoffset: -24;
+    }
+  }
+
+  @keyframes wave-breathe {
+    0%,
+    100% {
+      transform: scaleY(1);
+    }
+    50% {
+      transform: scaleY(1.25);
+    }
   }
 
   /* ── Cover / close ─────────────────────────────────────── */
@@ -666,13 +875,55 @@
     margin-bottom: 1.6rem;
   }
 
+  .logomark .ring {
+    transform-origin: 16px 16px;
+    animation: spin 9s linear infinite;
+  }
+
+  @keyframes spin {
+    to {
+      transform: rotate(360deg);
+    }
+  }
+
   .wordmark {
+    position: relative;
     margin: 0;
     font-size: clamp(3rem, 11vw, 5rem);
     font-weight: 700;
     letter-spacing: -0.045em;
     line-height: 1;
     color: var(--text);
+  }
+
+  /* One-shot brand light sweep across the letters on load. */
+  .wordmark::after {
+    content: attr(data-text);
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 38%,
+      rgba(var(--brand-rgb), 0.95) 50%,
+      transparent 62%
+    );
+    background-size: 250% 100%;
+    background-position: 120% 0;
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    color: transparent;
+    pointer-events: none;
+    animation: sheen 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+  }
+
+  @keyframes sheen {
+    from {
+      background-position: 120% 0;
+    }
+    to {
+      background-position: -60% 0;
+    }
   }
 
   .lead {
@@ -689,7 +940,7 @@
   }
 
   .hint {
-    margin: 2rem 0 0;
+    margin: 1.6rem 0 0;
     color: var(--text-muted);
     font-size: 0.82rem;
   }
@@ -706,6 +957,8 @@
   }
 
   .cta {
+    position: relative;
+    overflow: hidden;
     display: inline-flex;
     align-items: center;
     gap: 0.5rem;
@@ -719,12 +972,34 @@
     font-size: 0.95rem;
     text-decoration: none;
     transition:
-      opacity 0.2s ease,
+      transform 0.2s ease,
       box-shadow 0.2s ease;
   }
 
+  /* Light sweep travelling across the button forever. */
+  .cta::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(
+      100deg,
+      transparent 30%,
+      rgba(255, 255, 255, 0.35) 50%,
+      transparent 70%
+    );
+    background-size: 250% 100%;
+    background-position: 150% 0;
+    animation: cta-sheen 2.6s ease-in-out infinite;
+  }
+
+  @keyframes cta-sheen {
+    to {
+      background-position: -80% 0;
+    }
+  }
+
   .cta:hover {
-    opacity: 0.92;
+    transform: translateY(-2px);
     box-shadow: var(--shadow-lg);
   }
 
@@ -736,14 +1011,9 @@
   /* ── Points / lists ────────────────────────────────────── */
   .points {
     list-style: none;
-    margin: 1.6rem 0 0;
+    margin: 1.4rem 0 0;
     padding: 0;
     display: grid;
-    gap: 0.7rem;
-  }
-
-  .points.tight {
-    margin-top: 1.2rem;
     gap: 0.5rem;
   }
 
@@ -775,111 +1045,471 @@
     border: 1px solid var(--border);
   }
 
-  /* ── Problem chips ─────────────────────────────────────── */
-  .chips {
+  /* ── Interactive card FX (tilt + spotlight + beam border) ─ */
+  .fx {
+    --rx: 0deg;
+    --ry: 0deg;
+    --lift: 0px;
+    position: relative;
+    overflow: hidden;
+    isolation: isolate;
+    height: 100%;
+    background: var(--surface-elevated);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-xl);
+    box-shadow: var(--shadow-sm);
+    transform-style: preserve-3d;
+    transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry))
+      translateY(var(--lift));
+    transition:
+      transform 0.18s ease,
+      border-color 0.25s ease,
+      box-shadow 0.25s ease;
+  }
+
+  .fx:hover {
+    --lift: -4px;
+    border-color: rgba(var(--brand-rgb), 0.45);
+    box-shadow: var(--shadow-lg);
+  }
+
+  /* cursor-following brand spotlight */
+  .fx::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    background: radial-gradient(
+      220px circle at var(--mx, 50%) var(--my, 50%),
+      rgba(var(--brand-rgb), 0.13),
+      transparent 60%
+    );
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  .fx:hover::after {
+    opacity: 1;
+  }
+
+  /* single-accent beam that sweeps the hairline on hover */
+  .fx::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    padding: 1px;
+    background: conic-gradient(
+      from var(--beam),
+      transparent 0deg,
+      rgba(var(--brand-rgb), 0.75) 40deg,
+      transparent 120deg
+    );
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    -webkit-mask-composite: xor;
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
+    mask-composite: exclude;
+    opacity: 0;
+    transition: opacity 0.25s ease;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .fx:hover::before {
+    opacity: 1;
+    animation: beam 2.6s linear infinite;
+  }
+
+  @keyframes beam {
+    to {
+      --beam: 360deg;
+    }
+  }
+
+  .fx > * {
+    position: relative;
+    z-index: 2;
+  }
+
+  /* Staggered entrance wrapper (replays each slide via {#key}) */
+  .in {
+    animation: pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+    animation-delay: var(--d, 0ms);
+  }
+
+  @keyframes pop {
+    from {
+      opacity: 0;
+      transform: translateY(16px) scale(0.96);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+    }
+  }
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+
+  /* ── "Scattered work" chaos scene ──────────────────────── */
+  /* Local alarm tint — theme-aware (danger isn't exposed as RGB tokens). */
+  .chaos {
+    --warn-rgb: 220, 38, 38;
+    position: relative;
+    margin-top: 1.6rem;
+  }
+
+  :global(.dark) .chaos {
+    --warn-rgb: 239, 68, 68;
+  }
+
+  .pile {
+    position: relative;
+    height: clamp(220px, 34vh, 320px);
+    /* The whole heap trembles in periodic nervous shudders. */
+    animation: panic 5s ease-in-out infinite;
+  }
+
+  .pile-halo {
+    position: absolute;
+    inset: 8% 12%;
+    background: radial-gradient(
+      circle,
+      rgba(var(--warn-rgb), 0.12),
+      transparent 65%
+    );
+    filter: blur(34px);
+    z-index: 0;
+    animation: alarm 3.6s ease-in-out infinite;
+  }
+
+  @keyframes alarm {
+    0%,
+    100% {
+      opacity: 0.45;
+    }
+    50% {
+      opacity: 1;
+    }
+  }
+
+  /* Overlapping pile of file cards, centred in the stage. */
+  .heap {
+    position: absolute;
+    inset: 0;
     display: flex;
     flex-wrap: wrap;
-    gap: 0.7rem;
-    margin-top: 1.8rem;
+    align-content: center;
+    align-items: center;
+    justify-content: center;
+    z-index: 1;
   }
 
-  .chip {
+  .paper {
+    position: relative;
     display: inline-flex;
     align-items: center;
-    gap: 0.45rem;
-    padding: 0.5rem 0.85rem;
-    border-radius: 9999px;
-    background: var(--surface);
+    gap: 0.5rem;
+    margin: -6px -12px;
+    padding: 0.65rem 0.9rem;
+    border-radius: var(--radius-lg);
+    background: var(--surface-elevated);
     border: 1px solid var(--border);
-    color: var(--text-muted);
-    font-size: 0.85rem;
+    box-shadow: var(--shadow-lg);
+    color: var(--text);
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 0.82rem;
+    font-weight: 600;
+    white-space: nowrap;
+    z-index: var(--z, 1);
     transform: rotate(var(--rot, 0deg));
+    animation:
+      paper-in 0.5s cubic-bezier(0.22, 1, 0.36, 1) both,
+      jitter 4.5s ease-in-out infinite;
+    animation-delay: var(--d, 0ms), calc(var(--d, 0ms) + 500ms);
   }
 
-  .chip.muted {
+  .paper.ghost {
+    opacity: 0.55;
+    box-shadow: var(--shadow);
     color: var(--text-muted);
-    opacity: 0.7;
-    font-style: italic;
+  }
+
+  .paper-icon {
+    display: grid;
+    place-items: center;
+    color: var(--text-muted);
+  }
+
+  .paper-badge {
+    display: grid;
+    place-items: center;
+    position: absolute;
+    top: -7px;
+    right: -7px;
+    width: 19px;
+    height: 19px;
+    border-radius: 50%;
+    color: var(--danger-foreground);
+    background: var(--danger);
+    box-shadow: var(--shadow-sm);
+    animation: throb 1.6s ease-in-out infinite;
+  }
+
+  /* The loose card that tumbles out of the heap. */
+  .paper.falling {
+    position: absolute;
+    left: 50%;
+    top: 18%;
+    margin: 0;
+    z-index: 7;
+    color: var(--text-muted);
+    border-color: var(--border-strong);
+    animation: tumble 4.4s cubic-bezier(0.5, 0, 0.7, 1) infinite;
+  }
+
+  @keyframes tumble {
+    0% {
+      transform: translate(-50%, 0) rotate(-4deg);
+      opacity: 0;
+    }
+    12% {
+      opacity: 1;
+    }
+    100% {
+      transform: translate(40%, 150%) rotate(82deg);
+      opacity: 0;
+    }
+  }
+
+  @keyframes paper-in {
+    from {
+      opacity: 0;
+      transform: translateY(-14px) rotate(var(--rot, 0deg)) scale(0.94);
+    }
+    to {
+      opacity: 1;
+      transform: rotate(var(--rot, 0deg));
+    }
+  }
+
+  /* Each card wobbles a touch on its own rhythm. */
+  @keyframes jitter {
+    0%,
+    100% {
+      transform: rotate(var(--rot, 0deg)) translate(0, 0);
+    }
+    50% {
+      transform: rotate(calc(var(--rot, 0deg) + 1.4deg)) translate(2px, -2px);
+    }
+  }
+
+  /* Nervous, mostly-still shudder for the whole pile. */
+  @keyframes panic {
+    0%,
+    86%,
+    100% {
+      transform: translate(0, 0) rotate(0deg);
+    }
+    88% {
+      transform: translate(-3px, 1px) rotate(-0.5deg);
+    }
+    90% {
+      transform: translate(3px, -2px) rotate(0.5deg);
+    }
+    92% {
+      transform: translate(-3px, 1px) rotate(-0.4deg);
+    }
+    94% {
+      transform: translate(2px, -1px) rotate(0.3deg);
+    }
+    96% {
+      transform: translate(-1px, 1px) rotate(-0.2deg);
+    }
+  }
+
+  /* Excel-error / version-soup tags floating over the heap. */
+  .glitch {
+    position: absolute;
+    z-index: 6;
+    padding: 0.12rem 0.42rem;
+    border-radius: 5px;
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    font-size: 0.7rem;
+    font-weight: 700;
+    color: var(--danger);
+    background: rgba(var(--warn-rgb), 0.1);
+    border: 1px solid rgba(var(--warn-rgb), 0.32);
+    white-space: nowrap;
+    animation:
+      float-tag 6s ease-in-out infinite,
+      flicker 3.4s steps(1, end) infinite;
+    animation-delay: var(--d, 0s);
+  }
+
+  @keyframes float-tag {
+    0%,
+    100% {
+      transform: translateY(0);
+    }
+    50% {
+      transform: translateY(-7px);
+    }
+  }
+
+  @keyframes flicker {
+    0%,
+    92%,
+    100% {
+      opacity: 1;
+    }
+    94%,
+    98% {
+      opacity: 0.25;
+    }
+    96% {
+      opacity: 1;
+    }
+  }
+
+  .warnmark {
+    position: absolute;
+    z-index: 6;
+    display: grid;
+    place-items: center;
+    color: var(--danger);
+    filter: drop-shadow(0 1px 2px rgba(var(--warn-rgb), 0.4));
+    animation: throb 1.9s ease-in-out infinite;
+    animation-delay: var(--d, 0s);
+  }
+
+  @keyframes throb {
+    0%,
+    100% {
+      transform: scale(1);
+      opacity: 0.8;
+    }
+    50% {
+      transform: scale(1.18);
+      opacity: 1;
+    }
+  }
+
+  /* ── Vision cards ──────────────────────────────────────── */
+  .vgrid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 0.9rem;
+    margin-top: 1.8rem;
+    perspective: 1000px;
+  }
+
+  .vcard {
+    display: flex;
+    align-items: center;
+    gap: 0.9rem;
+    padding: 1.15rem 1.2rem;
+  }
+
+  .vcard-icon {
+    display: grid;
+    place-items: center;
+    width: 44px;
+    height: 44px;
+    flex-shrink: 0;
+    border-radius: var(--radius-lg);
+    color: var(--brand);
+    background: rgba(var(--brand-rgb), 0.08);
+    border: 1px solid rgba(var(--brand-rgb), 0.22);
+  }
+
+  .vcard-text {
+    font-size: 1.02rem;
+    font-weight: 550;
+    color: var(--text);
+    line-height: 1.4;
   }
 
   /* ── Audience roles ────────────────────────────────────── */
   .roles {
     display: grid;
     grid-template-columns: repeat(4, 1fr);
-    gap: 0.8rem;
+    gap: 0.9rem;
     margin-top: 1.8rem;
+    perspective: 1000px;
   }
 
   .role {
     display: flex;
     flex-direction: column;
     align-items: center;
-    gap: 0.5rem;
-    padding: 1.1rem 0.6rem;
-    border-radius: var(--radius-xl);
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
-    color: var(--text-muted);
-    font-size: 0.85rem;
+    gap: 0.65rem;
+    padding: 1.4rem 0.7rem;
+    color: var(--text);
+    font-size: 0.92rem;
     font-weight: 600;
     text-align: center;
-    transition:
-      color 0.2s ease,
-      border-color 0.2s ease;
   }
 
-  .role:hover {
+  .role-icon {
+    display: grid;
+    place-items: center;
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
     color: var(--brand);
-    border-color: rgba(var(--brand-rgb), 0.35);
-  }
-
-  .role :global(svg) {
-    color: var(--brand);
+    background: rgba(var(--brand-rgb), 0.08);
+    border: 1px solid rgba(var(--brand-rgb), 0.22);
   }
 
   /* ── Modules grid ──────────────────────────────────────── */
   .modules {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 0.7rem;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 0.9rem;
     margin-top: 1.6rem;
+    perspective: 1200px;
   }
 
   .module {
     display: flex;
     align-items: center;
-    gap: 0.7rem;
-    padding: 0.8rem 0.9rem;
-    border-radius: var(--radius-lg);
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
-    transition:
-      border-color 0.2s ease,
-      transform 0.2s ease;
-  }
-
-  .module:hover {
-    border-color: rgba(var(--brand-rgb), 0.35);
-    transform: translateY(-2px);
+    gap: 0.85rem;
+    padding: 1.05rem 1.1rem;
   }
 
   .module-icon {
     display: grid;
     place-items: center;
-    width: 38px;
-    height: 38px;
+    width: 44px;
+    height: 44px;
     flex-shrink: 0;
     border-radius: var(--radius-lg);
     color: var(--text-muted);
     background: var(--surface);
     border: 1px solid var(--border);
-    transition: color 0.2s ease;
+    transition:
+      color 0.25s ease,
+      background 0.25s ease,
+      border-color 0.25s ease;
   }
 
   .module:hover .module-icon {
     color: var(--brand);
+    background: rgba(var(--brand-rgb), 0.08);
+    border-color: rgba(var(--brand-rgb), 0.25);
   }
 
   .module-text {
@@ -898,13 +1528,28 @@
 
   .module-name {
     color: var(--text);
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 600;
   }
 
+  .module :global(.module-arrow) {
+    margin-left: auto;
+    color: var(--text-muted);
+    opacity: 0;
+    transform: translate(-4px, 4px);
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease,
+      color 0.25s ease;
+  }
+
+  .module:hover :global(.module-arrow) {
+    opacity: 1;
+    transform: translate(0, 0);
+    color: var(--brand);
+  }
+
   /* ── Serpentine pipeline ───────────────────────────────── */
-  /* All three rows share one column template so the cards line up in a grid
-     and the turn arrow sits exactly under the top-right card. */
   .serp {
     display: flex;
     flex-direction: column;
@@ -978,7 +1623,6 @@
     animation-delay: calc(var(--step) * 95ms + 40ms);
   }
 
-  /* Continuous directional drift to suggest the flow direction. */
   .parrow.right :global(svg) {
     animation: nudge-r 1.7s ease-in-out infinite;
   }
@@ -1015,17 +1659,6 @@
 
   .turn :global(svg) {
     animation: nudge-d 1.7s ease-in-out infinite;
-  }
-
-  @keyframes pop {
-    from {
-      opacity: 0;
-      transform: translateY(12px) scale(0.96);
-    }
-    to {
-      opacity: 1;
-      transform: translateY(0) scale(1);
-    }
   }
 
   @keyframes nudge-r {
@@ -1065,134 +1698,106 @@
     align-items: center;
     gap: 0.6rem;
     margin-top: 1.8rem;
+    perspective: 1000px;
   }
 
   .df-node {
     display: inline-flex;
     align-items: center;
-    gap: 0.4rem;
-    padding: 0.5rem 0.85rem;
-    border-radius: var(--radius-lg);
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
+    gap: 0.5rem;
+    padding: 0.75rem 1.05rem;
     color: var(--text);
-    font-size: 0.88rem;
+    font-size: 0.95rem;
     font-weight: 600;
   }
 
-  .df-node.off {
-    margin-left: 0.4rem;
-    background: var(--surface);
-    color: var(--text-muted);
-    text-decoration: line-through;
-    text-decoration-color: var(--border-strong);
-    box-shadow: none;
+  .df-icon {
+    display: grid;
+    place-items: center;
+    color: var(--brand);
   }
 
-  .dataflow :global(.df-arrow) {
-    color: var(--border-strong);
+  .df-node.off {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: 0.4rem;
+    padding: 0.75rem 1.05rem;
+    border-radius: var(--radius-xl);
+    background: var(--surface);
+    border: 1px dashed var(--border-strong);
+    color: var(--text-muted);
+    font-size: 0.95rem;
+    font-weight: 600;
+    text-decoration: line-through;
+    text-decoration-color: var(--border-strong);
+  }
+
+  .df-arrow-wrap {
+    display: grid;
+    place-items: center;
+    color: rgba(var(--brand-rgb), 0.75);
+    animation: fade-in 0.4s ease both;
+    animation-delay: var(--d, 0ms);
+  }
+
+  .df-arrow-wrap :global(svg) {
+    animation: nudge-r 1.7s ease-in-out infinite;
   }
 
   /* ── Strengths ─────────────────────────────────────────── */
   .strengths {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
-    gap: 0.8rem;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
+    gap: 0.9rem;
     margin-top: 1.8rem;
+    perspective: 1200px;
   }
 
   .strength {
     display: flex;
     flex-direction: column;
-    gap: 0.35rem;
-    padding: 1rem;
-    border-radius: var(--radius-xl);
-    background: var(--surface-elevated);
-    border: 1px solid var(--border);
-    box-shadow: var(--shadow-sm);
-    border-top: 2px solid rgba(var(--brand-rgb), 0.55);
+    gap: 0.4rem;
+    padding: 1.2rem 1.1rem;
+  }
+
+  .strength-bar {
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 3px;
+    width: 0;
+    border-radius: 0 3px 3px 0;
+    background: linear-gradient(
+      90deg,
+      var(--brand),
+      rgba(var(--brand-rgb), 0.2)
+    );
+    animation: bar-fill 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.3s forwards;
+    z-index: 2;
+  }
+
+  @keyframes bar-fill {
+    to {
+      width: 100%;
+    }
   }
 
   .strength-icon {
     color: var(--brand);
+    margin-top: 0.3rem;
   }
 
   .strength-label {
     color: var(--text);
-    font-size: 0.95rem;
+    font-size: 1rem;
     font-weight: 650;
   }
 
   .strength-note {
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 0.82rem;
     line-height: 1.4;
-  }
-
-  /* ── Roadmap timeline ──────────────────────────────────── */
-  .timeline {
-    position: relative;
-    list-style: none;
-    margin: 1.8rem 0 0;
-    padding: 0 0 0 1.4rem;
-    display: grid;
-    gap: 0.85rem;
-  }
-
-  .timeline::before {
-    content: "";
-    position: absolute;
-    left: 5px;
-    top: 6px;
-    bottom: 6px;
-    width: 1px;
-    background: var(--border);
-  }
-
-  .tl-item {
-    position: relative;
-    display: flex;
-    align-items: center;
-    gap: 0.7rem;
-  }
-
-  .tl-dot {
-    position: absolute;
-    left: -1.4rem;
-    width: 11px;
-    height: 11px;
-    border-radius: 50%;
-    background: var(--bg);
-    border: 1.5px solid var(--border-strong);
-  }
-
-  .tl-item.done .tl-dot {
-    background: var(--brand);
-    border-color: var(--brand);
-  }
-
-  .tl-label {
-    color: var(--text);
-    font-size: 0.98rem;
-  }
-
-  .tl-tag {
-    margin-left: auto;
-    font-size: 0.66rem;
-    font-weight: 700;
-    letter-spacing: 0.05em;
-    text-transform: uppercase;
-    color: var(--text-muted);
-    padding: 0.15rem 0.5rem;
-    border-radius: 9999px;
-    border: 1px solid var(--border);
-    background: var(--surface);
-  }
-
-  .tl-item.done .tl-tag {
-    color: var(--brand);
-    border-color: rgba(var(--brand-rgb), 0.4);
   }
 
   /* ── Controls ──────────────────────────────────────────── */
@@ -1252,7 +1857,6 @@
     cursor: pointer;
     transition:
       background 0.2s ease,
-      transform 0.2s ease,
       width 0.2s ease;
   }
 
@@ -1280,18 +1884,10 @@
     color: var(--text-muted);
   }
 
-  /* ── Entrance stagger (replays on each slide via {#key}) ── */
+  /* ── Text entrance stagger ─────────────────────────────── */
   .r {
     animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: calc(var(--i, 0) * 70ms);
-  }
-
-  .module,
-  .strength,
-  .tl-item,
-  .chip {
-    animation: rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: var(--d, 0ms);
   }
 
   @keyframes rise {
@@ -1306,15 +1902,18 @@
   }
 
   /* ── Responsive ────────────────────────────────────────── */
-  @media (max-width: 720px) {
+  @media (max-width: 860px) {
+    .vgrid {
+      grid-template-columns: 1fr;
+    }
     .roles {
       grid-template-columns: repeat(2, 1fr);
     }
+  }
+
+  @media (max-width: 720px) {
     .counter {
       display: none;
-    }
-    .chip {
-      transform: none;
     }
 
     /* Collapse the serpentine into a single readable column (1 → 6). */
@@ -1326,7 +1925,6 @@
     .turn-row {
       display: none;
     }
-    /* Bottom row is authored 6 ← 5 ← 4; reverse it so it reads 4 → 5 → 6. */
     .srow:last-child {
       display: flex;
       flex-direction: column-reverse;
@@ -1336,21 +1934,40 @@
 
   @media (prefers-reduced-motion: reduce) {
     .r,
-    .module,
-    .strength,
-    .tl-item,
-    .chip,
+    .in,
+    .pile,
+    .pile-halo,
+    .paper,
+    .paper-badge,
+    .glitch,
+    .warnmark,
     .pnode,
     .parrow,
-    .turn {
+    .turn,
+    .df-arrow-wrap,
+    .halo,
+    .logomark .ring,
+    .wave svg,
+    .wave-path,
+    .strength-bar,
+    .title::after,
+    .wordmark::after,
+    .cta::after,
+    .eyebrow::before {
       animation: none !important;
     }
-    .parrow :global(svg),
-    .turn :global(svg) {
-      animation: none !important;
-    }
-    .chip {
+    .paper {
       transform: rotate(var(--rot, 0deg));
+    }
+    /* The tumbling card has no resting state — hide it when motion is off. */
+    .paper.falling {
+      display: none;
+    }
+    .strength-bar {
+      width: 100%;
+    }
+    .title::after {
+      width: 3.4rem;
     }
   }
 </style>

@@ -83,12 +83,6 @@
             t = Math.max(0, 1 - dist / glow);
           }
 
-          if (ambientOn) {
-            // Diagonal travelling wave — very low amplitude, just "alive".
-            const wave = Math.sin((x + y) * 0.012 - now * 0.0011);
-            t = Math.max(t, 0.16 * (0.5 + 0.5 * wave));
-          }
-
           if (rippleOn) {
             for (const rp of ripples) {
               const age = now - rp.t0;

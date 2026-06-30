@@ -7,6 +7,7 @@ import {
   Library,
   ScanSearch,
   Layers,
+  Presentation,
 } from 'lucide-svelte';
 import type { ComponentType } from 'svelte';
 
@@ -84,6 +85,17 @@ export const stackDocs: DocEntry[] = [
   },
 ];
 
+/** Standalone presentation / pitch-deck documentation entries — not part of the exam workflow. */
+export const presentationDocs: DocEntry[] = [
+  {
+    slug: 'slides',
+    title: 'Slides',
+    eyebrow: 'Presentation',
+    description: 'A guided slide deck walking through the TAO pitch: problem, modules, workflow and strengths.',
+    icon: Presentation,
+  },
+];
+
 export function getDoc(slug: string): DocEntry | undefined {
-  return [...docs, ...stackDocs].find((d) => d.slug === slug);
+  return [...docs, ...stackDocs, ...presentationDocs].find((d) => d.slug === slug);
 }

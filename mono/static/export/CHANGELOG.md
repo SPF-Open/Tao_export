@@ -1,5 +1,15 @@
 ## Changelog
 
+### 2.7.2
+- Improve : Problem slide now *shows* the scattered-work chaos
+  - The calm chip row is replaced by a jittering heap of overlapping file cards — the four real sources plus version-soup clutter (`bank_v3_FINAL.xlsx`, `draft_v7.pdf`) — with a card tumbling loose, floating Excel-error tags (`#REF!`, `#VALUE!`, `merge conflict`, …), pulsing warning marks and a nervous "panic" shudder over an alarm-tinted halo
+  - Uses the danger token for errors only, stays monochrome elsewhere, and freezes into a static layout under `prefers-reduced-motion`
+
+### 2.7.1
+- Feat : Slides doc card — `/docs` now links to the presentation deck
+  - New "Presentation" section on the docs page with its own card, icon and description, pointing to `/docs/slides`; kept out of the homepage's numbered module grid since it's not an exam-workflow tool
+  - Added `slides.md` documentation in EN/FR/NL describing the deck and how to navigate it
+
 ### 2.7.0
 - Feat : Presentation deck at `/slides` — a full-screen, keyboard-driven tour of TAO
   - 11 slides covering the problem, vision, audience, the seven modules, the exam pipeline, architecture, strengths, a use case, roadmap and a close
