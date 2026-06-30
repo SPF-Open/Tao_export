@@ -1,26 +1,16 @@
 <script lang="ts">
-  import { onMount } from 'svelte';
-  import { goto } from '$app/navigation';
-  import {
-    ArrowUpRight,
-    Upload,
-    Download,
-    Hammer,
-    Bold,
-    ClipboardCheck,
-    Library,
-    ScanSearch,
-    Route as RouteIcon,
-  } from 'lucide-svelte';
-  import type { ComponentType } from 'svelte';
-  import DotCanvas from '$lib/ui/DotCanvas.svelte';
+  import { onMount } from "svelte";
+  import { goto } from "$app/navigation";
+  import { ArrowUpRight } from "lucide-svelte";
+  import DotCanvas from "$lib/ui/DotCanvas.svelte";
+  import { docs } from "$lib/docs.ts";
 
   // Production origin — used to build absolute URLs for SEO/social metadata.
   // Change this if the app is deployed somewhere other than tao.lv0.eu.
-  const SITE_URL = 'https://tao.lv0.eu';
-  const PAGE_TITLE = 'TAO — Exam toolkit by lv0.eu';
+  const SITE_URL = "https://tao.lv0.eu";
+  const PAGE_TITLE = "TAO — Exam toolkit by lv0.eu";
   const PAGE_DESC =
-    'TAO is a unified exam toolkit: import raw data, forge questions, run interactive assessments, and export formatted results — all in one place.';
+    "TAO is a unified exam toolkit: import raw data, forge questions, run interactive assessments, and export formatted results — all in one place.";
 
   // Track the pointer over each card: the spotlight follows the cursor, and the
   // card tilts very slightly toward it for a parallax / depth feel.
@@ -30,96 +20,23 @@
     const rect = el.getBoundingClientRect();
     const px = e.clientX - rect.left;
     const py = e.clientY - rect.top;
-    el.style.setProperty('--mx', `${px}px`);
-    el.style.setProperty('--my', `${py}px`);
-    if (window.matchMedia('(prefers-reduced-motion: reduce)').matches) return;
+    el.style.setProperty("--mx", `${px}px`);
+    el.style.setProperty("--my", `${py}px`);
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     // Normalise to -0.5..0.5 around the card centre.
     const nx = px / rect.width - 0.5;
     const ny = py / rect.height - 0.5;
-    el.style.setProperty('--ry', `${nx * MAX_TILT * 2}deg`);
-    el.style.setProperty('--rx', `${-ny * MAX_TILT * 2}deg`);
+    el.style.setProperty("--ry", `${nx * MAX_TILT * 2}deg`);
+    el.style.setProperty("--rx", `${-ny * MAX_TILT * 2}deg`);
   }
 
   function onCardLeave(e: PointerEvent) {
     const el = e.currentTarget as HTMLElement;
-    el.style.setProperty('--rx', '0deg');
-    el.style.setProperty('--ry', '0deg');
+    el.style.setProperty("--rx", "0deg");
+    el.style.setProperty("--ry", "0deg");
   }
 
-  interface Route {
-    path: string;
-    title: string;
-    description: string;
-    eyebrow: string;
-    icon: ComponentType;
-    available: boolean;
-  }
-
-  const routes: Route[] = [
-    {
-      path: '/import',
-      title: 'Import',
-      eyebrow: 'Excel to TAO',
-      description: 'Load a workbook, map the question columns, preview parsed items, and prepare a clean TAO question set.',
-      icon: Upload,
-      available: true,
-    },
-    {
-      path: '/forge',
-      title: 'Forge',
-      eyebrow: 'Question builder',
-      description: 'Compose and schedule exams from scratch or from existing templates with language-aware tooling.',
-      icon: Hammer,
-      available: true,
-    },
-    {
-      path: '/export',
-      title: 'Export',
-      eyebrow: 'ZIP to PDF/JSON',
-      description: 'Load ZIP exam archives, configure settings, preview questions and answers, and export formatted result tables.',
-      icon: Download,
-      available: true,
-    },
-    {
-      path: '/format',
-      title: 'Format',
-      eyebrow: 'Bold prompts',
-      description: 'Upload a TAO QTI export and get the same ZIP back with every question prompt wrapped in bold, ready to re-import.',
-      icon: Bold,
-      available: true,
-    },
-    {
-      path: '/iat',
-      title: 'IAT',
-      eyebrow: 'Item analysis',
-      description: 'Review item difficulty, discrimination, and alternative statistics after an exam session.',
-      icon: ClipboardCheck,
-      available: true,
-    },
-    {
-      path: '/library',
-      title: 'Library',
-      eyebrow: 'Question bank',
-      description: 'Build a portable SQLite question database from TAO exports, then search it instantly — all in your browser.',
-      icon: Library,
-      available: true,
-    },
-    {
-      path: '/audit',
-      title: 'Audit',
-      eyebrow: 'Compliance review',
-      description: 'Compare a TAO export against an Excel source: match questions and flag critical, major and minor differences by severity.',
-      icon: ScanSearch,
-      available: true,
-    },
-  ];
-
-  const workflow = [
-    { label: 'Import', value: 'map columns' },
-    { label: 'Forge', value: 'compose exam' },
-    { label: 'Export', value: 'print results' },
-    { label: 'IAT', value: 'analyse quality' },
-  ];
+  const routes = docs.map((d) => ({ ...d, path: `/${d.slug}`, available: d.available ?? true }));
 
   // Number keys 1–4 launch the matching module — a small command-palette touch.
   onMount(() => {
@@ -136,8 +53,8 @@
         goto(route.path);
       }
     }
-    window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    window.addEventListener("keydown", onKey);
+    return () => window.removeEventListener("keydown", onKey);
   });
 </script>
 
@@ -151,7 +68,10 @@
   <link rel="canonical" href={SITE_URL} />
 
   <!-- Crawler directives: welcome general + AI search bots -->
-  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1" />
+  <meta
+    name="robots"
+    content="index, follow, max-image-preview:large, max-snippet:-1"
+  />
   <meta name="googlebot" content="index, follow" />
   <meta name="GPTBot" content="index, follow" />
   <meta name="ChatGPT-User" content="index, follow" />
@@ -180,14 +100,18 @@
 
   <!-- Structured data for search & AI engines -->
   {@html `<script type="application/ld+json">${JSON.stringify({
-    '@context': 'https://schema.org',
-    '@type': 'SoftwareApplication',
-    name: 'TAO',
-    applicationCategory: 'BusinessApplication',
-    operatingSystem: 'Web',
+    "@context": "https://schema.org",
+    "@type": "SoftwareApplication",
+    name: "TAO",
+    applicationCategory: "BusinessApplication",
+    operatingSystem: "Web",
     url: SITE_URL,
     description: PAGE_DESC,
-    publisher: { '@type': 'Organization', name: 'lv0.eu', url: 'https://lv0.eu' }
+    publisher: {
+      "@type": "Organization",
+      name: "lv0.eu",
+      url: "https://lv0.eu",
+    },
   })}</` + `script>`}
 </svelte:head>
 
@@ -200,19 +124,43 @@
       <div class="brand">
         <span class="logomark" aria-hidden="true">
           <svg viewBox="0 0 32 32" width="26" height="26" fill="none">
-            <circle cx="16" cy="16" r="13" stroke="currentColor" stroke-width="1.4" opacity="0.35" />
+            <circle
+              cx="16"
+              cy="16"
+              r="13"
+              stroke="currentColor"
+              stroke-width="1.4"
+              opacity="0.35"
+            />
             <circle cx="16" cy="8.5" r="2.1" fill="currentColor" />
-            <circle cx="22.5" cy="19.5" r="2.1" fill="currentColor" opacity="0.65" />
-            <circle cx="9.5" cy="19.5" r="2.1" fill="currentColor" opacity="0.65" />
-            <path d="M16 8.5 L22.5 19.5 L9.5 19.5 Z" stroke="currentColor" stroke-width="1.2" opacity="0.5" />
+            <circle
+              cx="22.5"
+              cy="19.5"
+              r="2.1"
+              fill="currentColor"
+              opacity="0.65"
+            />
+            <circle
+              cx="9.5"
+              cy="19.5"
+              r="2.1"
+              fill="currentColor"
+              opacity="0.65"
+            />
+            <path
+              d="M16 8.5 L22.5 19.5 L9.5 19.5 Z"
+              stroke="currentColor"
+              stroke-width="1.2"
+              opacity="0.5"
+            />
           </svg>
         </span>
         <h1 class="wordmark" data-text="TAO">TAO</h1>
       </div>
       <p class="subtitle">Exams, end to end</p>
       <p class="hero-description">
-        Import question, build or review exams, export printable archives, and analyse item
-        performance from one quiet workspace.
+        Import question, build or review exams, export printable archives, and
+        analyse item performance from one quiet workspace.
       </p>
       <div class="meta-readout" aria-hidden="true">
         <span class="status-dot"></span>
@@ -220,24 +168,29 @@
         <span class="meta-sep">·</span>
         <span class="meta-item">{routes.length} modules</span>
         <span class="meta-sep">·</span>
-        <span class="meta-item">press <kbd>1</kbd>–<kbd>{routes.length}</kbd> to launch</span>
+        <span class="meta-item"
+          >press <kbd>1</kbd>–<kbd>{routes.length}</kbd> to launch</span
+        >
       </div>
     </div>
 
-    <aside class="hero-panel" aria-label="TAO workflow summary">
+    <aside class="hero-panel" aria-label="TAO workflow">
       <div class="panel-topline">
-        <span>Typical run</span>
-        <span class="panel-status">Start anywhere</span>
+        <span>Workflow</span>
+        <span class="panel-status">{routes.length} steps</span>
       </div>
-      <div class="workflow-strip" aria-label="Typical exam workflow">
-        <RouteIcon size={16} strokeWidth={1.8} />
-        {#each workflow as step}
-          <span>
-            <strong>{step.label}</strong>
-            <small>{step.value}</small>
-          </span>
+      <ol class="step-list">
+        {#each routes as route, i}
+          <li class="step-item">
+            <span class="step-num">{i + 1}</span>
+            <span class="step-icon"
+              ><route.icon size={14} strokeWidth={1.75} /></span
+            >
+            <span class="step-name">{route.title}</span>
+            <span class="step-sub">{route.eyebrow}</span>
+          </li>
         {/each}
-      </div>
+      </ol>
     </aside>
   </header>
 
@@ -295,7 +248,11 @@
     width: 640px;
     height: 640px;
     transform: translate(-50%, -50%);
-    background: radial-gradient(circle, rgba(var(--brand-rgb), 0.14), transparent 62%);
+    background: radial-gradient(
+      circle,
+      rgba(var(--brand-rgb), 0.14),
+      transparent 62%
+    );
     filter: blur(40px);
     pointer-events: none;
     z-index: 0;
@@ -378,8 +335,12 @@
   }
 
   @keyframes sheen {
-    from { background-position: 120% 0; }
-    to   { background-position: -60% 0; }
+    from {
+      background-position: 120% 0;
+    }
+    to {
+      background-position: -60% 0;
+    }
   }
 
   .subtitle {
@@ -409,7 +370,7 @@
     border: 1px solid var(--border);
     border-radius: 9999px;
     background: var(--surface);
-    font-family: 'SF Mono', 'Roboto Mono', ui-monospace, monospace;
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
     font-size: 0.7rem;
     letter-spacing: 0.04em;
     color: var(--text-muted);
@@ -426,9 +387,15 @@
   }
 
   @keyframes pulse {
-    0%   { box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0.5); }
-    70%  { box-shadow: 0 0 0 6px rgba(var(--brand-rgb), 0); }
-    100% { box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0); }
+    0% {
+      box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0.5);
+    }
+    70% {
+      box-shadow: 0 0 0 6px rgba(var(--brand-rgb), 0);
+    }
+    100% {
+      box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0);
+    }
   }
 
   .meta-sep {
@@ -451,26 +418,30 @@
     padding: 1rem;
     border: 1px solid var(--border);
     border-radius: var(--radius-xl);
-    background:
-      linear-gradient(135deg, rgba(var(--brand-rgb), 0.08), transparent 42%),
+    background: linear-gradient(
+        135deg,
+        rgba(var(--brand-rgb), 0.08),
+        transparent 42%
+      ),
       var(--surface-elevated);
     box-shadow: var(--shadow-sm);
   }
 
   .hero-panel::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
-    background-image:
-      linear-gradient(rgba(var(--brand-rgb), 0.055) 1px, transparent 1px),
+    background-image: linear-gradient(
+        rgba(var(--brand-rgb), 0.055) 1px,
+        transparent 1px
+      ),
       linear-gradient(90deg, rgba(var(--brand-rgb), 0.055) 1px, transparent 1px);
     background-size: 26px 26px;
     mask-image: linear-gradient(to bottom, #000, transparent 78%);
     pointer-events: none;
   }
 
-  .panel-topline,
-  .workflow-strip {
+  .panel-topline {
     position: relative;
     z-index: 1;
   }
@@ -491,43 +462,71 @@
     color: var(--brand);
   }
 
-  .workflow-strip {
+  .step-list {
+    position: relative;
+    list-style: none;
+    margin: 0.85rem 0 0;
+    padding: 0;
+    z-index: 1;
+  }
+
+  /* Vertical timeline line behind the number badges */
+  .step-list::before {
+    content: "";
+    position: absolute;
+    left: 9px;
+    top: 22px;
+    bottom: 10px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .step-item {
+    position: relative;
     display: grid;
-    grid-template-columns: auto repeat(4, minmax(0, 1fr));
+    grid-template-columns: 20px 20px 1fr auto;
     align-items: center;
-    gap: 0.7rem;
-    margin-top: 1rem;
-    padding: 0.75rem;
+    gap: 8px;
+    padding: 5px 0;
+  }
+
+  .step-item + .step-item {
+    border-top: 1px solid var(--border);
+  }
+
+  .step-num {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    place-items: center;
+    width: 20px;
+    height: 20px;
+    border-radius: 5px;
+    background: var(--surface-elevated);
     border: 1px solid var(--border);
-    border-radius: var(--radius-lg);
-    background: var(--surface);
+    color: var(--brand);
+    font-size: 0.62rem;
+    font-weight: 700;
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+    flex-shrink: 0;
   }
 
-  .workflow-strip :global(svg) {
+  .step-icon {
+    display: flex;
     color: var(--text-muted);
+    flex-shrink: 0;
   }
 
-  .workflow-strip span {
-    min-width: 0;
-  }
-
-  .workflow-strip strong,
-  .workflow-strip small {
-    display: block;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-
-  .workflow-strip strong {
+  .step-name {
+    font-size: 0.8rem;
+    font-weight: 600;
     color: var(--text);
-    font-size: 0.76rem;
   }
 
-  .workflow-strip small {
-    margin-top: 0.16rem;
-    color: var(--text-muted);
+  .step-sub {
     font-size: 0.68rem;
+    color: var(--text-muted);
+    white-space: nowrap;
   }
 
   .module-shell {
@@ -604,20 +603,23 @@
     isolation: isolate;
     transform-style: preserve-3d;
     transform: rotateX(var(--rx)) rotateY(var(--ry)) translateY(var(--lift));
-    transition: box-shadow 0.25s ease, border-color 0.25s ease, transform 0.18s ease;
+    transition:
+      box-shadow 0.25s ease,
+      border-color 0.25s ease,
+      transform 0.18s ease;
     animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
     animation-delay: var(--delay);
   }
 
   /* Single-accent border-beam that sweeps the hairline on hover. */
   @property --beam {
-    syntax: '<angle>';
+    syntax: "<angle>";
     initial-value: 0deg;
     inherits: false;
   }
 
   .route-card::before {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
@@ -628,9 +630,13 @@
       rgba(var(--brand-rgb), 0.75) 38deg,
       transparent 110deg
     );
-    -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    -webkit-mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
     -webkit-mask-composite: xor;
-    mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+    mask:
+      linear-gradient(#000 0 0) content-box,
+      linear-gradient(#000 0 0);
     mask-composite: exclude;
     opacity: 0;
     transition: opacity 0.25s ease;
@@ -645,12 +651,14 @@
   }
 
   @keyframes beam {
-    to { --beam: 360deg; }
+    to {
+      --beam: 360deg;
+    }
   }
 
   /* subtle brand-tinted spotlight that follows the cursor */
   .route-card::after {
-    content: '';
+    content: "";
     position: absolute;
     inset: 0;
     border-radius: inherit;
@@ -702,7 +710,10 @@
     background: var(--surface);
     border: 1px solid var(--border);
     transform: translateZ(38px);
-    transition: color 0.25s ease, background 0.25s ease, border-color 0.25s ease;
+    transition:
+      color 0.25s ease,
+      background 0.25s ease,
+      border-color 0.25s ease;
   }
 
   .route-card:not(.unavailable):hover .route-icon {
@@ -752,7 +763,7 @@
     min-width: 1.25rem;
     height: 1.25rem;
     padding: 0 0.3rem;
-    font-family: 'SF Mono', 'Roboto Mono', ui-monospace, monospace;
+    font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
     font-size: 0.7rem;
     line-height: 1;
     color: var(--text-muted);
@@ -777,7 +788,10 @@
     color: var(--text-muted);
     opacity: 0;
     transform: translate(-4px, 4px) translateZ(28px);
-    transition: opacity 0.25s ease, transform 0.25s ease, color 0.25s ease;
+    transition:
+      opacity 0.25s ease,
+      transform 0.25s ease,
+      color 0.25s ease;
   }
 
   .route-card:not(.unavailable):hover :global(.route-arrow) {
@@ -787,8 +801,14 @@
   }
 
   @keyframes rise {
-    from { opacity: 0; transform: translateY(16px); }
-    to   { opacity: 1; transform: translateY(0); }
+    from {
+      opacity: 0;
+      transform: translateY(16px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .badge {
@@ -841,19 +861,6 @@
       border-radius: var(--radius-lg);
     }
 
-    .workflow-strip {
-      grid-template-columns: 1fr;
-    }
-
-    .workflow-strip :global(svg) {
-      display: none;
-    }
-
-    .workflow-strip strong,
-    .workflow-strip small {
-      white-space: normal;
-    }
-
     .module-shell {
       padding: 0.75rem;
     }
@@ -876,13 +883,25 @@
   @media (prefers-reduced-motion: reduce) {
     .hero,
     .module-shell,
-    .route-card { animation: none !important; opacity: 1; }
+    .route-card {
+      animation: none !important;
+      opacity: 1;
+    }
     .route-card {
       transform: none !important;
-      transition: box-shadow 0.2s ease, border-color 0.2s ease;
+      transition:
+        box-shadow 0.2s ease,
+        border-color 0.2s ease;
     }
-    .route-card::before { animation: none !important; }
-    .wordmark::after { animation: none !important; opacity: 0; }
-    .status-dot { animation: none !important; }
+    .route-card::before {
+      animation: none !important;
+    }
+    .wordmark::after {
+      animation: none !important;
+      opacity: 0;
+    }
+    .status-dot {
+      animation: none !important;
+    }
   }
 </style>

@@ -1,5 +1,15 @@
 ## Changelog
 
+### 2.5.0
+- Feat : Multilingual documentation (EN / FR / NL) with stack page
+  - All tool docs reorganised into `static/docs/en|fr|nl/` — language switcher on each doc page
+  - All 7 tool docs translated to French and Dutch from the English source
+  - New "Project stack" documentation page (`/docs/stack`) covering Cloudflare Pages hosting and GitHub, also translated to FR and NL
+  - Stack section added as a distinct section on the `/docs` index page
+- Refactor : `docs.ts` is now the single source of truth for tool metadata
+  - Homepage `routes` array removed — derived from `docs` at runtime (`slug → path`)
+  - `stackDocs` export added for infrastructure entries; `getDoc` searches both arrays
+
 ### 2.4.0
 - Feat : Global debug panel, changelog page, and per-tool documentation
   - The debug panel now opens from a button in the top navigation bar on every route, instead of only on the landing page

@@ -1,6 +1,6 @@
 <script lang="ts">
   import { PageHeader } from "$lib/ui";
-  import { docs } from "$lib/docs";
+  import { docs, stackDocs } from "$lib/docs";
   import { BookOpen, ArrowUpRight } from "lucide-svelte";
 
   const SITE_URL = "https://tao.lv0.eu";
@@ -60,6 +60,31 @@
       </a>
     {/each}
   </nav>
+
+  <section class="stack-section" aria-label="Stack documentation">
+    <h2 class="section-label">Stack</h2>
+    <nav class="doc-grid">
+      {#each stackDocs as doc, i (doc.slug)}
+        {@const Icon = doc.icon}
+        <a
+          href={`/docs/${doc.slug}`}
+          class="doc-card"
+          style={`animation-delay:${(docs.length + i) * 60}ms`}
+          onpointermove={onCardMove}
+        >
+          <span class="doc-icon" aria-hidden="true">
+            <Icon size={20} strokeWidth={1.75} />
+          </span>
+          <div class="doc-text">
+            <span class="doc-eyebrow">{doc.eyebrow}</span>
+            <h2 class="doc-title">{doc.title}</h2>
+            <p class="doc-desc">{doc.description}</p>
+          </div>
+          <ArrowUpRight class="doc-arrow" size={18} strokeWidth={1.75} />
+        </a>
+      {/each}
+    </nav>
+  </section>
 </main>
 
 <style>
@@ -185,6 +210,21 @@
     opacity: 1;
     transform: translate(0, 0);
     color: var(--brand);
+  }
+
+  .stack-section {
+    margin-top: 2.5rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+  }
+
+  .section-label {
+    margin: 0 0 1rem;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--text-muted);
   }
 
   @keyframes doc-rise {

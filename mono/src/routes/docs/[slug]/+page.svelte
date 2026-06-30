@@ -2,6 +2,7 @@
   import { page } from "$app/state";
   import { Markdown, PageHeader } from "$lib/ui";
   import { getDoc } from "$lib/docs";
+  import { docLang, LANG_LABELS, type DocLang } from "$lib/docLang";
   import { ArrowLeft, ArrowRight, BookOpen } from "lucide-svelte";
 
   const SITE_URL = "https://tao.lv0.eu";
@@ -13,10 +14,18 @@
   let loading = $state(true);
   let failed = $state(false);
 
-  // Re-fetch the markdown whenever the slug changes. ssr is disabled app-wide,
-  // so this always runs in the browser.
+  async function fetchDoc(lang: DocLang, s: string) {
+    const res = await fetch(`/docs/${lang}/${s}.md`);
+    if (!res.ok) {
+      if (lang !== "en") return fetchDoc("en", s);
+      throw new Error("Not found");
+    }
+    return res.text();
+  }
+
   $effect(() => {
     const current = slug;
+    const lang = $docLang;
     if (!getDoc(current)) {
       loading = false;
       return;
@@ -24,11 +33,7 @@
     loading = true;
     failed = false;
     source = "";
-    fetch(`/docs/${current}.md`)
-      .then((res) => {
-        if (!res.ok) throw new Error("Not found");
-        return res.text();
-      })
+    fetchDoc(lang, current)
       .then((text) => {
         if (slug === current) {
           source = text;
@@ -54,10 +59,25 @@
 </svelte:head>
 
 <main>
-  <a class="back-link" href="/docs">
-    <ArrowLeft size={15} strokeWidth={1.75} />
-    <span>All documentation</span>
-  </a>
+  <div class="top-bar">
+    <a class="back-link" href="/docs">
+      <ArrowLeft size={15} strokeWidth={1.75} />
+      <span>All documentation</span>
+    </a>
+
+    <div class="lang-switcher" role="group" aria-label="Language">
+      {#each Object.entries(LANG_LABELS) as [lang, label]}
+        <button
+          class="lang-btn"
+          class:active={$docLang === lang}
+          onclick={() => docLang.set(lang as DocLang)}
+          aria-pressed={$docLang === lang}
+        >
+          {label}
+        </button>
+      {/each}
+    </div>
+  </div>
 
   {#if meta}
     <PageHeader
@@ -97,11 +117,17 @@
     margin: 0 auto;
   }
 
+  .top-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+
   .back-link {
     display: inline-flex;
     align-items: center;
     gap: 6px;
-    margin-bottom: 1.25rem;
     font-size: 0.85rem;
     font-weight: 500;
     color: var(--text-muted);
@@ -111,6 +137,38 @@
 
   .back-link:hover {
     color: var(--text);
+  }
+
+  .lang-switcher {
+    display: flex;
+    gap: 2px;
+    padding: 3px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-lg);
+  }
+
+  .lang-btn {
+    padding: 3px 10px;
+    border: none;
+    border-radius: var(--radius);
+    background: transparent;
+    color: var(--text-muted);
+    font-size: 0.75rem;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    cursor: pointer;
+    transition: background 0.15s, color 0.15s;
+  }
+
+  .lang-btn:hover {
+    color: var(--text);
+  }
+
+  .lang-btn.active {
+    background: var(--surface-elevated);
+    color: var(--text);
+    box-shadow: var(--shadow-sm);
   }
 
   .doc-body {
