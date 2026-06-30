@@ -1,5 +1,10 @@
 ## Changelog
 
+### 2.7.0
+- Feat : Presentation deck at `/slides` — a full-screen, keyboard-driven tour of TAO
+  - 11 slides covering the problem, vision, audience, the seven modules, the exam pipeline, architecture, strengths, a use case, roadmap and a close
+  - Arrow / space navigation, clickable progress dots and a slide counter, built with the TAO design language (dot grid, single accent, reduced-motion aware)
+
 ### 2.6.0
 - Feat : Build fake exams in Library mode
   - New "Exams" tab — pick questions from the library, assemble them into a new exam, reorder and remove items, with a live preview matching the export-page look
