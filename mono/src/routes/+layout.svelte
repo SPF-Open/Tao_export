@@ -6,10 +6,11 @@
 <script lang="ts">
 	import "./layout.css";
 	import { page } from "$app/state";
-	import { Sun, Moon, Menu, Info, FileText, Bug, BookOpen, ScrollText } from "lucide-svelte";
-	import { fly } from "svelte/transition";
+	import { Sun, Moon, Menu, Info, FileText, Bug, BookOpen, ScrollText, ChevronDown } from "lucide-svelte";
+	import { fly, fade } from "svelte/transition";
+	import { goto } from "$app/navigation";
 	import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
-	import { getDoc } from "$lib/docs";
+	import { docs, getDoc } from "$lib/docs";
 	import NotificationQueue from "$lib/ui/NotificationQueue.svelte";
 	import DebugPanel from "$lib/general/DebugPanel.svelte";
 	import Modal from "$lib/ui/Modal.svelte";
@@ -34,6 +35,7 @@
 	);
 	let showAbout = $state(false);
 	let debugOpen = $state(false);
+	let toolMenuOpen = $state(false);
 
 	// Contextual docs link: on a tool route, deep-link to that tool's doc page;
 	// otherwise point at the docs index.
@@ -41,6 +43,14 @@
 	const docsHref = $derived(getDoc(docSlug) ? `/docs/${docSlug}` : "/docs");
 
 	const bcSegments = $derived(page.url.pathname.split("/").filter(Boolean));
+
+	function clickOutside(node: HTMLElement, handler: () => void) {
+		function onPointerDown(e: PointerEvent) {
+			if (!node.contains(e.target as Node)) handler();
+		}
+		document.addEventListener("pointerdown", onPointerDown, true);
+		return { destroy() { document.removeEventListener("pointerdown", onPointerDown, true); } };
+	}
 
 	// Disable the drawer slide under reduced-motion (JS transitions aren't gated
 	// by the CSS media query on their own).
@@ -74,6 +84,14 @@
 
 	let appName = $derived(APP_NAMES[page.url.pathname] ?? null);
 	let protectedRoute = $derived(appName !== null);
+
+	// Slug of the current tool when on a direct tool route (not /docs/*, etc.)
+	const currentToolSlug = $derived(appName ? page.url.pathname.slice(1) : null);
+
+	function switchTool(slug: string) {
+		toolMenuOpen = false;
+		goto(`/${slug}`);
+	}
 
 	$effect(() => {
 		initializeLicense();
@@ -111,7 +129,41 @@
 			<a href="/" class="bc-link">tao</a>
 			{#each bcSegments as seg, i}
 				<span class="bc-sep" aria-hidden="true">/</span>
-				{#if i === bcSegments.length - 1}
+				{#if i === bcSegments.length - 1 && currentToolSlug}
+					<div class="tool-switcher">
+						<button
+							class="bc-tool-btn"
+							onclick={() => (toolMenuOpen = !toolMenuOpen)}
+							aria-haspopup="listbox"
+							aria-expanded={toolMenuOpen}
+						>
+							<span>{seg}</span>
+							<ChevronDown size={11} strokeWidth={2} />
+						</button>
+						{#if toolMenuOpen}
+							<div
+								class="tool-menu"
+								role="listbox"
+								aria-label="Switch tool"
+								use:clickOutside={() => (toolMenuOpen = false)}
+							>
+								{#each docs as d (d.slug)}
+									{@const Icon = d.icon}
+									<button
+										class="tool-menu-item"
+										class:active={d.slug === currentToolSlug}
+										role="option"
+										aria-selected={d.slug === currentToolSlug}
+										onclick={() => switchTool(d.slug)}
+									>
+										<Icon size={13} strokeWidth={1.75} />
+										<span>{d.title}</span>
+									</button>
+								{/each}
+							</div>
+						{/if}
+					</div>
+				{:else if i === bcSegments.length - 1}
 					<span class="bc-current">{seg}</span>
 				{:else}
 					<a href="/{bcSegments.slice(0, i + 1).join('/')}" class="bc-link">{seg}</a>
@@ -228,6 +280,7 @@
 		class="sidebar-backdrop hide-print"
 		aria-label="Close menu"
 		onclick={() => sidebarOpen.set(false)}
+		transition:fade={{ duration: 150 }}
 	></button>
 {/if}
 
@@ -291,7 +344,7 @@
 		gap: 6px;
 		font-size: 13px;
 		min-width: 0;
-		overflow: hidden;
+		overflow: visible;
 	}
 
 	.bc-link,
@@ -527,5 +580,88 @@
 		.hide-print {
 			display: none;
 		}
+	}
+
+	/* ── Tool switcher ───────────────────────────────────── */
+	.tool-switcher {
+		position: relative;
+	}
+
+	.bc-tool-btn {
+		display: inline-flex;
+		align-items: center;
+		gap: 3px;
+		padding: 0 3px;
+		border: none;
+		background: transparent;
+		color: var(--text);
+		font-size: 13px;
+		font-weight: 600;
+		font-family: inherit;
+		cursor: pointer;
+		border-radius: var(--radius);
+		transition: background 0.15s, color 0.15s;
+		line-height: 1;
+		height: 22px;
+	}
+
+	.bc-tool-btn:hover {
+		background: var(--surface);
+		color: var(--brand);
+	}
+
+	.bc-tool-btn :global(svg) {
+		color: var(--text-muted);
+		flex-shrink: 0;
+		transition: transform 0.15s;
+	}
+
+	.tool-menu {
+		position: absolute;
+		top: calc(100% + 6px);
+		left: 0;
+		min-width: 160px;
+		padding: 4px;
+		background: var(--surface-elevated);
+		border: 1px solid var(--border);
+		border-radius: var(--radius-lg);
+		box-shadow: var(--shadow-lg);
+		z-index: 300;
+		display: flex;
+		flex-direction: column;
+		gap: 1px;
+		animation: fadeIn 0.1s ease;
+	}
+
+	.tool-menu-item {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+		padding: 6px 9px;
+		border: none;
+		background: transparent;
+		color: var(--text-muted);
+		font-size: 12.5px;
+		font-weight: 500;
+		font-family: inherit;
+		border-radius: var(--radius);
+		cursor: pointer;
+		text-align: left;
+		width: 100%;
+		transition: background 0.12s, color 0.12s;
+	}
+
+	.tool-menu-item:hover {
+		background: var(--surface);
+		color: var(--text);
+	}
+
+	.tool-menu-item.active {
+		color: var(--brand);
+		font-weight: 600;
+	}
+
+	.tool-menu-item.active :global(svg) {
+		color: var(--brand);
 	}
 </style>

@@ -4,7 +4,7 @@
   import DynamicTable from "$lib/iat/components/DynamicTable.svelte";
   import Header from "$lib/iat/components/Header.svelte";
   import Summary from "$lib/iat/components/Summary.svelte";
-  import { PageHeader } from "$lib/ui";
+  import { PageHeader, SidebarLayout } from "$lib/ui";
 </script>
 
 <svelte:head>
@@ -12,7 +12,11 @@
   <meta name="description" content="Interactive Assessment Tool — analyse exam item statistics in the TAO toolkit." />
 </svelte:head>
 
-<main class:center={!$file}>
+<SidebarLayout sidebarLabel="IAT settings">
+  {#snippet sidebar()}
+    <Header />
+  {/snippet}
+
   <div class="hide-print">
     <PageHeader
       icon={ClipboardCheck}
@@ -22,26 +26,8 @@
     />
   </div>
 
-  <Header />
-
   {#if $pagesData}
     <Summary />
     <DynamicTable pagesData={$pagesData} />
   {/if}
-</main>
-
-<style>
-  main {
-    display: flex;
-    flex-direction: column;
-    gap: 0.6rem;
-    margin: 0.3rem;
-    min-height: calc(100vh - 0.6rem);
-  }
-  @media print {
-    main {
-      margin: 0rem;
-      max-width: calc(100vw - 0.6rem);
-    }
-  }
-</style>
+</SidebarLayout>

@@ -1,6 +1,15 @@
 <script lang="ts">
   import type { Snippet } from "svelte";
+  import { fly } from "svelte/transition";
+  import { cubicOut } from "svelte/easing";
   import { sidebarEnabled, sidebarOpen } from "$lib/sidebar";
+
+  function sidebarFly() {
+    const reduce =
+      typeof window !== "undefined" &&
+      window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    return { x: -320, duration: reduce ? 0 : 200, easing: cubicOut };
+  }
 
   interface Props {
     /** Sidebar body (filters, settings, navigation, inputs). */
@@ -22,7 +31,7 @@
 
 <div class="content">
   {#if $sidebarOpen}
-    <aside class="sidebar" aria-label={sidebarLabel}>
+    <aside class="sidebar" aria-label={sidebarLabel} transition:fly={sidebarFly()}>
       <div class="sidebar-content">
         {@render sidebar?.()}
       </div>
@@ -78,15 +87,9 @@
       width: min(86vw, var(--sidebar-width));
       z-index: 60;
       box-shadow: var(--shadow-xl);
-      animation: slideInRight 200ms cubic-bezier(0.22, 1, 0.36, 1);
     }
     .main-area {
       padding: 0 12px 2rem;
-    }
-  }
-  @media (max-width: 640px) and (prefers-reduced-motion: reduce) {
-    .sidebar {
-      animation: none;
     }
   }
 
