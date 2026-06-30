@@ -1,10 +1,7 @@
 <script lang="ts">
-  import { slide } from 'svelte/transition';
   import { onMount } from 'svelte';
   import { goto } from '$app/navigation';
   import {
-    Bug,
-    ChevronDown,
     ArrowUpRight,
     Upload,
     Download,
@@ -17,9 +14,6 @@
   } from 'lucide-svelte';
   import type { ComponentType } from 'svelte';
   import DotCanvas from '$lib/ui/DotCanvas.svelte';
-  import DebugPanel from '$lib/general/DebugPanel.svelte';
-
-  let debugOpen = $state(false);
 
   // Production origin — used to build absolute URLs for SEO/social metadata.
   // Change this if the app is deployed somewhere other than tao.lv0.eu.
@@ -288,24 +282,6 @@
       {/each}
     </nav>
   </section>
-
-  <div class="debug-section">
-    <button
-      class="debug-trigger"
-      onclick={() => (debugOpen = !debugOpen)}
-      aria-expanded={debugOpen}
-    >
-      <Bug size={12} />
-      <span>Debug</span>
-      <ChevronDown size={12} class={debugOpen ? 'flip' : ''} />
-    </button>
-
-    {#if debugOpen}
-      <div class="debug-body" transition:slide={{ duration: 150 }}>
-        <DebugPanel onclose={() => (debugOpen = false)} />
-      </div>
-    {/if}
-  </div>
 </main>
 
 <style>
@@ -815,47 +791,6 @@
     to   { opacity: 1; transform: translateY(0); }
   }
 
-  /* ── Debug ────────────────────────────────────────────── */
-  .debug-section {
-    margin-top: 2.5rem;
-    width: 100%;
-    max-width: 820px;
-    animation: rise 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
-    animation-delay: 340ms;
-  }
-
-  .debug-trigger {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    border: 1px solid var(--border);
-    border-radius: var(--radius);
-    background: var(--surface);
-    color: var(--text-muted);
-    font-size: 11px;
-    font-weight: 500;
-    cursor: pointer;
-    transition: color 0.15s, border-color 0.15s;
-  }
-
-  .debug-trigger:hover {
-    color: var(--text);
-    border-color: var(--border-strong);
-  }
-
-  .debug-trigger :global(.flip) {
-    transform: rotate(180deg);
-  }
-
-  .debug-body {
-    margin-top: 8px;
-    height: 420px;
-    border-radius: var(--radius-lg);
-    overflow: hidden;
-    border: 1px solid var(--border);
-  }
-
   .badge {
     align-self: flex-start;
     font-size: 0.7rem;
@@ -941,8 +876,7 @@
   @media (prefers-reduced-motion: reduce) {
     .hero,
     .module-shell,
-    .route-card,
-    .debug-section { animation: none !important; opacity: 1; }
+    .route-card { animation: none !important; opacity: 1; }
     .route-card {
       transform: none !important;
       transition: box-shadow 0.2s ease, border-color 0.2s ease;

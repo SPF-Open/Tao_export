@@ -1,6 +1,4 @@
 // Components
-export { default as ChangelogModal } from './ChangelogModal.svelte';
-export { default as DocumentationModal } from './DocumentationModal.svelte';
 export { default as MaintenanceOverlay } from './MaintenanceOverlay.svelte';
 export { default as Settings } from './Settings.svelte';
 export { default as Tables } from './Tables.svelte';

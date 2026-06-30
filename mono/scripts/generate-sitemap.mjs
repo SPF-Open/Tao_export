@@ -4,6 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const root = dirname(fileURLToPath(new URL('../package.json', import.meta.url)));
 const routesDir = join(root, 'src', 'routes');
+const docsDir = join(root, 'static', 'docs');
 const sitemapPath = join(root, 'static', 'sitemap.xml');
 const pagePattern = /^\+page\.(svelte|svx|md|js|ts)$/;
 
@@ -73,6 +74,21 @@ function isRoute(route) {
 }
 
 /**
+ * The /docs/[slug] route is dynamic, so it is skipped by the route crawler.
+ * Enumerate one URL per documentation markdown file instead.
+ * @returns {string[]}
+ */
+function findDocRoutes() {
+	if (!existsSync(docsDir)) {
+		return [];
+	}
+
+	return readdirSync(docsDir)
+		.filter((name) => name.endsWith('.md'))
+		.map((name) => `/docs/${name.replace(/\.md$/, '')}`);
+}
+
+/**
  * @param {{ baseUrl?: string, lastmod?: string }} [options]
  */
 export function generateSitemap({
@@ -80,7 +96,8 @@ export function generateSitemap({
 	lastmod = new Date().toISOString().slice(0, 10)
 } = {}) {
 	const normalizedBaseUrl = baseUrl.replace(/\/+$/, '');
-	const routes = [...new Set(findPages(routesDir).map(toRoutePath).filter(isRoute))].sort((a, b) => {
+	const discovered = [...findPages(routesDir).map(toRoutePath).filter(isRoute), ...findDocRoutes()];
+	const routes = [...new Set(discovered)].sort((a, b) => {
 		if (a === '/') return -1;
 		if (b === '/') return 1;
 

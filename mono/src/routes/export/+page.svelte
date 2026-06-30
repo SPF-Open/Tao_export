@@ -6,7 +6,6 @@
   import TextInput from "$lib/ui/TextInput.svelte";
   import { EmptyState, SidebarLayout } from "$lib/ui";
   import { FileArchive } from "lucide-svelte";
-  import { showDocsStore, showChangelogStore } from "$lib/about";
 
   import {
     compareExamIndex1,
@@ -29,23 +28,12 @@
   } from "$lib/export/store";
   import { JsonAdapter } from "$lib/questions/adapters/json.js";
   import ExamToolsBadge from "$lib/questions/ExamToolsBadge.svelte";
-  import ChangelogModal from "$lib/export/ChangelogModal.svelte";
-  import DocumentationModal from "$lib/export/DocumentationModal.svelte";
 
   import { get } from "svelte/store";
 
 
   let titleHeader = $state("");
   let rrnHeader = $state("");
-  let showChangelog = $state(false);
-  let showDocumentation = $state(false);
-
-  $effect(() => {
-    if ($showDocsStore) { showDocumentation = true; showDocsStore.set(false); }
-  });
-  $effect(() => {
-    if ($showChangelogStore) { showChangelog = true; showChangelogStore.set(false); }
-  });
 
   async function exportToJson() {
     const list = get(assessments);
@@ -271,14 +259,6 @@
       {/if}
   </div>
 </SidebarLayout>
-
-{#if showChangelog}
-  <ChangelogModal onClose={() => showChangelog = false} />
-{/if}
-
-{#if showDocumentation}
-  <DocumentationModal onClose={() => showDocumentation = false} />
-{/if}
 
 <style>
   .export-main {
