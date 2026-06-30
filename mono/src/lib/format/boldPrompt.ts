@@ -47,6 +47,7 @@ export interface BoldPromptResult {
  */
 export function boldPromptXml(xml: string): BoldPromptResult {
   let changed = false;
+  const nl = xml.includes('\r\n') ? '\r\n' : '\n';
 
   const out = xml.replace(PROMPT_RE, (match, indent: string, inner: string) => {
     const text = inner.trim();
@@ -60,10 +61,10 @@ export function boldPromptXml(xml: string): BoldPromptResult {
     changed = true;
     const pad = `${indent}  `;
     return (
-      `${indent}<prompt>\n` +
-      `${pad}<div>${NBSP}</div>\n` +
-      `${pad}<strong>${text}</strong>\n` +
-      `${pad}<div>${NBSP}</div>\n` +
+      `${indent}<prompt>${nl}` +
+      `${pad}<div>${NBSP}</div>${nl}` +
+      `${pad}<strong>${text}</strong>${nl}` +
+      `${pad}<div>${NBSP}</div>${nl}` +
       `${indent}</prompt>`
     );
   });

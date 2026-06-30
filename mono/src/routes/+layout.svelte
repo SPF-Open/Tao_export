@@ -40,6 +40,8 @@
 	const docSlug = $derived(page.url.pathname.split("/")[1] ?? "");
 	const docsHref = $derived(getDoc(docSlug) ? `/docs/${docSlug}` : "/docs");
 
+	const bcSegments = $derived(page.url.pathname.split("/").filter(Boolean));
+
 	// Disable the drawer slide under reduced-motion (JS transitions aren't gated
 	// by the CSS media query on their own).
 	function debugFly() {
@@ -65,8 +67,9 @@
 		"/import": "import",
 		"/forge": "forge",
 		"/format": "format",
+		"/library": "library",
 		"/iat": "iat",
-		"/audit": "audit",
+		"/audit": "audit",	
 	};
 
 	let appName = $derived(APP_NAMES[page.url.pathname] ?? null);
@@ -106,10 +109,14 @@
 			>
 			<span class="bc-sep bc-sep-extern" aria-hidden="true">/</span>
 			<a href="/" class="bc-link">tao</a>
-			{#if appName}
+			{#each bcSegments as seg, i}
 				<span class="bc-sep" aria-hidden="true">/</span>
-				<span class="bc-current">{appName}</span>
-			{/if}
+				{#if i === bcSegments.length - 1}
+					<span class="bc-current">{seg}</span>
+				{:else}
+					<a href="/{bcSegments.slice(0, i + 1).join('/')}" class="bc-link">{seg}</a>
+				{/if}
+			{/each}
 		</nav>
 	</div>
 	<div class="header-right">
