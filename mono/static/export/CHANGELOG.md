@@ -1,5 +1,21 @@
 ## Changelog
 
+### 2.6.0
+- Feat : Build fake exams in Library mode
+  - New "Exams" tab — pick questions from the library, assemble them into a new exam, reorder and remove items, with a live preview matching the export-page look
+  - Fake exams are stored in their own database tables (separate from imported tests/questions) and export straight to Excel
+
+### 2.5.3
+- Feat : Doc switcher in breadcrumb — clicking the doc slug on any `/docs/[slug]` page opens a dropdown to jump to another doc, mirroring the tool switcher
+
+### 2.5.2
+- Fix : `.taodb` inline code invisible in dark mode on docs pages
+  - Tailwind typography was overriding the code element text color; added explicit `color: var(--text)` to the Markdown.svelte code rule
+
+### 2.5.1
+- Fix : Sidebar open/close now slides the main content smoothly instead of teleporting it
+  - Replaced `{#if}` Svelte transition with a CSS width transition on a sticky wrapper so both panels animate together
+
 ### 2.5.0
 - Feat : Multilingual documentation (EN / FR / NL) with stack page
   - All tool docs reorganised into `static/docs/en|fr|nl/` — language switcher on each doc page

@@ -1,10 +1,18 @@
 <script lang="ts">
-  import { Timer, ChevronLeft, ChevronRight, FileQuestion } from "lucide-svelte";
+  import { Timer, ChevronLeft, ChevronRight, FileQuestion, Plus, Check } from "lucide-svelte";
   import { EmptyState } from "$lib/ui";
   import type { LibraryQuestion } from "$lib/library/types.js";
   import { sanitizeSnippet } from "$lib/library/sanitize";
   import { dbInfo, searchResponse, searchPage, getQuestion, SEARCH_LIMIT } from "$lib/library/store";
   import QuestionDetailModal from "./QuestionDetailModal.svelte";
+
+  interface Props {
+    /** When set, each result shows an "Add" button instead of opening the detail modal on click. */
+    onAdd?: (id: number) => void;
+    /** Question ids already present in the target (e.g. fake exam) — shown as added. */
+    addedIds?: Set<number>;
+  }
+  let { onAdd, addedIds }: Props = $props();
 
   const typeLabels: Record<string, string> = {
     "single-choice": "Single choice",
@@ -45,7 +53,8 @@
     {:else}
       <ul class="results">
         {#each response.results as r (r.id)}
-          <li>
+          {@const added = addedIds?.has(r.id) ?? false}
+          <li class="result-row">
             <button class="result" onclick={() => open(r.id)}>
               <span class="r-head">
                 <span class="r-title">{r.title || "Untitled question"}</span>
@@ -55,6 +64,18 @@
               <!-- eslint-disable-next-line svelte/no-at-html-tags -->
               <span class="r-snippet">{@html sanitizeSnippet(r.snippet)}</span>
             </button>
+            {#if onAdd}
+              <button
+                class="add-btn"
+                class:added
+                disabled={added}
+                onclick={() => onAdd?.(r.id)}
+                aria-label={added ? "Already in exam" : "Add to exam"}
+                title={added ? "Already in exam" : "Add to exam"}
+              >
+                {#if added}<Check size={16} strokeWidth={2} />{:else}<Plus size={16} strokeWidth={2} />{/if}
+              </button>
+            {/if}
           </li>
         {/each}
       </ul>
@@ -84,13 +105,24 @@
   .time { display: inline-flex; align-items: center; gap: 0.3rem; }
   .empty { color: var(--text-muted); font-size: 0.9rem; }
   .results { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+  .result-row { display: flex; align-items: stretch; gap: 0.4rem; }
   .result {
-    width: 100%; text-align: left; cursor: pointer;
+    flex: 1; min-width: 0; width: 100%; text-align: left; cursor: pointer;
     display: flex; flex-direction: column; gap: 0.25rem;
     padding: 0.7rem 0.85rem; border: 1px solid var(--border);
     border-radius: var(--radius-lg); background: var(--surface-elevated);
     transition: border-color 150ms ease, box-shadow 150ms ease, transform 150ms ease;
   }
+  .add-btn {
+    flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
+    width: 36px; border: 1px solid var(--border); border-radius: var(--radius-lg);
+    background: var(--surface-elevated); color: var(--text-muted); cursor: pointer;
+    transition: border-color 150ms ease, color 150ms ease, background 150ms ease;
+  }
+  .add-btn:hover:not(:disabled) { border-color: rgba(var(--brand-rgb), 0.5); color: var(--brand); background: rgba(var(--brand-rgb), 0.06); }
+  .add-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18); }
+  .add-btn.added { color: var(--success); border-color: var(--success); cursor: default; }
+  .add-btn:disabled { opacity: 0.7; }
   .result:hover { border-color: rgba(var(--brand-rgb), 0.4); box-shadow: var(--shadow-sm); transform: translateY(-1px); }
   .result:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18); }
   .r-head { display: flex; justify-content: space-between; gap: 0.5rem; align-items: baseline; }
@@ -110,5 +142,6 @@
   @media (prefers-reduced-motion: reduce) { .result:hover { transform: none; } }
   @media (max-width: 640px) {
     .pager button { width: 44px; height: 44px; }
+    .add-btn { width: 44px; }
   }
 </style>

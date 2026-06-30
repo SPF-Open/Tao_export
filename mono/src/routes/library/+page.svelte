@@ -1,16 +1,17 @@
 <script lang="ts">
   import { get } from "svelte/store";
   import { onMount } from "svelte";
-  import { Library, Database, Upload, Search, TerminalSquare, FileStack } from "lucide-svelte";
+  import { Library, Database, Upload, Search, TerminalSquare, FileStack, ClipboardList } from "lucide-svelte";
   import { PageHeader, SidebarLayout } from "$lib/ui";
   import { dbInfo, busy, ingestRunning, restoreDb } from "$lib/library/store";
   import DbPanel from "$lib/library/components/DbPanel.svelte";
   import IngestPanel from "$lib/library/components/IngestPanel.svelte";
   import SearchFilters from "$lib/library/components/SearchFilters.svelte";
   import SearchResults from "$lib/library/components/SearchResults.svelte";
+  import FakeExamsPanel from "$lib/library/components/FakeExamsPanel.svelte";
   import QueryModal from "$lib/library/components/QueryModal.svelte";
 
-  type Tab = "db" | "ingest" | "search";
+  type Tab = "db" | "ingest" | "search" | "exams";
   let tab = $state<Tab>("db");
   let queryOpen = $state(false);
 
@@ -18,12 +19,14 @@
     { id: "db", label: "Database", icon: Database },
     { id: "ingest", label: "Import", icon: Upload },
     { id: "search", label: "Search", icon: Search },
+    { id: "exams", label: "Exams", icon: ClipboardList },
   ];
 
   const subtitles: Record<Tab, string> = {
     db: "Create, open and export your portable .taodb question library.",
     ingest: "Import TAO .zip exports, Excel files, or ZIP enriched with Excel competencies.",
     search: "Search the question bank instantly; refine with the filters on the left.",
+    exams: "Build fake exams from your library questions, preview them and export to Excel.",
   };
 
   // Reattach to a persisted (OPFS) library so it survives a page refresh.
@@ -59,8 +62,6 @@
 
 <SidebarLayout sidebarLabel="Library sections">
   {#snippet sidebar()}
-    <div class="brand"><Library size={16} strokeWidth={1.9} /> <span>Library</span></div>
-
     <nav class="mode-switch" aria-label="Library sections">
       {#each tabs as t (t.id)}
         {@const Icon = t.icon}
@@ -77,6 +78,8 @@
       <SearchFilters />
     {:else if tab === "db"}
       <p class="side-hint">Manage your library file on the right. Everything stays in your browser.</p>
+    {:else if tab === "exams"}
+      <p class="side-hint">Create a fake exam, then search and add questions to it on the right. Changes save instantly.</p>
     {:else}
       <p class="side-hint">Import TAO <code>.zip</code> exports, <code>.xlsx</code> Excel files, or both together to enrich competencies.</p>
     {/if}
@@ -104,9 +107,10 @@
     subtitle={subtitles[tab]}
   />
 
-  <section class="panel">
+  <section class="panel" class:panel-wide={tab === "exams"}>
     {#if tab === "db"}<DbPanel />
     {:else if tab === "ingest"}<IngestPanel />
+    {:else if tab === "exams"}<FakeExamsPanel />
     {:else}<SearchResults />{/if}
   </section>
 </SidebarLayout>
@@ -157,6 +161,7 @@
   .busy { font-size: 0.78rem; color: var(--text-muted); }
 
   .panel { animation: fade 200ms ease; max-width: 960px; }
+  .panel.panel-wide { max-width: none; }
   @keyframes fade { from { opacity: 0; } to { opacity: 1; } }
   @media (prefers-reduced-motion: reduce) { .panel { animation: none; } }
 

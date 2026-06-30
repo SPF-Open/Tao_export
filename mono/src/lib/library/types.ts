@@ -10,7 +10,7 @@ import type { ItemType } from '$lib/questions/types.js';
  */
 
 /** Current application schema version. Bump when a migration is added. */
-export const APP_LIBRARY_SCHEMA_VERSION = 1;
+export const APP_LIBRARY_SCHEMA_VERSION = 2;
 
 /** How the active database is persisted. */
 export type LibraryStorageMode =
@@ -150,6 +150,45 @@ export interface LibraryFacets {
 }
 
 /* ------------------------------------------------------------------ */
+/* Fake exams — hand-built exams assembled from library questions      */
+/* ------------------------------------------------------------------ */
+
+/** Summary row for the fake exams list. */
+export interface LibraryFakeExamSummary {
+	id: number;
+	title: string;
+	language: string;
+	itemCount: number;
+	createdAt: string;
+	updatedAt: string;
+}
+
+/** A single question snapshot inside a fake exam. */
+export interface LibraryFakeExamItem {
+	id: number;
+	position: number;
+	/** Back-reference only; may point at a question that no longer exists. */
+	sourceQuestionId: number | null;
+	title: string;
+	type: ItemType;
+	promptHtml: string;
+	promptText: string;
+	answers: LibraryAnswer[];
+	metadata: Record<string, unknown>;
+	assetRefs: string[];
+}
+
+/** A fully hydrated fake exam, returned by `fakeExam:get` and mutating commands. */
+export interface LibraryFakeExam {
+	id: number;
+	title: string;
+	language: string;
+	createdAt: string;
+	updatedAt: string;
+	items: LibraryFakeExamItem[];
+}
+
+/* ------------------------------------------------------------------ */
 /* Worker RPC protocol                                                  */
 /* ------------------------------------------------------------------ */
 
@@ -206,6 +245,15 @@ export interface LibraryCommandMap {
 	'question:get': { req: { id: number }; res: LibraryQuestion };
 	'question:getAssets': { req: { id: number }; res: LibraryAssetBlob[] };
 	'sql:query': { req: { sql: string; limit?: number }; res: LibrarySqlResult };
+	'fakeExam:list': { req: Record<string, never>; res: LibraryFakeExamSummary[] };
+	'fakeExam:get': { req: { id: number }; res: LibraryFakeExam };
+	'fakeExam:create': { req: { title: string; language?: string }; res: LibraryFakeExam };
+	'fakeExam:rename': { req: { id: number; title: string }; res: LibraryFakeExam };
+	'fakeExam:delete': { req: { id: number }; res: Record<string, never> };
+	'fakeExam:addItems': { req: { examId: number; questionIds: number[] }; res: LibraryFakeExam };
+	'fakeExam:removeItem': { req: { itemId: number }; res: LibraryFakeExam };
+	'fakeExam:reorderItems': { req: { examId: number; orderedItemIds: number[] }; res: LibraryFakeExam };
+	'fakeExam:getItemAssets': { req: { itemId: number }; res: LibraryAssetBlob[] };
 }
 
 /** An asset's raw bytes, returned for rendering question images. */

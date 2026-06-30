@@ -110,6 +110,40 @@ export interface Migration {
 	up: (db: Database) => void;
 }
 
+const SCHEMA_V2 = /* sql */ `
+CREATE TABLE fake_exams (
+  id            INTEGER PRIMARY KEY AUTOINCREMENT,
+  title         TEXT NOT NULL,
+  language      TEXT NOT NULL DEFAULT '',
+  created_at    TEXT NOT NULL,
+  updated_at    TEXT NOT NULL,
+  metadata_json TEXT NOT NULL DEFAULT '{}'
+);
+
+CREATE TABLE fake_exam_items (
+  id                  INTEGER PRIMARY KEY AUTOINCREMENT,
+  fake_exam_id        INTEGER NOT NULL REFERENCES fake_exams(id) ON DELETE CASCADE,
+  position            INTEGER NOT NULL DEFAULT 0,
+  source_question_id  INTEGER REFERENCES questions(id) ON DELETE SET NULL,
+  title               TEXT NOT NULL DEFAULT '',
+  type                TEXT NOT NULL DEFAULT 'unknown',
+  prompt_html         TEXT NOT NULL DEFAULT '',
+  prompt_text         TEXT NOT NULL DEFAULT '',
+  answers_json        TEXT NOT NULL DEFAULT '[]',
+  metadata_json       TEXT NOT NULL DEFAULT '{}'
+);
+CREATE INDEX idx_fake_exam_items_exam ON fake_exam_items(fake_exam_id);
+
+CREATE TABLE fake_exam_assets (
+  id                 INTEGER PRIMARY KEY AUTOINCREMENT,
+  fake_exam_item_id  INTEGER NOT NULL REFERENCES fake_exam_items(id) ON DELETE CASCADE,
+  path               TEXT NOT NULL,
+  mime               TEXT NOT NULL DEFAULT '',
+  bytes              BLOB
+);
+CREATE INDEX idx_fake_exam_assets_item ON fake_exam_assets(fake_exam_item_id);
+`;
+
 /** Ordered list of migrations shipped with this build. */
 export const MIGRATIONS: Migration[] = [
 	{
@@ -117,8 +151,14 @@ export const MIGRATIONS: Migration[] = [
 		up: (db) => {
 			db.exec(SCHEMA_V1);
 		}
+	},
+	{
+		version: 2,
+		up: (db) => {
+			db.exec(SCHEMA_V2);
+		}
 	}
-	// Future: { version: 2, up: (db) => db.exec('ALTER TABLE ...') }
+	// Future: { version: 3, up: (db) => db.exec('ALTER TABLE ...') }
 ];
 
 /** Reads the current schema version from `PRAGMA user_version`. */

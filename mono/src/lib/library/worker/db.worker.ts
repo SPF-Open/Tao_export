@@ -17,6 +17,17 @@ import { analyze, ingest } from './ingest.js';
 import { facets, search } from './search.js';
 import { getQuestion, getQuestionAssets } from './question.js';
 import { runQuery } from './sql.js';
+import {
+	addItemsToFakeExam,
+	createFakeExam,
+	deleteFakeExam,
+	getFakeExam,
+	getFakeExamItemAssets,
+	listFakeExams,
+	removeFakeExamItem,
+	renameFakeExam,
+	reorderFakeExamItems
+} from './fakeExam.js';
 
 /**
  * Owns the SQLite WASM instance and serves all library commands. Persistence
@@ -181,6 +192,31 @@ async function handle<C extends LibraryCommand>(
 			const q = data as { sql: string; limit?: number };
 			return runQuery(requireDb(), q.sql, q.limit) as never;
 		}
+		case 'fakeExam:list':
+			return listFakeExams(requireDb()) as never;
+		case 'fakeExam:get':
+			return getFakeExam(requireDb(), (data as { id: number }).id) as never;
+		case 'fakeExam:create':
+			return createFakeExam(requireDb(), data as { title: string; language?: string }) as never;
+		case 'fakeExam:rename': {
+			const r = data as { id: number; title: string };
+			return renameFakeExam(requireDb(), r.id, r.title) as never;
+		}
+		case 'fakeExam:delete':
+			deleteFakeExam(requireDb(), (data as { id: number }).id);
+			return {} as never;
+		case 'fakeExam:addItems': {
+			const a = data as { examId: number; questionIds: number[] };
+			return addItemsToFakeExam(requireDb(), a.examId, a.questionIds) as never;
+		}
+		case 'fakeExam:removeItem':
+			return removeFakeExamItem(requireDb(), (data as { itemId: number }).itemId) as never;
+		case 'fakeExam:reorderItems': {
+			const r = data as { examId: number; orderedItemIds: number[] };
+			return reorderFakeExamItems(requireDb(), r.examId, r.orderedItemIds) as never;
+		}
+		case 'fakeExam:getItemAssets':
+			return getFakeExamItemAssets(requireDb(), (data as { itemId: number }).itemId) as never;
 		default:
 			throw new Error(`Unknown command: ${command}`);
 	}
