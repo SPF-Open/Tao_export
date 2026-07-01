@@ -8,7 +8,7 @@
   const SITE_URL = "https://tao.lv0.eu";
   const PAGE_TITLE = "Format — TAO";
   const PAGE_DESC =
-    "Edit a question's stem from a TAO QTI export: auto-detect bullet lists and line breaks, preview the result, then re-import the ZIP.";
+    "Auto-format every question in a TAO QTI export: bullet lists and line breaks are detected and every prompt is bolded. Preview and adjust any question before re-importing the ZIP.";
 
   let files = $state<File[]>([]);
   let items = $state<StemItem[]>([]);
@@ -16,7 +16,9 @@
   let edits = $state<Map<string, string>>(new Map());
   let parsing = $state(false);
   let exporting = $state(false);
-  let result = $state<{ blob: Blob; changed: number; total: number } | null>(null);
+  let result = $state<{ blob: Blob; stemsFormatted: number; promptsBolded: number; total: number } | null>(
+    null,
+  );
   let outName = $state("");
 
   const sourceFile = $derived(files[0] ?? null);
@@ -68,7 +70,8 @@
     edits = new Map(edits);
   }
 
-  function isDirty(item: StemItem): boolean {
+  /** Whether the user manually overrode this question's auto-detected text. */
+  function isManuallyAdjusted(item: StemItem): boolean {
     const edited = edits.get(item.filename);
     return edited !== undefined && edited !== item.initialText;
   }
@@ -87,12 +90,9 @@
       result = res;
       outName = stemName(sourceFile.name);
       pushNotification({
-        title: "Stems updated",
-        message:
-          res.changed === 0
-            ? `No changes to export across ${res.total} question${res.total === 1 ? "" : "s"}.`
-            : `Updated ${res.changed} of ${res.total} question stem${res.total === 1 ? "" : "s"}.`,
-        variant: res.changed === 0 ? "info" : "success",
+        title: "Package formatted",
+        message: `Formatted ${res.stemsFormatted} question stem${res.stemsFormatted === 1 ? "" : "s"}, bolded ${res.promptsBolded} prompt${res.promptsBolded === 1 ? "" : "s"} across ${res.total} question${res.total === 1 ? "" : "s"}.`,
+        variant: res.stemsFormatted === 0 && res.promptsBolded === 0 ? "info" : "success",
       });
     } catch (err) {
       pushError(
@@ -167,8 +167,8 @@
               >
                 <FileText size={14} />
                 <span class="question-title" title={item.title}>{item.title}</span>
-                {#if isDirty(item)}
-                  <span class="dirty-dot" title="Unsaved edits"></span>
+                {#if isManuallyAdjusted(item)}
+                  <span class="dirty-dot" title="Manually adjusted"></span>
                 {/if}
               </button>
             </li>
@@ -195,14 +195,14 @@
       icon={AlignLeft}
       eyebrow="Question stem editor"
       title="Format"
-      subtitle="Pick a question from a TAO export, edit its stem, and preview the result before re-importing."
+      subtitle="Every question is auto-formatted on export — bullet lists, line breaks, and bold prompts. Preview and adjust any question first if needed."
     />
 
     {#if !sourceFile}
       <EmptyState
         icon={FileArchive}
         title="Upload a TAO QTI export"
-        description="Pick the .zip you exported from TAO. Each question's stem can be edited by hand — bullet lines and line breaks are auto-formatted, with a live preview before you export."
+        description="Pick the .zip you exported from TAO. Exporting auto-formats every question's stem (bullet lines and line breaks) and bolds every prompt. Pick a question here first if you want to preview or adjust its result before exporting."
       />
     {:else if parsing}
       <EmptyState icon={FileArchive} title="Reading the package…" />
@@ -228,16 +228,15 @@
             <span class="result-icon"><CheckCircle2 size={20} /></span>
             <div>
               <h3 class="result-title">
-                {result.changed === 0
-                  ? "Nothing to export"
-                  : `${result.changed} stem${result.changed === 1 ? "" : "s"} updated`}
+                {result.stemsFormatted} stem{result.stemsFormatted === 1 ? "" : "s"} formatted,
+                {result.promptsBolded} prompt{result.promptsBolded === 1 ? "" : "s"} bolded
               </h3>
               <p class="result-sub">{result.total} question{result.total === 1 ? "" : "s"} in the package</p>
             </div>
           </div>
           <p class="result-note">
             Download <code>{outName}</code> and import it back into TAO to get the
-            updated stems.
+            formatted package.
           </p>
           <Button variant="primary" onclick={download}>
             <Download size={16} />

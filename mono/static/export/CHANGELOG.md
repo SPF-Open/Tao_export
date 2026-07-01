@@ -1,5 +1,10 @@
 ## Changelog
 
+### 2.10.0
+- Feat : Format now auto-formats every question on export, and bold is back
+  - Exporting a package auto-detects bullet lists and line breaks for every question's stem, and bolds every plain-text prompt — no need to open a question first
+  - The per-question editor is now for previewing the automatic result and adjusting anything the detection missed, not the only way to get a question formatted
+
 ### 2.9.0
 - Feat : Format is now an interactive question-stem editor
   - Pick any question from an uploaded TAO QTI export and rewrite its stem by hand, with a live preview

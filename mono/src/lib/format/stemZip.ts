@@ -8,12 +8,30 @@ import {
 } from '@zip.js/zip.js';
 import { locateStemRegion, spliceStemRegion } from './stemRegion';
 import { formatStemText, htmlStemToText } from './stemFormat';
+import { boldPromptXml } from './boldPrompt';
 
 const ASSESSMENT_ITEM_TAG_RE = /<assessmentItem\b[^>]*>/;
 
 function extractAttr(tag: string, name: string): string | null {
   const match = new RegExp(`\\b${name}="([^"]*)"`).exec(tag);
   return match ? match[1] : null;
+}
+
+const BULLET_LINE_RE = /^[•-]\s+/;
+
+/**
+ * Whether plain text actually has bullets/line-breaks worth normalizing.
+ * A "prompt"-kind region shares its tag with the bold-prompt transform, so a
+ * plain single-line prompt is left untouched here — otherwise every export
+ * would strip its `<strong>` wrapper and let the bold pass reapply it,
+ * converging to the same bytes but doing pointless churn on every run.
+ */
+function needsStemFormatting(text: string): boolean {
+  const lines = text
+    .split('\n')
+    .map((line) => line.trim())
+    .filter((line) => line.length > 0);
+  return lines.length > 1 || lines.some((line) => BULLET_LINE_RE.test(line));
 }
 
 export interface StemItem {
@@ -66,19 +84,24 @@ export async function parseStemZip(
 }
 
 /**
- * Rebuild the zip, splicing edited stems back into their qti.xml entries.
- * Entries with no recorded edit, and every non-qti.xml entry, pass through
- * byte-identical.
+ * Rebuild the zip: every question's stem gets its bullets/line-breaks
+ * auto-formatted (using the manually edited text where the user provided
+ * one, otherwise the same auto-detected text the editor was seeded with),
+ * and every plain-text `<prompt>` gets bolded — matching the old bulk
+ * "Bold prompts" behavior. Only entries with no detectable stem region
+ * (e.g. instruction-only pages) and non-qti.xml entries (manifest, assets)
+ * pass through byte-identical.
  */
 export async function buildStemZip(
   input: Blob | File,
   edits: Map<string, string>,
-): Promise<{ blob: Blob; changed: number; total: number }> {
+): Promise<{ blob: Blob; stemsFormatted: number; promptsBolded: number; total: number }> {
   const reader = new ZipReader(new BlobReader(input));
   const writer = new ZipWriter(new BlobWriter('application/zip'));
 
   let total = 0;
-  let changed = 0;
+  let stemsFormatted = 0;
+  let promptsBolded = 0;
 
   try {
     const entries = await reader.getEntries();
@@ -89,18 +112,25 @@ export async function buildStemZip(
       if (entry.filename.endsWith('qti.xml')) {
         total += 1;
         const xml = await entry.getData(new TextWriter());
-        const editedText = edits.get(entry.filename);
         let output = xml;
 
-        if (editedText !== undefined) {
-          const region = locateStemRegion(xml);
-          if (region) {
-            output = spliceStemRegion(xml, region, formatStemText(editedText));
-            if (output !== xml) changed += 1;
+        const region = locateStemRegion(xml);
+        if (region) {
+          const editedText = edits.get(entry.filename);
+          const text = editedText ?? htmlStemToText(region.innerHtml);
+          const shouldFormat =
+            editedText !== undefined || region.kind === 'context' || needsStemFormatting(text);
+
+          if (shouldFormat) {
+            output = spliceStemRegion(xml, region, formatStemText(text));
+            if (output !== xml) stemsFormatted += 1;
           }
         }
 
-        await writer.add(entry.filename, new TextReader(output));
+        const bolded = boldPromptXml(output);
+        if (bolded.changed) promptsBolded += 1;
+
+        await writer.add(entry.filename, new TextReader(bolded.xml));
       } else {
         const blob = await entry.getData(new BlobWriter());
         await writer.add(entry.filename, new BlobReader(blob));
@@ -111,5 +141,5 @@ export async function buildStemZip(
   }
 
   const blob = await writer.close();
-  return { blob, changed, total };
+  return { blob, stemsFormatted, promptsBolded, total };
 }
