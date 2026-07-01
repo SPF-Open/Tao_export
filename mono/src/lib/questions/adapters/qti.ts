@@ -223,7 +223,9 @@ function itemKey(path: string): string {
 
 const instructionLikeTitles = new Set([
 	'exemple question à choix multiple',
-	'voorbeeld meerkeuzevraag'
+	'voorbeeld meerkeuzevraag',
+	'exemple question ouverte',
+	'voorbeeld open vraag'
 ]);
 
 function isInstructionLikeTitle(title: string, label?: string): boolean {
@@ -265,15 +267,22 @@ function parseItem(
 				? gridRows.filter((el) => el.getElementsByTagName('simpleChoice').length === 0)
 				: gridRows;
 			contentHtml = promptRows.map((el) => el.outerHTML).join('');
-			// Include <prompt> element content for choice/text interactions
+			// Include <prompt> element content for interactions whose row got filtered
+			// out of promptRows above (choiceInteraction rows containing simpleChoice).
+			// Rows are never filtered for extendedTextInteraction/textEntryInteraction,
+			// so their <prompt> is already part of contentHtml and must not be re-added.
 			if (hasChoice || hasExtended) {
 				const promptEls = Array.from(
 					doc.querySelectorAll(
 						'choiceInteraction > prompt, extendedTextInteraction > prompt, textEntryInteraction > prompt'
 					)
 				);
-				const extra = promptEls.map((el) => el.innerHTML).join('');
-				if (extra && !contentHtml.includes(extra)) contentHtml += extra;
+				const missingPromptEls = promptEls.filter((el) => {
+					const row = el.closest('.grid-row');
+					return !row || !promptRows.includes(row);
+				});
+				const extra = missingPromptEls.map((el) => el.innerHTML).join('');
+				if (extra) contentHtml += extra;
 			}
 		} else {
 			contentHtml = itemBody.innerHTML;
