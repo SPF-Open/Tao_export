@@ -1,26 +1,35 @@
 # Format
 
-**Bold prompts.** Format takes a TAO QTI export and gives you the same ZIP back
-with every question prompt wrapped in bold — ready to re-import into TAO.
+**Edit a question's stem.** Format opens a TAO QTI export, lets you pick a
+question and rewrite its stem by hand — with bullet lists and line breaks
+auto-detected and a live preview — then gives you the same ZIP back, ready to
+re-import into TAO.
 
 ## What it does
 
-Some exams read better when the question prompt stands out. Format opens your
-QTI `.zip`, finds each plain-text prompt, wraps it in bold, and repackages the
-archive without touching anything else.
+Format reads every question in your QTI `.zip` and lists them in the side
+panel. Pick one to edit its stem (the intro/context text shown before the
+answer choices) as plain text: lines starting with `•` or `-` become a real
+bulleted list, and any other line break becomes a line break in the rendered
+question. A live preview shows exactly how the result will look before you
+export.
 
 ## Using Format
 
 1. **Upload** your TAO QTI `.zip` export.
-2. Click **Run** (the formatter processes every question in the package).
-3. Review the result summary — it reports how many of the total prompts were
-   bolded.
-4. **Download** the new archive. Its name has `-bold` appended (for example
-   `exam.zip` → `exam-bold.zip`).
-5. **Re-import** the `-bold.zip` into TAO.
+2. **Pick a question** from the list in the side panel.
+3. **Edit the stem** in the text pane — the preview pane updates as you type.
+4. Repeat for any other question you want to change.
+5. Click **Export ZIP**, then **Download** the new archive. Its name has
+   `-stems` appended (for example `exam.zip` → `exam-stems.zip`).
+6. **Re-import** the `-stems.zip` into TAO.
 
 ## Notes
 
-- Prompts that already contain formatting are left unchanged; the summary tells
-  you how many were actually modified.
+- Only the question stem is editable — answer choices are left untouched.
+- Questions with no recognizable stem (e.g. an instruction-only page) still
+  appear in the list, but their editor is disabled.
+- Only formatting you create here (bullet lists and line breaks) is applied;
+  other rich formatting already present in the export (e.g. bold text) is
+  reduced to plain text the first time you edit that question's stem.
 - Processing is fully client-side — the ZIP never leaves your browser.

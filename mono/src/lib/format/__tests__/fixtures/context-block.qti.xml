@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p2" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p2 http://www.imsglobal.org/xsd/qti/qtiv2p2/imsqti_v2p2.xsd" identifier="i6011423ba1e83975c19a3f96e48f662" title="QCM 18" label="QCM 18" xml:lang="fr-FR" adaptive="false" timeDependent="false" toolName="TAO" toolVersion="2024.11 LTS">
+  <responseDeclaration identifier="RESPONSE" cardinality="single" baseType="identifier">
+    <correctResponse>
+      <value><![CDATA[choice_1]]></value>
+    </correctResponse>
+    <mapping defaultValue="0">
+      <mapEntry mapKey="choice_1" mappedValue="3"/>
+      <mapEntry mapKey="choice_2" mappedValue="-1"/>
+      <mapEntry mapKey="choice_3" mappedValue="-1"/>
+      <mapEntry mapKey="choice_4" mappedValue="-1"/>
+    </mapping>
+  </responseDeclaration>
+  <outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float" normalMaximum="3"/>
+  <outcomeDeclaration identifier="MAXSCORE" cardinality="single" baseType="float">
+    <defaultValue>
+      <value>3</value>
+    </defaultValue>
+  </outcomeDeclaration>
+  <itemBody>
+    <div class="grid-row">
+      <div class="col-12">
+        <p>
+          <strong>Vous disposez d'une table « employés » avec les colonnes suivantes : </strong>
+        </p>
+        <ul>
+          <li>
+            <strong>département </strong>
+          </li>
+          <li>
+            <strong>salaire </strong>
+          </li>
+        </ul>
+        <p>
+          <strong>Vous souhaitez sélectionner les départements dont le salaire moyen est supérieur à 3 000 et ne prendre en compte que les employés dont le salaire est supérieur à 2 000. </strong>
+        </p>
+      </div>
+    </div>
+    <div class="grid-row">
+      <div class="col-12">
+        <choiceInteraction responseIdentifier="RESPONSE" shuffle="true" maxChoices="1" minChoices="0" orientation="vertical">
+          <prompt>
+            <div>
+              <strong>Quelle requête SQL est correcte ?</strong>
+            </div>
+            <div>
+              <div> </div>
+            </div>
+          </prompt>
+          <simpleChoice identifier="choice_1" fixed="false" showHide="show">SELECT département, AVG(salaire) FROM employés WHERE salaire &gt; 2000 GROUP BY département HAVING AVG(salaire) &gt; 3000;</simpleChoice>
+          <simpleChoice identifier="choice_2" fixed="false" showHide="show">SELECT département, AVG(salaire) FROM employés GROUP BY département WHERE salaire &gt; 2000 AND AVG(salaire) &gt; 3000;</simpleChoice>
+          <simpleChoice identifier="choice_3" fixed="false" showHide="show">SELECT département, AVG(salaire) FROM employés WHERE AVG(salaire)&gt;3000 GROUP BY département HAVING salaire &gt; 2000;</simpleChoice>
+          <simpleChoice identifier="choice_4" fixed="false" showHide="show">SELECT département, AVG(salaire) FROM employés GROUP BY département HAVING salaire &gt; 2000 AND AVG(salaire) &gt; 3000;</simpleChoice>
+        </choiceInteraction>
+      </div>
+    </div>
+  </itemBody>
+  <responseProcessing template="http://www.imsglobal.org/question/qti_v2p2/rptemplates/map_response"/>
+</assessmentItem>

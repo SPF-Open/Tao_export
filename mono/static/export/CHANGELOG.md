@@ -1,5 +1,11 @@
 ## Changelog
 
+### 2.9.0
+- Feat : Format is now an interactive question-stem editor
+  - Pick any question from an uploaded TAO QTI export and rewrite its stem by hand, with a live preview
+  - Lines starting with "•" or "-" are auto-detected as a bulleted list; other line breaks become line breaks
+  - Replaces the previous one-click "bold every prompt" behavior — export now produces an `-stems.zip`
+
 ### 2.8.1
 - Fix : The exam's extracted time limit is now visible in the printed/PDF export
   - The time badge was wrapped in a `hide-print` container together with the on-screen-only tool badges (Zoom, Highlighter, …); it now prints while those screen-only badges stay hidden

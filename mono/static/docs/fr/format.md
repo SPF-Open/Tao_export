@@ -1,20 +1,23 @@
 # Format
 
-**Mise en gras des questions.** Format prend un export TAO QTI et vous retourne le même ZIP avec chaque intitulé de question mis en gras — prêt à être réimporté dans TAO.
+**Modifiez l'intitulé d'une question.** Format ouvre un export TAO QTI, vous permet de choisir une question et de réécrire son intitulé à la main — avec détection automatique des listes à puces et des sauts de ligne, et un aperçu en direct — puis vous retourne le même ZIP, prêt à être réimporté dans TAO.
 
 ## Fonctionnement
 
-Certains examens sont plus lisibles lorsque l'intitulé de la question se distingue. Format ouvre votre `.zip` QTI, repère chaque intitulé en texte brut, le met en gras, puis repackage l'archive sans toucher au reste.
+Format lit chaque question de votre `.zip` QTI et les liste dans le panneau latéral. Choisissez-en une pour modifier son intitulé (le texte d'introduction/de contexte affiché avant les choix de réponse) sous forme de texte brut : les lignes commençant par `•` ou `-` deviennent une véritable liste à puces, et tout autre saut de ligne devient un saut de ligne dans la question affichée. Un aperçu en direct montre exactement à quoi ressemblera le résultat avant l'export.
 
 ## Utilisation de Format
 
 1. **Importez** votre export TAO QTI `.zip`.
-2. Cliquez sur **Run** (le formateur traite chaque question du package).
-3. Consultez le récapitulatif des résultats — il indique combien d'intitulés ont été mis en gras sur le total.
-4. **Téléchargez** la nouvelle archive. Son nom est complété par `-bold` (par exemple `exam.zip` → `exam-bold.zip`).
-5. **Réimportez** le `-bold.zip` dans TAO.
+2. **Choisissez une question** dans la liste du panneau latéral.
+3. **Modifiez l'intitulé** dans le panneau de texte — l'aperçu se met à jour au fur et à mesure.
+4. Répétez l'opération pour chaque question que vous souhaitez modifier.
+5. Cliquez sur **Export ZIP**, puis **Téléchargez** la nouvelle archive. Son nom est complété par `-stems` (par exemple `exam.zip` → `exam-stems.zip`).
+6. **Réimportez** le `-stems.zip` dans TAO.
 
 ## Remarques
 
-- Les intitulés contenant déjà une mise en forme ne sont pas modifiés ; le récapitulatif indique combien ont été réellement traités.
+- Seul l'intitulé de la question est modifiable — les choix de réponse restent inchangés.
+- Les questions sans intitulé reconnaissable (par exemple une page d'instructions) apparaissent quand même dans la liste, mais leur éditeur est désactivé.
+- Seule la mise en forme que vous créez ici (listes à puces et sauts de ligne) est appliquée ; toute autre mise en forme déjà présente dans l'export (par exemple du texte en gras) est réduite à du texte brut dès que vous modifiez l'intitulé de cette question.
 - Le traitement est entièrement côté client — le ZIP ne quitte jamais votre navigateur.
