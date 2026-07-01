@@ -1,5 +1,12 @@
 ## Changelog
 
+### 2.8.0
+- Fix : Open-question ("QO"/"OV") prompts no longer appear twice in the export
+  - The extra-prompt dedup check compared serialized HTML strings, which silently failed for open questions because the XML serializer re-declares the inherited namespace on isolated fragments; it now checks DOM ancestry instead
+- Fix : "Exemple question ouverte" / "Voorbeeld open vraag" are now recognized as instruction pages
+  - They're hidden/shown together with the other instructions via the existing "Show Instructions" setting, matching the QCM example page
+- Feat : Each question now shows its own TAO tools badge (Zoom, Highlighter, Calculator, Review screen, …) below its content, instead of only once for the whole exam
+
 ### 2.7.4
 - Improve : Presentation deck remembers the current slide in the URL
   - Each slide updates `?slide=N` (shallow routing, no navigation), so a reload or a shared link lands on the same slide instead of resetting to the cover

@@ -1,6 +1,7 @@
 <script lang="ts">
   import type { AssessmentItem } from '$lib/questions/types.js';
   import Qcm from './QCM.svelte';
+  import ExamToolsBadge from '$lib/questions/ExamToolsBadge.svelte';
 
   interface Props {
     item: AssessmentItem;
@@ -35,6 +36,11 @@
     </div>
     {#if item.type === 'single-choice' || item.type === 'multiple-choice'}
       <Qcm {item} />
+    {/if}
+    {#if item.metadata?.tools}
+      <div class="item-tools">
+        <ExamToolsBadge tools={item.metadata.tools} />
+      </div>
     {/if}
   </div>
 {:else}
@@ -86,6 +92,11 @@
   .prompt {
     padding: 8px;
     line-height: 1.5;
+  }
+
+  .item-tools {
+    padding: 6px 8px 10px;
+    border-top: 1px solid var(--border);
   }
 
   /* Each QTI grid-row is its own full-width row that stacks vertically;
