@@ -33,9 +33,13 @@
 				{formatTime(timeLimits.maxTime)}
 			</span>
 		{/if}
-		{#each enabledTools as tool (tool.key)}
-			<span class="badge">{tool.label}</span>
-		{/each}
+		{#if enabledTools.length > 0}
+			<span class="tools-group hide-print">
+				{#each enabledTools as tool (tool.key)}
+					<span class="badge">{tool.label}</span>
+				{/each}
+			</span>
+		{/if}
 	</div>
 {/if}
 
@@ -65,5 +69,9 @@
 	.badge-time {
 		color: var(--text);
 		border-color: var(--border-strong);
+	}
+
+	.tools-group {
+		display: contents;
 	}
 </style>

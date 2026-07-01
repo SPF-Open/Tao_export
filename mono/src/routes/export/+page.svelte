@@ -202,7 +202,7 @@
           {#if $activeItems.length > 0}
             {@const activeAssessment = $assessments[$examsIndex]}
             {#if activeAssessment}
-              <div class="exam-header hide-print">
+              <div class="exam-header">
                 <ExamToolsBadge
                   tools={activeAssessment.metadata.tools}
                   timeLimits={activeAssessment.metadata.timeLimits}

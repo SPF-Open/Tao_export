@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2.8.1
+- Fix : The exam's extracted time limit is now visible in the printed/PDF export
+  - The time badge was wrapped in a `hide-print` container together with the on-screen-only tool badges (Zoom, Highlighter, …); it now prints while those screen-only badges stay hidden
+
 ### 2.8.0
 - Fix : Open-question ("QO"/"OV") prompts no longer appear twice in the export
   - The extra-prompt dedup check compared serialized HTML strings, which silently failed for open questions because the XML serializer re-declares the inherited namespace on isolated fragments; it now checks DOM ancestry instead
