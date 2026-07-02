@@ -1,6 +1,7 @@
 import { writable } from 'svelte/store';
 import { libraryClient } from './client.js';
 import { pushError } from '$lib/ui/notifications';
+import { downloadBlob } from '$lib/utils/download.js';
 import { ExcelAdapter } from '$lib/questions/adapters/excel.js';
 import type { Assessment, AssessmentItem, ChoiceOption } from '$lib/questions/types.js';
 import type { LibraryFakeExam, LibraryFakeExamItem, LibraryFakeExamSummary } from './types.js';
@@ -160,15 +161,4 @@ export async function exportFakeExamToExcel(exam: LibraryFakeExam): Promise<void
 		const filename = `${exam.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() || 'fake_exam'}.xlsx`;
 		downloadBlob(blob, filename);
 	});
-}
-
-function downloadBlob(blob: Blob, filename: string): void {
-	const url = URL.createObjectURL(blob);
-	const a = document.createElement('a');
-	a.href = url;
-	a.download = filename;
-	document.body.appendChild(a);
-	a.click();
-	a.remove();
-	URL.revokeObjectURL(url);
 }

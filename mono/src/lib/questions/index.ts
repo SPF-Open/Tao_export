@@ -3,5 +3,4 @@ export * from './tao-tools.js';
 export * from './adapters/base.js';
 export { QtiAdapter } from './adapters/qti.js';
 export { ExcelAdapter } from './adapters/excel.js';
-export { CsvAdapter } from './adapters/csv.js';
 export { JsonAdapter } from './adapters/json.js';

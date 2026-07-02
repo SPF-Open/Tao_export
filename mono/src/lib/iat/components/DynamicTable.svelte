@@ -14,6 +14,7 @@
   import { visibleColumns, colorRules } from "./DynamicTable";
   import { read, utils, write } from "xlsx";
   import { file } from "$lib/iat/store";
+  import { downloadBlob } from "$lib/utils/download";
   import { onMount } from "svelte";
 
   let { pagesData }: { pagesData: Record<number, PageInfo> } = $props();
@@ -319,13 +320,7 @@
     workbook.Sheets[sheetName] = newSheet;
 
     const wbout = write(workbook, { bookType: "xlsx", type: "array" });
-    const blob = new Blob([wbout], { type: "application/octet-stream" });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = "exported.xlsx";
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadBlob(new Blob([wbout], { type: "application/octet-stream" }), "exported.xlsx");
   }
 </script>
 

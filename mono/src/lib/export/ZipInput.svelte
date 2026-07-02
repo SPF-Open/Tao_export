@@ -49,13 +49,6 @@
           onExportJSON?.();
         }
       }}
-      onClick={() => {
-        if (exportFormat === 'pdf') {
-          onExportPDF?.();
-        } else {
-          onExportJSON?.();
-        }
-      }}
       variant="primary"
     >
       {#if exportFormat === 'pdf'}
@@ -68,7 +61,7 @@
     </Button>
 
     <div class="export-selector">
-      <button
+      <button type="button"
         class="dropdown-toggle"
         onclick={() => dropdownOpen = !dropdownOpen}
         aria-label="Select export format"
@@ -83,7 +76,7 @@
 
       {#if dropdownOpen}
         <div class="dropdown-menu">
-          <button
+          <button type="button"
             class="dropdown-item"
             class:active={exportFormat === 'pdf'}
             onclick={() => {
@@ -93,7 +86,7 @@
           >
             PDF
           </button>
-          <button
+          <button type="button"
             class="dropdown-item"
             class:active={exportFormat === 'json'}
             onclick={() => {

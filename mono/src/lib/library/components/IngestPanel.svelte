@@ -118,7 +118,7 @@
   {:else}
     <!-- Mode tabs -->
     <div class="mode-tabs" role="tablist" aria-label="Import mode">
-      <button
+      <button type="button"
         role="tab"
         class="tab-btn"
         class:active={importMode === "zip"}
@@ -127,7 +127,7 @@
       >
         <FileArchive size={14} strokeWidth={1.75} /> ZIP
       </button>
-      <button
+      <button type="button"
         role="tab"
         class="tab-btn"
         class:active={importMode === "merged"}
@@ -136,7 +136,7 @@
       >
         <Upload size={14} strokeWidth={1.75} /> ZIP + Excel
       </button>
-      <button
+      <button type="button"
         role="tab"
         class="tab-btn"
         class:active={importMode === "excel"}
@@ -179,7 +179,7 @@
           bind:selectedSheet
         />
       {/if}
-      <button
+      <button type="button"
         class="import-btn"
         disabled={!zipFileMerge || !excelFile}
         onclick={() => {
@@ -205,7 +205,7 @@
           bind:sheetNames
           bind:selectedSheet
         />
-        <button
+        <button type="button"
           class="import-btn"
           onclick={() => {
             if (!excelFile) return;
@@ -235,7 +235,7 @@
         <div class="global-foot">
           <span>{importedQuestions} questions imported</span>
           {#if !$ingestRunning}
-            <button class="clear" onclick={clearFinishedJobs}><Trash2 size={13} strokeWidth={1.75} /> Clear list</button>
+            <button type="button" class="clear" onclick={clearFinishedJobs}><Trash2 size={13} strokeWidth={1.75} /> Clear list</button>
           {/if}
         </div>
       </div>

@@ -82,7 +82,7 @@
 
   <!-- Summary -->
   <section class="surface">
-    <button class="section-toggle" onclick={() => (showStats = !showStats)} aria-expanded={showStats}>
+    <button type="button" class="section-toggle" onclick={() => (showStats = !showStats)} aria-expanded={showStats}>
       <span class="chev" class:open={showStats}><ChevronRight size={15} strokeWidth={2} /></span>
       Summary
     </button>
@@ -115,25 +115,25 @@
     <div class="btn-row">
       {#each exporters as ex (ex.label)}
         {@const Icon = ex.icon}
-        <button class="chip-btn" onclick={ex.run}><Icon size={15} strokeWidth={1.75} /> {ex.label}</button>
+        <button type="button" class="chip-btn" onclick={ex.run}><Icon size={15} strokeWidth={1.75} /> {ex.label}</button>
       {/each}
-      <button class="chip-btn" onclick={printReport}><Printer size={15} strokeWidth={1.75} /> Print</button>
+      <button type="button" class="chip-btn" onclick={printReport}><Printer size={15} strokeWidth={1.75} /> Print</button>
     </div>
   </section>
 
   <!-- Results -->
   <section class="surface">
     <div class="filter-bar" role="group" aria-label="Filter by severity">
-      <button class="filter-btn" class:active={selectedSeverity === "ALL"} onclick={() => (selectedSeverity = "ALL")}>
+      <button type="button" class="filter-btn" class:active={selectedSeverity === "ALL"} onclick={() => (selectedSeverity = "ALL")}>
         All ({report.results.length})
       </button>
-      <button class="filter-btn sev-c" class:active={selectedSeverity === "BLOQUANT"} onclick={() => (selectedSeverity = "BLOQUANT")}>
+      <button type="button" class="filter-btn sev-c" class:active={selectedSeverity === "BLOQUANT"} onclick={() => (selectedSeverity = "BLOQUANT")}>
         Critical ({filterBySeverity(report.results, "BLOQUANT").length})
       </button>
-      <button class="filter-btn sev-m" class:active={selectedSeverity === "MAJEUR"} onclick={() => (selectedSeverity = "MAJEUR")}>
+      <button type="button" class="filter-btn sev-m" class:active={selectedSeverity === "MAJEUR"} onclick={() => (selectedSeverity = "MAJEUR")}>
         Major ({filterBySeverity(report.results, "MAJEUR").length})
       </button>
-      <button class="filter-btn sev-n" class:active={selectedSeverity === "MINEUR"} onclick={() => (selectedSeverity = "MINEUR")}>
+      <button type="button" class="filter-btn sev-n" class:active={selectedSeverity === "MINEUR"} onclick={() => (selectedSeverity = "MINEUR")}>
         Minor ({filterBySeverity(report.results, "MINEUR").length})
       </button>
     </div>
@@ -152,7 +152,7 @@
           {#each filteredResults as result, idx (idx)}
             <tr class="row" class:has-errors={result.errors.length > 0}>
               <td class="ex-cell">
-                <button class="ex-btn" class:open={expandedRowIndex === idx} onclick={() => toggleRow(idx)} aria-label="Toggle details">
+                <button type="button" class="ex-btn" class:open={expandedRowIndex === idx} onclick={() => toggleRow(idx)} aria-label="Toggle details">
                   <ChevronRight size={15} strokeWidth={2} />
                 </button>
               </td>
@@ -200,7 +200,7 @@
   <!-- Unmatched -->
   {#if report.unmatched.excel.length > 0 || report.unmatched.qti.length > 0}
     <section class="surface">
-      <button class="section-toggle" onclick={() => (showUnmatched = !showUnmatched)} aria-expanded={showUnmatched}>
+      <button type="button" class="section-toggle" onclick={() => (showUnmatched = !showUnmatched)} aria-expanded={showUnmatched}>
         <span class="chev" class:open={showUnmatched}><ChevronRight size={15} strokeWidth={2} /></span>
         Unmatched items ({report.unmatched.excel.length + report.unmatched.qti.length})
         {#if report.summary.potentialCopyPasteErrors > 0}

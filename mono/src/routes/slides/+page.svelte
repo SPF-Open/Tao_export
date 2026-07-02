@@ -607,7 +607,7 @@
   </div>
 
   <footer class="controls hide-print">
-    <button
+    <button type="button"
       class="nav-btn"
       onclick={prev}
       disabled={current === 0}
@@ -618,7 +618,7 @@
 
     <div class="dots" role="tablist" aria-label="Slides">
       {#each slides as label, i}
-        <button
+        <button type="button"
           class="dot"
           class:active={i === current}
           role="tab"
@@ -630,7 +630,7 @@
       {/each}
     </div>
 
-    <button
+    <button type="button"
       class="nav-btn"
       onclick={next}
       disabled={current === TOTAL - 1}

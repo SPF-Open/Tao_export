@@ -41,7 +41,6 @@
       const dateStringTemp = $date.toISOString().split("T")[0];
       if (dateStringTemp !== $dateString) {
         dateString.update(() => dateStringTemp);
-        console.log(dateStringTemp);
       }
       days = Day.from(d);
     });

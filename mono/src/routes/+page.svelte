@@ -205,12 +205,14 @@
 
     <nav class="route-grid">
       {#each routes as route, i (route.path)}
-        <a
+        <!-- Unavailable modules render as plain (non-focusable) divs, not links. -->
+        <svelte:element
+          this={route.available ? "a" : "div"}
           href={route.available ? route.path : undefined}
+          role={route.available ? undefined : "group"}
           class="route-card"
           class:unavailable={!route.available}
-          aria-disabled={!route.available}
-          tabindex={route.available ? 0 : -1}
+          aria-disabled={route.available ? undefined : true}
           style="--delay:{i * 70}ms;"
           onpointermove={onCardMove}
           onpointerleave={onCardLeave}
@@ -231,7 +233,7 @@
           {:else}
             <span class="badge">Coming soon</span>
           {/if}
-        </a>
+        </svelte:element>
       {/each}
     </nav>
   </section>

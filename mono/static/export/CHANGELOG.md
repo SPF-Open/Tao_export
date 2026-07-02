@@ -1,5 +1,11 @@
 ## Changelog
 
+### 2.11.5
+- Remove : Dead code cleanup — obsolete export helper copy, unused CSV adapter, unused styles and leftover debug logging removed
+- Refactor : One shared file-download helper now serves Export, Format, Library, Audit and IAT (five separate copies before)
+- Fix : Every button now declares its type explicitly, and the shared Button component honours its `type` prop
+- Improve : "Coming soon" tiles on the home page are no longer fake links; tooltips show on keyboard focus and dismiss with Escape
+
 ### 2.11.4
 - Improve : Dialogs are now fully keyboard-accessible
   - Escape closes any dialog, Tab stays trapped inside it, and focus returns to where you were when it closes

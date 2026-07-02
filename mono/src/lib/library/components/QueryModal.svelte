@@ -83,7 +83,7 @@
         <ul>
           {#each QUERY_EXAMPLES as ex, i (ex.title)}
             <li>
-              <button
+              <button type="button"
                 class="ex"
                 class:active={i === activeIndex && !hovered}
                 onclick={() => pick(i)}
@@ -104,7 +104,7 @@
       <div class="console">
         <textarea class="editor" bind:value={sql} spellcheck="false" rows="6" aria-label="SQL query"></textarea>
         <div class="console-bar">
-          <button class="run" onclick={run} disabled={$sqlRunning}>
+          <button type="button" class="run" onclick={run} disabled={$sqlRunning}>
             <Play size={14} strokeWidth={2} /> {$sqlRunning ? "Running…" : "Run"}
           </button>
           {#if $sqlResult}

@@ -43,12 +43,9 @@ export async function parseExcel(
       throw new Error('No data found in Excel sheet');
     }
 
-    console.log(`[Excel Parser] Sheet: ${selectedSheet}, Total rows: ${rows.length}`);
-    console.log(`[Excel Parser] Config: rowOffset=${config.rowOffset}, skipRows=${config.skipRows}, answerLayout=${config.answerLayout}`);
 
     const questions = extractQuestions(rows as Record<string, any>[], config);
     
-    console.log(`[Excel Parser] Extracted ${questions.length} questions`);
     
     return questions;
   } catch (error) {

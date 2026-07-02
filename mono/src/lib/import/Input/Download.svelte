@@ -99,14 +99,14 @@
       //   break;
       // }
       default: {
-        console.log("Not unsuported yet");
+        // Unsupported format: nothing to download.
       }
     }
   };
 </script>
 
 <a bind:this={linkFile} href="about:blank" download aria-label="Download export" tabindex="-1"></a>
-<Button type="info" {onClick}>
+<Button onclick={onClick}>
   <div class="button">
   <FilesIcon size={18} />
     <span> Download Export</span>

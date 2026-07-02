@@ -146,7 +146,7 @@
 
 <div class="builder">
   <div class="builder-header">
-    <button class="back-btn" onclick={onBack}>
+    <button type="button" class="back-btn" onclick={onBack}>
       <ArrowLeft size={15} strokeWidth={1.9} /> All exams
     </button>
     <input
@@ -156,7 +156,7 @@
       onblur={onRenameBlur}
       placeholder="Exam title"
     />
-    <button class="export-btn" onclick={onExport} disabled={$fakeExamBusy || !$activeFakeExam?.items.length}>
+    <button type="button" class="export-btn" onclick={onExport} disabled={$fakeExamBusy || !$activeFakeExam?.items.length}>
       <FileSpreadsheet size={15} strokeWidth={1.9} /> Export to Excel
     </button>
   </div>
@@ -197,7 +197,7 @@
                     <Question item={previewItem} show={true} />
                   {/if}
                 </div>
-                <button class="remove-btn" onclick={() => onRemove(item.id)} aria-label="Remove question" title="Remove from exam">
+                <button type="button" class="remove-btn" onclick={() => onRemove(item.id)} aria-label="Remove question" title="Remove from exam">
                   <X size={16} strokeWidth={1.9} />
                 </button>
               </div>

@@ -55,7 +55,7 @@
         {#each response.results as r (r.id)}
           {@const added = addedIds?.has(r.id) ?? false}
           <li class="result-row">
-            <button class="result" onclick={() => open(r.id)}>
+            <button type="button" class="result" onclick={() => open(r.id)}>
               <span class="r-head">
                 <span class="r-title">{r.title || "Untitled question"}</span>
                 <span class="r-type">{typeLabels[r.type] ?? r.type}</span>
@@ -65,7 +65,7 @@
               <span class="r-snippet">{@html sanitizeSnippet(r.snippet)}</span>
             </button>
             {#if onAdd}
-              <button
+              <button type="button"
                 class="add-btn"
                 class:added
                 disabled={added}
@@ -82,11 +82,11 @@
 
       {#if totalPages > 1}
         <div class="pager">
-          <button disabled={page === 0} onclick={() => searchPage.set(Math.max(0, page - 1))} aria-label="Previous page">
+          <button type="button" disabled={page === 0} onclick={() => searchPage.set(Math.max(0, page - 1))} aria-label="Previous page">
             <ChevronLeft size={16} />
           </button>
           <span>Page {page + 1} / {totalPages}</span>
-          <button disabled={page + 1 >= totalPages} onclick={() => searchPage.set(page + 1)} aria-label="Next page">
+          <button type="button" disabled={page + 1 >= totalPages} onclick={() => searchPage.set(page + 1)} aria-label="Next page">
             <ChevronRight size={16} />
           </button>
         </div>

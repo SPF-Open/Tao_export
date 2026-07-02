@@ -113,11 +113,11 @@
 		<span class="panel-title">Debug</span>
 		<div class="panel-actions">
 			{#if canClear}
-				<button class="icon-btn" onclick={clearCurrent} title="Clear">
+				<button type="button" class="icon-btn" onclick={clearCurrent} title="Clear">
 					<Trash2 size={13} />
 				</button>
 			{/if}
-			<button class="icon-btn" onclick={onclose} title="Close">
+			<button type="button" class="icon-btn" onclick={onclose} title="Close">
 				<X size={13} />
 			</button>
 		</div>
@@ -125,7 +125,7 @@
 
 	<div class="tabs" role="tablist">
 		{#each tabs as t}
-			<button
+			<button type="button"
 				role="tab"
 				aria-selected={tab === t.id}
 				class="tab"

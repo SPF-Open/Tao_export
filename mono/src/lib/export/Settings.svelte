@@ -160,7 +160,7 @@
   <Tables />
   <!-- General Section -->
   <div class="settings-section">
-    <button
+    <button type="button"
       class="section-header"
       onclick={() => (sectionState.general = !sectionState.general)}
     >
@@ -194,7 +194,7 @@
 
   <!-- Paper Test Section -->
   <div class="settings-section">
-    <button
+    <button type="button"
       class="section-header"
       onclick={() => (sectionState.paperTest = !sectionState.paperTest)}
     >
@@ -242,7 +242,7 @@
 
   <!-- Advanced Section -->
   <div class="settings-section">
-    <button
+    <button type="button"
       class="section-header"
       onclick={() => (sectionState.advanced = !sectionState.advanced)}
     >
@@ -300,7 +300,7 @@
   <!-- Question Filtering Section -->
   {#if $activeItems && $activeItems.length}
     <div class="settings-section">
-      <button
+      <button type="button"
         class="section-header"
         onclick={() => (sectionState.filtering = !sectionState.filtering)}
       >
