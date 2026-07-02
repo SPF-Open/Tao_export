@@ -12,17 +12,20 @@ Format leest elke vraag in je QTI `.zip` en toont ze in het zijpaneel.
 Exporteren past twee automatische stappen toe op het hele pakket:
 
 - **Stam-opmaak** — in de inleidende/context-tekst van elke vraag (vóór de
-  antwoordkeuzes) worden regels die beginnen met `•` of `-` een echte
-  opsommingslijst, en elk ander regeleinde wordt een regeleinde in de
-  weergegeven vraag.
+  antwoordkeuzes) wordt elke `•`- of `-`-opsommingsteken een lijstitem — of
+  het nu op zijn eigen regel staat of samen met andere in dezelfde alinea
+  loopt — en elk ander regeleinde wordt een regeleinde in de weergegeven
+  vraag.
 - **Prompts vetgedrukt** — elke prompt die nog platte tekst is, wordt
   vetgedrukt, volgens de conventie van TAO. Prompts die al opmaak bevatten,
   blijven ongewijzigd.
 
 Je hoeft geen vraag te openen om dit toe te passen — het gebeurt voor elke
-vraag bij het exporteren. Door een vraag te openen kun je precies bekijken
-hoe de stam wordt weergegeven, en de tekst handmatig aanpassen als de
-automatische detectie iets miste of je een ander resultaat wilt.
+vraag bij het exporteren. Door een vraag te openen zie je het resultaat
+meteen: zowel de lijst-/regeleinde-opmaak van de stam als de prompt van de
+vraag (vetgedrukt) verschijnen al in de preview voordat je iets aanraakt, zodat
+je de tekst handmatig kunt aanpassen als de automatische detectie iets miste
+of je een ander resultaat wilt.
 
 ## Format gebruiken
 

@@ -8,7 +8,7 @@ import {
 } from '@zip.js/zip.js';
 import { locateStemRegion, spliceStemRegion } from './stemRegion';
 import { formatStemText, htmlStemToText } from './stemFormat';
-import { boldPromptXml } from './boldPrompt';
+import { boldPromptXml, previewBoldedPrompt } from './boldPrompt';
 
 const ASSESSMENT_ITEM_TAG_RE = /<assessmentItem\b[^>]*>/;
 
@@ -43,6 +43,13 @@ export interface StemItem {
   region: { kind: 'context' | 'prompt' } | null;
   /** Plain-text editor seed, derived from the region's current markup. */
   initialText: string;
+  /**
+   * Preview of the interaction's own `<prompt>` after bold is applied on
+   * export — null when there's no `<prompt>` tag. Only meaningfully distinct
+   * from the stem when `region.kind === 'context'`; when `region.kind ===
+   * 'prompt'` this is the same tag the stem editor already shows.
+   */
+  promptPreviewHtml: string | null;
 }
 
 /** Enumerate every qti.xml entry in a TAO QTI zip for the question picker. */
@@ -74,6 +81,7 @@ export async function parseStemZip(
         title,
         region: region ? { kind: region.kind } : null,
         initialText: region ? htmlStemToText(region.innerHtml) : '',
+        promptPreviewHtml: previewBoldedPrompt(xml),
       });
     }
   } finally {

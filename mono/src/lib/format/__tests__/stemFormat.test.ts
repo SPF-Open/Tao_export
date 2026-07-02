@@ -52,6 +52,32 @@ describe('formatStemText', () => {
     expect(out).not.toContain('<br>');
     expect(out).toContain('<br/>');
   });
+
+  test('detects multiple "•" bullets running together on a single line', () => {
+    const out = formatStemText('Intro: • département • salaire');
+    expect(out).toBe('Intro:<ul><li>département</li><li>salaire</li></ul>');
+  });
+
+  test('detects multiple "-" bullets running together on a single line', () => {
+    const out = formatStemText('Intro: - département - salaire');
+    expect(out).toBe('Intro:<ul><li>département</li><li>salaire</li></ul>');
+  });
+
+  test('an inline bullet run with no leading prose produces a plain list', () => {
+    expect(formatStemText('• first • second • third')).toBe(
+      '<ul><li>first</li><li>second</li><li>third</li></ul>',
+    );
+  });
+
+  test('does not split hyphenated words or numeric ranges mid-line', () => {
+    expect(formatStemText('well-known fact')).toBe('well-known fact');
+    expect(formatStemText('pages 3-4 are missing')).toBe('pages 3-4 are missing');
+  });
+
+  test('already one-bullet-per-line input is unaffected by inline expansion', () => {
+    const out = formatStemText('- département\n- salaire');
+    expect(out).toBe('<ul><li>département</li><li>salaire</li></ul>');
+  });
 });
 
 describe('htmlStemToText', () => {

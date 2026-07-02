@@ -1,5 +1,10 @@
 ## Changelog
 
+### 2.10.1
+- Fix : Bullet detection now catches markers running together in one paragraph
+  - Previously only a bullet at the very start of a line was recognized; now `• item` or `- item` is detected anywhere in the text, so a question opens with its list already correct, before any editing
+  - The preview now also shows the question's own prompt text, bolded, exactly as it will appear after export — previously bold was invisible until you downloaded the ZIP
+
 ### 2.10.0
 - Feat : Format now auto-formats every question on export, and bold is back
   - Exporting a package auto-detects bullet lists and line breaks for every question's stem, and bolds every plain-text prompt — no need to open a question first

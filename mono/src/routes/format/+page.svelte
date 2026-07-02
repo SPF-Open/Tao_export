@@ -219,6 +219,9 @@
           value={currentText}
           disabled={selectedItem.region === null}
           oninput={handleEdit}
+          promptPreviewHtml={selectedItem.region?.kind === "context"
+            ? selectedItem.promptPreviewHtml
+            : null}
         />
       </section>
 

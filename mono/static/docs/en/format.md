@@ -12,17 +12,20 @@ Format reads every question in your QTI `.zip` and lists them in the side
 panel. Exporting applies two automatic passes to the whole package:
 
 - **Stem formatting** — in each question's stem (the intro/context text
-  shown before the answer choices), lines starting with `•` or `-` become a
-  real bulleted list, and any other line break becomes a line break in the
-  rendered question.
+  shown before the answer choices), every `•` or `-` bullet marker becomes a
+  real list item — whether it starts its own line or runs together with
+  others in the same paragraph — and any other line break becomes a line
+  break in the rendered question.
 - **Bold prompts** — every prompt that's still plain text gets wrapped in
   bold, matching TAO's own convention. Prompts that already contain
   formatting are left alone.
 
 You don't need to open a question for either of these to apply — they run
-on every question when you export. Opening a question lets you preview
-exactly how its stem will render, and edit the text by hand if the automatic
-detection missed something or you want a different result.
+on every question when you export. Opening a question shows the result
+immediately: the stem's list/line-break formatting and the question's own
+prompt (bolded) both appear in the preview before you touch anything, so you
+can review and edit the text by hand if the automatic detection missed
+something or you want a different result.
 
 ## Using Format
 

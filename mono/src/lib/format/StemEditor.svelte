@@ -6,11 +6,14 @@
     value: string;
     oninput?: (text: string) => void;
     disabled?: boolean;
+    /** Preview of the question's own prompt after bold is applied on export, if it's a separate field from the stem. */
+    promptPreviewHtml?: string | null;
   }
 
-  let { value, oninput, disabled = false }: Props = $props();
+  let { value, oninput, disabled = false, promptPreviewHtml = null }: Props = $props();
 
   const previewHtml = $derived(DOMPurify.sanitize(formatStemText(value)));
+  const promptHtml = $derived(promptPreviewHtml ? DOMPurify.sanitize(promptPreviewHtml) : null);
 
   function handleInput(event: Event) {
     oninput?.((event.target as HTMLTextAreaElement).value);
@@ -39,6 +42,13 @@
       <div class="preview">
         <!-- eslint-disable-next-line svelte/no-at-html-tags -->
         {@html previewHtml}
+        {#if promptHtml}
+          <div class="prompt-preview">
+            <span class="prompt-preview-label">Question prompt — bolded on export</span>
+            <!-- eslint-disable-next-line svelte/no-at-html-tags -->
+            <div class="prompt-preview-body">{@html promptHtml}</div>
+          </div>
+        {/if}
       </div>
     </div>
   </div>
@@ -113,6 +123,27 @@
 
   .preview :global(li) {
     margin-bottom: 0.25rem;
+  }
+
+  .prompt-preview {
+    margin-top: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px dashed var(--border);
+  }
+
+  .prompt-preview-label {
+    display: block;
+    margin-bottom: 0.35rem;
+    font-size: 0.7rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--text-muted);
+  }
+
+  .prompt-preview-body :global(strong) {
+    color: var(--text);
+    font-weight: 650;
   }
 
   .stem-disabled {

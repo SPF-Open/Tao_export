@@ -32,6 +32,13 @@ const NBSP = '\u00A0';
 /** Matches a `<prompt>…</prompt>` block, capturing its leading indentation. */
 const PROMPT_RE = /([ \t]*)<prompt>([\s\S]*?)<\/prompt>/g;
 
+/**
+ * Same pattern as PROMPT_RE without the global flag, for single-shot
+ * extraction via `.exec()` — kept separate so callers never share PROMPT_RE's
+ * mutable `lastIndex` state with `boldPromptXml`'s own `.replace()` usage.
+ */
+const PROMPT_EXTRACT_RE = /([ \t]*)<prompt>([\s\S]*?)<\/prompt>/;
+
 export interface BoldPromptResult {
   /** The (possibly) transformed XML. */
   xml: string;
@@ -70,4 +77,16 @@ export function boldPromptXml(xml: string): BoldPromptResult {
   });
 
   return { xml: out, changed };
+}
+
+/**
+ * Preview the `<prompt>` content `boldPromptXml` would produce for this xml,
+ * without writing anything — used to show the (possibly bolded) prompt text
+ * in the stem editor's preview ahead of export. Returns null if there's no
+ * `<prompt>` tag.
+ */
+export function previewBoldedPrompt(xml: string): string | null {
+  const { xml: bolded } = boldPromptXml(xml);
+  const match = PROMPT_EXTRACT_RE.exec(bolded);
+  return match ? match[2].trim() : null;
 }

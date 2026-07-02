@@ -6,10 +6,10 @@
 
 Format lit chaque question de votre `.zip` QTI et les liste dans le panneau latéral. L'export applique deux passes automatiques à l'ensemble du package :
 
-- **Mise en forme de l'intitulé** — dans le texte d'introduction/de contexte de chaque question (affiché avant les choix de réponse), les lignes commençant par `•` ou `-` deviennent une véritable liste à puces, et tout autre saut de ligne devient un saut de ligne dans la question affichée.
+- **Mise en forme de l'intitulé** — dans le texte d'introduction/de contexte de chaque question (affiché avant les choix de réponse), chaque puce `•` ou `-` devient un élément de liste — qu'elle commence sa propre ligne ou qu'elle s'enchaîne avec d'autres dans le même paragraphe — et tout autre saut de ligne devient un saut de ligne dans la question affichée.
 - **Mise en gras des prompts** — chaque prompt encore en texte brut est mis en gras, selon la convention de TAO. Les prompts contenant déjà une mise en forme sont laissés tels quels.
 
-Il n'est pas nécessaire d'ouvrir une question pour que ces deux traitements s'appliquent : ils s'exécutent sur chaque question lors de l'export. Ouvrir une question permet de prévisualiser exactement le rendu de son intitulé, et de modifier le texte à la main si la détection automatique a manqué quelque chose ou si vous souhaitez un résultat différent.
+Il n'est pas nécessaire d'ouvrir une question pour que ces deux traitements s'appliquent : ils s'exécutent sur chaque question lors de l'export. Ouvrir une question affiche immédiatement le résultat : la mise en forme de l'intitulé (liste/sauts de ligne) et le prompt de la question (en gras) apparaissent tous deux dans l'aperçu avant même que vous ne touchiez à quoi que ce soit, pour que vous puissiez vérifier et modifier le texte à la main si la détection automatique a manqué quelque chose ou si vous souhaitez un résultat différent.
 
 ## Utilisation de Format
 

@@ -2,8 +2,10 @@
  * Plain-text <-> HTML conversion for the question-stem editor.
  *
  * `formatStemText` turns editable plain text into the HTML fragment that gets
- * spliced back into a qti.xml stem region: consecutive lines starting with
- * "•" or "-" become one <ul><li> list, every other line break becomes <br/>.
+ * spliced back into a qti.xml stem region: every "•" or "-" bullet marker —
+ * whether it starts its own line or runs together with others in one
+ * paragraph — becomes its own <li>, consecutive bullets group into one <ul>,
+ * every other line break becomes <br/>.
  *
  * `htmlStemToText` runs once, when a question is first opened, to seed the
  * editor from whatever markup TAO already exported. It intentionally only
@@ -13,6 +15,35 @@
  */
 
 const BULLET_RE = /^\s*[•-]\s+(.*)$/;
+
+/**
+ * A bullet marker preceded by start-of-line/whitespace and followed by
+ * whitespace — same rule as BULLET_RE, but detected anywhere in a line, not
+ * just at its start. TAO source text often runs several bullets together in
+ * one paragraph with no line break between them (no `•` never appears in
+ * normal prose, so it's always safe; `-` only counts when whitespace sits on
+ * both sides, so "well-known" or "3-4" are never split — a stylistic " - "
+ * em-dash in prose can still be mis-split, an accepted tradeoff since the
+ * marker is user-requested).
+ */
+const INLINE_BULLET_RE = /(?:^|\s)([•-])\s+/;
+
+/** Split a line into one line per bullet marker it contains, if more than one. */
+function expandInlineBullets(line: string): string[] {
+  const parts = line.split(INLINE_BULLET_RE);
+  if (parts.length === 1) return [line];
+
+  const result: string[] = [];
+  if (parts[0].trim() !== '') result.push(parts[0]);
+
+  for (let i = 1; i < parts.length; i += 2) {
+    const marker = parts[i];
+    const content = (parts[i + 1] ?? '').trim();
+    result.push(`${marker} ${content}`);
+  }
+
+  return result;
+}
 
 function escapeHtml(text: string): string {
   return text
@@ -40,11 +71,13 @@ type Token = { kind: 'text'; content: string } | { kind: 'list'; html: string };
 
 /** Convert editable plain text (with optional bullet lines) into an HTML fragment. */
 export function formatStemText(text: string): string {
-  const lines = text.replace(/\r\n?/g, '\n').split('\n');
+  let lines = text.replace(/\r\n?/g, '\n').split('\n');
 
   while (lines.length && lines[0].trim() === '') lines.shift();
   while (lines.length && lines[lines.length - 1].trim() === '') lines.pop();
   if (lines.length === 0) return '';
+
+  lines = lines.flatMap(expandInlineBullets);
 
   const tokens: Token[] = [];
   let i = 0;
