@@ -1,5 +1,11 @@
 ## Changelog
 
+### 2.11.4
+- Improve : Dialogs are now fully keyboard-accessible
+  - Escape closes any dialog, Tab stays trapped inside it, and focus returns to where you were when it closes
+  - Screen readers now announce the dialog with its title
+- Feat : Friendly error page — broken links and unexpected errors now show a styled page with a way back home instead of a blank default
+
 ### 2.11.3
 - Fix : Import page no longer re-parses the workbook once per past visit
   - Store subscriptions leaked every time the page was opened, multiplying parse work after navigating back and forth
