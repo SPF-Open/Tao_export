@@ -1,5 +1,12 @@
 ## Changelog
 
+### 2.11.3
+- Fix : Import page no longer re-parses the workbook once per past visit
+  - Store subscriptions leaked every time the page was opened, multiplying parse work after navigating back and forth
+- Fix : Unreadable or corrupt Excel files now show an error notification in Import and IAT instead of failing silently
+- Improve : IAT statistics parsing extracted into a typed, unit-tested module; missing sheets (`Speed_Pages`, `Questions`, `Alternatives`) now produce a clear error
+- Fix : A flaky license test that could accept a tampered signature is now deterministic
+
 ### 2.11.2
 - Refactor : Export tool internals reorganized for reliability — no behaviour change
   - Sorting, shuffling, merge and compare logic now runs through explicit, tested functions instead of hidden store side effects

@@ -73,8 +73,15 @@ describe("license verification", () => {
 
 	test("rejects tampered signatures", async () => {
 		const signed = await createSignedToken(payload());
+		// Flip a character in the middle of the signature segment. (The *last*
+		// base64url char only carries 2 significant bits, so overwriting it can
+		// decode to the same bytes and leave the signature valid.)
+		const [prefix, payloadSegment, signatureSegment] = signed.token.split(".");
+		const i = Math.floor(signatureSegment.length / 2);
+		const flipped = signatureSegment[i] === "A" ? "B" : "A";
+		const tampered = signatureSegment.slice(0, i) + flipped + signatureSegment.slice(i + 1);
 		const result = await verifyLicenseToken(
-			`${signed.token.slice(0, -1)}A`,
+			`${prefix}.${payloadSegment}.${tampered}`,
 			signed.publicKey,
 			Date.UTC(2026, 0, 1)
 		);

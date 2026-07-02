@@ -10,7 +10,7 @@
     Tooltip,
   } from "$lib/ui";
   import { Search } from "lucide-svelte";
-  import type { PageInfo } from "$lib/iat/store";
+  import type { Alternative, PageInfo, Question } from "$lib/iat/store";
   import { visibleColumns, colorRules } from "./DynamicTable";
   import { read, utils, write } from "xlsx";
   import { file } from "$lib/iat/store";
@@ -18,12 +18,22 @@
 
   let { pagesData }: { pagesData: Record<number, PageInfo> } = $props();
 
+  // One table row: a question enriched with its page-level stats plus the
+  // user annotations edited in the detail modal (exported with the sheet).
+  type TableRow = Question & {
+    instruction: boolean;
+    duration_mean: number;
+    duration_sd: number;
+    extraInfo?: string;
+    action?: string;
+  };
+
   // Define the structure of a column (excluding alternatives)
   type Column = {
-    id: string;
+    id: keyof TableRow & string;
     label: string;
     tooltip?: string;
-    renderer: (row: any) => string;
+    renderer: (row: TableRow) => string | number;
   };
 
   // Configure your columns here (the renderer formats the cell value)
@@ -33,7 +43,7 @@
     {
       id: "instruction",
       label: "Instruction",
-      renderer: (row) => row.instruction || "",
+      renderer: (row) => (row.instruction ? "true" : ""),
     },
     {
       id: "duration_mean",
@@ -219,7 +229,7 @@
     colMap[col.id] = col;
   });
 
-  let rows = $state<any | null>(null);
+  let rows = $state<TableRow[] | null>(null);
 
   // Flatten page data for table display
   onMount(() => {
@@ -253,7 +263,7 @@
   }
 
   // Helper function to apply color rules if defined and cell value is numeric.
-  function getColorClass(colId: string, cellValue: any): string {
+  function getColorClass(colId: string, cellValue: unknown): string {
     const rule = colorRules[colId];
     if (rule && typeof cellValue === "number") {
       if (cellValue < rule.max && cellValue >= rule.min) return rule.inClass;
@@ -271,10 +281,10 @@
 
   // Refactored heat map function for alternatives with configurable thresholds
   function getAltHeatClass(
-    row: any,
+    row: TableRow,
     alt: { pct: number; isCorrect: boolean }
   ): string {
-    const correctAlt = row.alternatives.find((a: any) => a.isCorrect);
+    const correctAlt = row.alternatives.find((a: Alternative) => a.isCorrect);
     const correctPct = correctAlt ? correctAlt.pct : 0;
     if (!alt.isCorrect) {
       const diff = alt.pct - correctPct;
@@ -286,16 +296,16 @@
   }
 
   let showModal = $state(false);
-  let selectedRow: any = $state(null);
+  let selectedRow: TableRow | null = $state(null);
 
-  function openModal(row: any) {
+  function openModal(row: TableRow) {
     selectedRow = row;
     showModal = true;
   }
 
   // New export function to add a new sheet with table rows to the original workbook
   async function exportToExcel() {
-    if (!$file) {
+    if (!$file || !rows) {
       alert("No original file available for export.");
       return;
     }
@@ -457,13 +467,14 @@
 </div>
 
 {#if showModal && selectedRow}
+  {@const row = selectedRow}
   <Modal bind:open={showModal} size="xl">
     {#snippet title()}
-      Details for item: {selectedRow.itemRank}
+      Details for item: {row.itemRank}
     {/snippet}
     <div class="modal-content">
       <div class="alt-cards">
-        {#each selectedRow.alternatives as alt, index}
+        {#each row.alternatives as alt, index}
           <Card status={alt.isCorrect ? "success" : undefined}>
             {#snippet title()}
               <span>Alternative {index + 1}</span>
@@ -480,7 +491,7 @@
           disabled
           rows={4}
           placeholder="Additional info"
-          bind:value={selectedRow.extraInfo}
+          bind:value={row.extraInfo}
         />
         <div class="modal-action-row">
           <Combobox
@@ -491,7 +502,7 @@
               { label: "Supprimer", value: "delete" },
               { label: "Autre", value: "other" },
             ]}
-            bind:value={selectedRow.action}
+            bind:value={row.action}
           />
           <Button variant="danger" onclick={() => (showModal = false)}>Cancel</Button>
           <Button variant="success" disabled>Save</Button>
