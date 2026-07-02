@@ -1,5 +1,8 @@
 ## Changelog
 
+### 2.11.8
+- Improve : The IAT page now shows a guiding empty state before a workbook is loaded, instead of a blank area
+
 ### 2.11.7
 - Improve : Full end-to-end browser test suite (18 tests)
   - Every page is loaded and checked for rendering and console errors; the error page, Library SQLite worker boot, Format tool happy path (real QTI zip), phone drawer navigation and slides keyboard navigation are all covered
