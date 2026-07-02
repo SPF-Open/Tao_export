@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2.9.1
+- Improve : Audit's "Custom" Excel template now seeds from the previously selected preset
+  - Switching to Custom copies the column letters and row layout of the preset that was active, so you only need to adjust the field(s) that actually differ instead of retyping the whole mapping
+
 ### 2.9.0
 - Feat : Audit gets a "Custom" Excel template
   - Alongside the fixed FIN / OLD_BOSA / OLD_FIN presets, you can now type in your own column letters (title, prompt, answer, competency, indicator, descriptions) and row layout (first data row, answers per question, rows to skip) — the same manual mapping the Import route already offers — so any Excel source can be audited, not just the three known layouts

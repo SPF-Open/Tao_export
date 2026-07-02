@@ -33,6 +33,26 @@
   function setRow(key: keyof typeof $auditCustomRow, value: number) {
     auditCustomRow.update((r) => ({ ...r, [key]: value }));
   }
+
+  // Switching into Custom from a fixed preset seeds the manual fields with that
+  // preset's binding, so users only have to adjust the column(s) that differ
+  // instead of retyping the whole mapping from scratch.
+  function selectTemplate(template: TemplateColumn) {
+    if (template === TemplateColumn.OTHER && $auditTemplate !== TemplateColumn.OTHER) {
+      const b = bindingTemplate[$auditTemplate];
+      auditCustomColumns.set({
+        title: b.column.title ?? '',
+        prompt: b.column.prompt ?? '',
+        correct: b.column.correct ?? '',
+        competency: b.column.competency ?? '',
+        indicator: b.column.indicator ?? '',
+        competencyDescr: b.column.competencyDescr ?? '',
+        masteryDescr: b.column.masteryDescr ?? '',
+      });
+      auditCustomRow.set({ ...b.row });
+    }
+    auditTemplate.set(template);
+  }
 </script>
 
 {#snippet letterField(label: string, key: keyof typeof $auditCustomColumns)}
@@ -58,7 +78,7 @@
           type="button"
           class="preset-btn"
           class:active={$auditTemplate === template}
-          onclick={() => auditTemplate.set(template)}
+          onclick={() => selectTemplate(template)}
         >
           {labels[template]}
         </button>
