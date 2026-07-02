@@ -7,14 +7,17 @@
   import { runAudit } from "$lib/audit/index";
   import { getExcelSheets } from "$lib/audit/excel-parser";
   import { assessmentItemsToQuestions } from "$lib/audit/fromAssessment";
-  import { bindingFromTemplate } from "$lib/audit/fromExcel";
+  import { bindingFromTemplate, customBinding } from "$lib/audit/fromExcel";
   import AuditConfig from "$lib/audit/AuditConfig.svelte";
   import AuditResults from "$lib/audit/AuditResults.svelte";
+  import { TemplateColumn } from "$lib/import/helper/store";
   import {
     auditItems,
     auditZipName,
     auditTemplate,
     auditIgnoreTitle,
+    auditCustomColumns,
+    auditCustomRow,
     auditFilename,
     auditReport,
     auditLoading,
@@ -75,7 +78,11 @@
         return;
       }
       const buffer = await excelFile.arrayBuffer();
-      const result = await runAudit(buffer, questions, bindingFromTemplate(get(auditTemplate)), {
+      const binding =
+        get(auditTemplate) === TemplateColumn.OTHER
+          ? customBinding(get(auditCustomColumns), get(auditCustomRow))
+          : bindingFromTemplate(get(auditTemplate));
+      const result = await runAudit(buffer, questions, binding, {
         sheetName: selectedSheet,
         ignoreTitleMismatch: get(auditIgnoreTitle),
       });

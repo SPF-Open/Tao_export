@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2.9.0
+- Feat : Audit gets a "Custom" Excel template
+  - Alongside the fixed FIN / OLD_BOSA / OLD_FIN presets, you can now type in your own column letters (title, prompt, answer, competency, indicator, descriptions) and row layout (first data row, answers per question, rows to skip) — the same manual mapping the Import route already offers — so any Excel source can be audited, not just the three known layouts
+
 ### 2.8.1
 - Fix : The exam's extracted time limit is now visible in the printed/PDF export
   - The time badge was wrapped in a `hide-print` container together with the on-screen-only tool badges (Zoom, Highlighter, …); it now prints while those screen-only badges stay hidden
