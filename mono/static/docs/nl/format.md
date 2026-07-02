@@ -1,25 +1,56 @@
 # Format
 
-**Vragen vetgedrukt.** Format neemt een TAO QTI-export en geeft je dezelfde ZIP terug
-met elke vraagprompt in vetgedrukte tekst — klaar om opnieuw te importeren in TAO.
+**Elke vraag automatisch opgemaakt, met preview en aanpassing.** Format opent
+een TAO QTI-export en maakt bij het exporteren elke vraag automatisch op:
+opsommingslijsten en regeleinden worden in elke stam gedetecteerd, en elke
+nog platte-tekst-prompt wordt vetgedrukt. Kies eerst een vraag als je het
+resultaat wilt bekijken of aanpassen vóór het exporteren.
 
 ## Wat het doet
 
-Sommige examens lezen beter wanneer de vraagprompt duidelijk opvalt. Format opent je
-QTI `.zip`, zoekt elke prompt in platte tekst, zet die vetgedrukt en verpakt het
-archief opnieuw zonder iets anders aan te raken.
+Format leest elke vraag in je QTI `.zip` en toont ze in het zijpaneel.
+Exporteren past twee automatische stappen toe op het hele pakket:
+
+- **Stam-opmaak** — in de inleidende/context-tekst van elke vraag (vóór de
+  antwoordkeuzes) wordt elke `•`- of `-`-opsommingsteken een lijstitem — of
+  het nu op zijn eigen regel staat of samen met andere in dezelfde alinea
+  loopt — en elk ander regeleinde wordt een regeleinde in de weergegeven
+  vraag.
+- **Prompts vetgedrukt** — elke prompt die nog platte tekst is, wordt
+  vetgedrukt, volgens de conventie van TAO. Prompts die al opmaak bevatten,
+  blijven ongewijzigd.
+
+Je hoeft geen vraag te openen om dit toe te passen — het gebeurt voor elke
+vraag bij het exporteren. Door een vraag te openen zie je het resultaat
+meteen: zowel de lijst-/regeleinde-opmaak van de stam als de prompt van de
+vraag (vetgedrukt) verschijnen al in de preview voordat je iets aanraakt, zodat
+je de tekst handmatig kunt aanpassen als de automatische detectie iets miste
+of je een ander resultaat wilt.
 
 ## Format gebruiken
 
 1. **Upload** je TAO QTI `.zip`-export.
-2. Klik op **Run** (de formatter verwerkt elke vraag in het pakket).
-3. Bekijk de resultatensamenvattting — die toont hoeveel van de prompts vetgedrukt zijn.
-4. **Download** het nieuwe archief. De naam krijgt `-bold` toegevoegd (bijvoorbeeld
-   `exam.zip` → `exam-bold.zip`).
-5. **Importeer** de `-bold.zip` opnieuw in TAO.
+2. *(Optioneel)* **Kies een vraag** uit de lijst in het zijpaneel om de
+   automatisch opgemaakte stam te bekijken, en pas de tekst aan als je dat
+   wilt — de preview wordt live bijgewerkt.
+3. Klik op **Export ZIP**. De stam van elke vraag wordt automatisch opgemaakt
+   (met je aangepaste tekst voor elke vraag die je hebt bijgewerkt) en elke
+   platte prompt wordt vetgedrukt.
+4. **Download** het nieuwe archief. De naam krijgt `-stems` toegevoegd
+   (bijvoorbeeld `exam.zip` → `exam-stems.zip`).
+5. **Importeer** de `-stems.zip` opnieuw in TAO.
 
 ## Opmerkingen
 
-- Prompts die al opmaak bevatten, blijven ongewijzigd; de samenvatting toont
-  hoeveel er effectief zijn aangepast.
-- De verwerking gebeurt volledig in je browser — de ZIP verlaat je browser nooit.
+- Alleen de stam van de vraag is bewerkbaar — antwoordkeuzes blijven
+  ongewijzigd.
+- Vragen zonder herkenbare stam (bijvoorbeeld een instructiepagina)
+  verschijnen nog steeds in de lijst, maar de editor staat dan uit; ze worden
+  niet beïnvloed door stam-opmaak (vetgedrukte prompts worden wel toegepast
+  indien relevant).
+- Alleen de opmaak die je hier aanmaakt (opsommingslijsten en regeleinden)
+  wordt toegepast; andere opmaak die al in een stam aanwezig was (bijvoorbeeld
+  vetgedrukte tekst) wordt teruggebracht tot platte tekst zodra die stam door
+  de automatische opmaak gaat.
+- De verwerking gebeurt volledig in je browser — de ZIP verlaat je browser
+  nooit.

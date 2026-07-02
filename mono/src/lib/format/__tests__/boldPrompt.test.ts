@@ -1,14 +1,14 @@
 import { describe, expect, test } from 'bun:test';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { boldPromptXml } from '../boldPrompt.js';
+import { boldPromptXml, previewBoldedPrompt } from '../boldPrompt.js';
 
 const fixtures = join(import.meta.dir, 'fixtures');
 const read = (name: string) => readFileSync(join(fixtures, name), 'utf-8');
 
 describe('boldPromptXml', () => {
   test('wraps a plain-text prompt to match a hand-bolded TAO export', () => {
-    const plain = read('plain.qti.xml');
+    const plain = read('prompt-only.qti.xml');
     const bold = read('bold.qti.xml');
 
     const { xml, changed } = boldPromptXml(plain);
@@ -57,7 +57,7 @@ describe('boldPromptXml', () => {
   });
 
   test('preserves every other byte of the document', () => {
-    const plain = read('plain.qti.xml');
+    const plain = read('prompt-only.qti.xml');
     const { xml } = boldPromptXml(plain);
 
     // The closing assessment tag and the response mapping are untouched.
@@ -65,5 +65,27 @@ describe('boldPromptXml', () => {
     expect(xml).toContain('<mapEntry mapKey="choice_1" mappedValue="3"/>');
     // The original single-line prompt no longer exists.
     expect(xml).not.toContain('<prompt>In welke');
+  });
+});
+
+describe('previewBoldedPrompt', () => {
+  test('previews the bolded content of a plain-text prompt without writing anything', () => {
+    const plain = read('prompt-only.qti.xml');
+    const preview = previewBoldedPrompt(plain);
+
+    expect(preview).toContain('<strong>In welke van de onderstaande gevallen');
+    // The source file itself is untouched — this is a pure preview.
+    expect(plain).toContain('<prompt>In welke van de onderstaande gevallen');
+  });
+
+  test('previews an already-bold prompt as-is', () => {
+    const bold = read('bold.qti.xml');
+    const preview = previewBoldedPrompt(bold);
+
+    expect(preview).toContain('<strong>In welke van de onderstaande gevallen');
+  });
+
+  test('returns null when the document has no <prompt> tag', () => {
+    expect(previewBoldedPrompt('<assessmentItem><itemBody></itemBody></assessmentItem>')).toBeNull();
   });
 });
