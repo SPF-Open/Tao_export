@@ -22,6 +22,19 @@ export const auditTemplate = writable<TemplateColumn>(TemplateColumn.FIN);
 /** Skip question-title mismatch checks (titles are real in Import output). */
 export const auditIgnoreTitle = writable<boolean>(false);
 
+/** Manual column letters used when `auditTemplate` is `TemplateColumn.OTHER`. */
+export const auditCustomColumns = writable({
+	title: '',
+	prompt: '',
+	correct: '',
+	competency: '',
+	indicator: '',
+	competencyDescr: '',
+	masteryDescr: '',
+});
+/** Manual row layout used when `auditTemplate` is `TemplateColumn.OTHER`. */
+export const auditCustomRow = writable({ offset: 0, alternative: 4, skipRow: 0 });
+
 /** Filename of the loaded Excel workbook. */
 export const auditFilename = writable<string>('');
 export const auditError = writable<string | null>(null);
@@ -34,6 +47,16 @@ export function resetAudit(): void {
 	auditError.set(null);
 	auditTemplate.set(TemplateColumn.FIN);
 	auditIgnoreTitle.set(false);
+	auditCustomColumns.set({
+		title: '',
+		prompt: '',
+		correct: '',
+		competency: '',
+		indicator: '',
+		competencyDescr: '',
+		masteryDescr: '',
+	});
+	auditCustomRow.set({ offset: 0, alternative: 4, skipRow: 0 });
 }
 
 /** Clears everything, including the parsed QTI questions and ZIP name. */

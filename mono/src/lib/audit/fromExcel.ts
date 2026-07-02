@@ -43,6 +43,17 @@ export function bindingFromTemplate(template: TemplateColumn): ExcelBinding {
 	};
 }
 
+/**
+ * Build an {@link ExcelBinding} from manually entered column letters/row
+ * layout (the audit-side equivalent of Import's `TemplateColumn.OTHER`).
+ */
+export function customBinding(
+	columns: ExcelBinding['column'],
+	row: ExcelBinding['row']
+): ExcelBinding {
+	return { column: { ...columns }, row: { ...row } };
+}
+
 /** Matches leading example/instruction questions ("Voorbeeld" / "Exemple"). */
 const EXAMPLE_RE = /^\s*(voorbeeld|exemple)/i;
 

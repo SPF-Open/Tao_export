@@ -15,9 +15,10 @@ minor.
 
 1. **Upload the TAO `.zip`** export. Its questions are parsed and counted.
 2. **Upload the Excel source** and pick the **sheet** to compare against.
-3. **Choose the template** (for example FIN / OLD_BOSA / OLD_FIN) so the Excel is
-   read the same way the Import route reads it. Optionally **ignore titles** if
-   only prompts and answers matter.
+3. **Choose the template** (FIN / OLD_BOSA / OLD_FIN) so the Excel is read the
+   same way the Import route reads it, or pick **Custom** to type in your own
+   column letters and row layout for a source that doesn't match any preset.
+   Optionally **ignore titles** if only prompts and answers matter.
 4. **Run** the audit and review the results.
 
 ## Reading the results

@@ -15,9 +15,11 @@ mineure.
 
 1. **Chargez l'export TAO `.zip`**. Ses questions sont analysées et comptées.
 2. **Chargez la source Excel** et sélectionnez la **feuille** à comparer.
-3. **Choisissez le modèle** (par exemple FIN / OLD_BOSA / OLD_FIN) pour que l'Excel soit
-   lu de la même manière que la route Import le fait. Optionnellement, **ignorez les titres** si
-   seuls les énoncés et les réponses importent.
+3. **Choisissez le modèle** (FIN / OLD_BOSA / OLD_FIN) pour que l'Excel soit
+   lu de la même manière que la route Import le fait, ou choisissez **Personnalisé**
+   pour saisir vous-même les lettres de colonnes et la disposition des lignes pour
+   une source qui ne correspond à aucun modèle prédéfini. Optionnellement, **ignorez
+   les titres** si seuls les énoncés et les réponses importent.
 4. **Lancez** l'audit et examinez les résultats.
 
 ## Lire les résultats

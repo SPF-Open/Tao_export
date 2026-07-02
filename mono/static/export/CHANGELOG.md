@@ -10,12 +10,19 @@
   - Exporting a package auto-detects bullet lists and line breaks for every question's stem, and bolds every plain-text prompt — no need to open a question first
   - The per-question editor is now for previewing the automatic result and adjusting anything the detection missed, not the only way to get a question formatted
 
+### 2.9.1
+- Improve : Audit's "Custom" Excel template now seeds from the previously selected preset
+  - Switching to Custom copies the column letters and row layout of the preset that was active, so you only need to adjust the field(s) that actually differ instead of retyping the whole mapping
+
+### 2.9.0
+- Feat : Audit gets a "Custom" Excel template
+  - Alongside the fixed FIN / OLD_BOSA / OLD_FIN presets, you can now type in your own column letters (title, prompt, answer, competency, indicator, descriptions) and row layout (first data row, answers per question, rows to skip) — the same manual mapping the Import route already offers — so any Excel source can be audited, not just the three known layouts
+
 ### 2.9.0
 - Feat : Format is now an interactive question-stem editor
   - Pick any question from an uploaded TAO QTI export and rewrite its stem by hand, with a live preview
   - Lines starting with "•" or "-" are auto-detected as a bulleted list; other line breaks become line breaks
   - Replaces the previous one-click "bold every prompt" behavior — export now produces an `-stems.zip`
-
 ### 2.8.1
 - Fix : The exam's extracted time limit is now visible in the printed/PDF export
   - The time badge was wrapped in a `hide-print` container together with the on-screen-only tool badges (Zoom, Highlighter, …); it now prints while those screen-only badges stay hidden
