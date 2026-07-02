@@ -1,5 +1,11 @@
 ## Changelog
 
+### 2.11.2
+- Refactor : Export tool internals reorganized for reliability — no behaviour change
+  - Sorting, shuffling, merge and compare logic now runs through explicit, tested functions instead of hidden store side effects
+  - Question lists in the preview and mapping table are now keyed, so per-question show/hide toggles stay attached to the right question when the order changes
+  - Removed an unused internal error queue in favour of the app-wide notification system
+
 ### 2.11.1
 - Improve : The Export tool's question logic (exam switching, sorting, shuffling, mappings, compare mode) is now covered by an automated test suite, protecting these behaviours against future regressions
 

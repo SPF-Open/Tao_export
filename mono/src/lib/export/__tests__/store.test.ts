@@ -1,9 +1,9 @@
 /**
  * Characterization tests for the export store.
  *
- * The store keeps module-level mutable state (original question/answer orders)
- * and wires behaviour through store subscriptions, so every test re-imports a
- * fresh module instance via `vi.resetModules()` + dynamic import.
+ * The store keeps module-level mutable state (original question/answer orders),
+ * so every test re-imports a fresh module instance via `vi.resetModules()` +
+ * dynamic import.
  */
 import { beforeEach, describe, expect, test, vi } from 'vitest';
 import { get } from 'svelte/store';
@@ -81,7 +81,7 @@ describe('exam selection (examsIndex)', () => {
 		store.activeItems.set([item('q1', 'Question 1')]);
 		store.showItems.set(new Map([['q1', false]]));
 
-		store.examsIndex.set(1);
+		store.selectExam(1);
 		expect(get(store.activeItems).map((i) => i.id)).toEqual(['q2']);
 		expect(get(store.oldItems)).toEqual([]);
 		expect(get(store.showItems).size).toBe(0);
@@ -91,7 +91,7 @@ describe('exam selection (examsIndex)', () => {
 	test('an out-of-range index leaves activeItems untouched', async () => {
 		const store = await freshStore();
 		loadExam(store);
-		store.examsIndex.set(5);
+		store.selectExam(5);
 		expect(get(store.activeItems).map((i) => i.id)).toEqual(['q1', 'q2', 'q3']);
 	});
 });
@@ -106,7 +106,7 @@ describe('sort', () => {
 			item('q1', 'Question 1')
 		]);
 
-		store.sort.set(true);
+		store.setSort(true);
 		expect(get(store.activeItems).map((i) => i.id)).toEqual(['q1', 'q2', 'q10', 'inst']);
 	});
 
@@ -114,11 +114,11 @@ describe('sort', () => {
 		const store = await freshStore();
 		loadExam(store, [item('q2', 'Question 2'), item('q1', 'Question 1')]);
 
-		store.sort.set(true);
+		store.setSort(true);
 		expect(get(store.activeItems).map((i) => i.id)).toEqual(['q1', 'q2']);
 		// The store sorts the saved copy (oldItems) too, so switching sort off
 		// does NOT restore the pre-sort order. Pinned as-is.
-		store.sort.set(false);
+		store.setSort(false);
 		expect(get(store.activeItems).map((i) => i.id)).toEqual(['q1', 'q2']);
 	});
 });
@@ -135,7 +135,7 @@ describe('randomizeQuestion', () => {
 
 		// Math.random() -> 0 makes the Fisher-Yates shuffle deterministic.
 		vi.spyOn(Math, 'random').mockReturnValue(0);
-		store.randomizeQuestion.set(true);
+		store.setRandomizeQuestion(true);
 
 		const ids = get(store.activeItems).map((i) => i.id);
 		expect(ids[0]).toBe('inst');
@@ -148,8 +148,8 @@ describe('randomizeQuestion', () => {
 		loadExam(store);
 
 		vi.spyOn(Math, 'random').mockReturnValue(0);
-		store.randomizeQuestion.set(true);
-		store.randomizeQuestion.set(false);
+		store.setRandomizeQuestion(true);
+		store.setRandomizeQuestion(false);
 
 		expect(get(store.activeItems).map((i) => i.id)).toEqual(['q1', 'q2', 'q3']);
 	});
@@ -159,7 +159,7 @@ describe('randomizeQuestion', () => {
 		loadExam(store);
 
 		vi.spyOn(Math, 'random').mockReturnValue(0);
-		store.randomizeQuestion.set(true);
+		store.setRandomizeQuestion(true);
 
 		const mapping = get(store.questionMapping);
 		expect(mapping).toHaveLength(3);
@@ -186,14 +186,14 @@ describe('randomizeAnswer', () => {
 		loadExam(store);
 
 		vi.spyOn(Math, 'random').mockReturnValue(0);
-		store.randomizeAnswer.set(true);
+		store.setRandomizeAnswer(true);
 
 		const q1 = get(store.activeItems).find((i) => i.id === 'q1')!;
 		const shuffled = q1.responses![0].options!.map((o) => o.id);
 		expect([...shuffled].sort()).toEqual(['a', 'b', 'c']);
 		expect(shuffled).not.toEqual(['a', 'b', 'c']);
 
-		store.randomizeAnswer.set(false);
+		store.setRandomizeAnswer(false);
 		const restored = get(store.activeItems).find((i) => i.id === 'q1')!;
 		expect(restored.responses![0].options!.map((o) => o.id)).toEqual(['a', 'b', 'c']);
 	});
@@ -203,7 +203,7 @@ describe('randomizeAnswer', () => {
 		loadExam(store);
 
 		vi.spyOn(Math, 'random').mockReturnValue(0);
-		store.randomizeAnswer.set(true);
+		store.setRandomizeAnswer(true);
 
 		const mapping = get(store.answerMapping);
 		expect(mapping.map((m) => m.title)).toEqual(['Question 1', 'Question 2', 'Question 3']);
@@ -212,7 +212,7 @@ describe('randomizeAnswer', () => {
 			expect([...entry.mapping.map((m) => m.originalIndex)].sort()).toEqual([1, 2, 3]);
 		}
 
-		store.randomizeAnswer.set(false);
+		store.setRandomizeAnswer(false);
 		expect(get(store.answerMapping)).toEqual([]);
 	});
 
@@ -220,7 +220,7 @@ describe('randomizeAnswer', () => {
 		const store = await freshStore();
 		loadExam(store, [item('inst', 'Instructions', 'instruction'), item('txt', 'Free text', 'text')]);
 
-		store.randomizeAnswer.set(true);
+		store.setRandomizeAnswer(true);
 		expect(get(store.activeItems).map((i) => i.id)).toEqual(['inst', 'txt']);
 	});
 });
@@ -232,12 +232,12 @@ describe('merge', () => {
 			assessment('e1', 'First', [item('q1', 'Question 1')]),
 			assessment('e2', 'Second', [item('q2', 'Question 2')])
 		]);
-		store.examsIndex.set(0);
+		store.selectExam(0);
 
-		store.merge.set(true);
+		store.setMerge(true);
 		expect(get(store.activeItems).map((i) => i.id)).toEqual(['q1', 'q2']);
 
-		store.merge.set(false);
+		store.setMerge(false);
 		expect(get(store.activeItems).map((i) => i.id)).toEqual(['q1']);
 	});
 });
@@ -249,15 +249,15 @@ describe('multiple / compareMode', () => {
 			assessment('e1', 'First', [item('q1', 'Question 1')]),
 			assessment('e2', 'Second', [item('q2', 'Question 2')])
 		]);
-		store.examsIndex.set(0);
-		store.multiple.set(true);
+		store.selectExam(0);
+		store.setMultiple(true);
 
-		store.compareMode.set(true);
+		store.setCompareMode(true);
 		expect(get(store.compareExamIndex1)).toBe(0);
 		expect(get(store.compareExamIndex2)).toBe(1);
 		expect(get(store.currentPage)).toBe('compare');
 
-		store.compareMode.set(false);
+		store.setCompareMode(false);
 		expect(get(store.compareExamIndex1)).toBe(-1);
 		expect(get(store.compareExamIndex2)).toBe(-1);
 		expect(get(store.currentPage)).toBe('questions');
@@ -269,11 +269,11 @@ describe('multiple / compareMode', () => {
 			assessment('e1', 'First', [item('q1', 'Question 1')]),
 			assessment('e2', 'Second', [item('q2', 'Question 2')])
 		]);
-		store.examsIndex.set(0);
-		store.multiple.set(true);
-		store.compareMode.set(true);
+		store.selectExam(0);
+		store.setMultiple(true);
+		store.setCompareMode(true);
 
-		store.multiple.set(false);
+		store.setMultiple(false);
 		expect(get(store.compareMode)).toBe(false);
 		expect(get(store.compareExamIndex1)).toBe(-1);
 		expect(get(store.compareExamIndex2)).toBe(-1);
