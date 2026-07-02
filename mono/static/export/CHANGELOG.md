@@ -1,5 +1,8 @@
 ## Changelog
 
+### 2.11.1
+- Improve : The Export tool's question logic (exam switching, sorting, shuffling, mappings, compare mode) is now covered by an automated test suite, protecting these behaviours against future regressions
+
 ### 2.11.0
 - Improve : Test suite now runs with Vitest under npm, and Playwright end-to-end tests are in place
   - All existing unit tests were migrated from `bun test` to Vitest (`npm run test:unit`) so the whole project works with a single package manager

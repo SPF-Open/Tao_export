@@ -135,7 +135,20 @@ randomizeQuestion.subscribe((value) => {
   else unrandomizeItems();
 });
 
-export const getQuestionMapping = (items: AssessmentItem[]): { currentIndex: number; originalIndex: number; title: string; type: string }[] => {
+export interface QuestionMappingEntry {
+  currentIndex: number;
+  originalIndex: number;
+  title: string;
+  type: string;
+}
+
+export interface AnswerMappingEntry {
+  currentIndex: number;
+  originalIndex: number;
+  id: string;
+}
+
+export const getQuestionMapping = (items: AssessmentItem[]): QuestionMappingEntry[] => {
   return items.map((item, currentIdx) => {
     const originalIdx = originalItemIndices.get(item) ?? currentIdx;
     return { currentIndex: currentIdx + 1, originalIndex: originalIdx + 1, title: item.title, type: item.type };
@@ -216,7 +229,7 @@ randomizeAnswer.subscribe((value) => {
   }
 });
 
-export const getAnswerMapping = (title: string, options: { id: string }[]): { currentIndex: number; originalIndex: number; id: string }[] => {
+export const getAnswerMapping = (title: string, options: { id: string }[]): AnswerMappingEntry[] => {
   const original = originalAnswerOrders.get(title);
   if (!original) return [];
   return options.map((opt, currentIdx) => {
