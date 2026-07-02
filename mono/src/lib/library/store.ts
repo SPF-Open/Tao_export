@@ -7,6 +7,7 @@ import { parseExcel } from '$lib/audit/excel-parser.js';
 import type { ExcelConfig } from '$lib/audit/types.js';
 import { decryptDb, encryptDb, isEncryptedBytes } from './crypto.js';
 import { pushError } from '$lib/ui/notifications';
+import { downloadBlob } from '$lib/utils/download.js';
 import type {
 	IngestPayload,
 	LibraryDbInfo,
@@ -473,13 +474,5 @@ async function refreshFacets(): Promise<void> {
 function downloadBytes(bytes: Uint8Array, filename: string): void {
 	// Copy into a fresh Uint8Array (backed by a plain ArrayBuffer) so the type
 	// satisfies BlobPart regardless of the worker's buffer kind.
-	const blob = new Blob([bytes.slice()], { type: 'application/octet-stream' });
-	const url = URL.createObjectURL(blob);
-	const a = document.createElement('a');
-	a.href = url;
-	a.download = filename;
-	document.body.appendChild(a);
-	a.click();
-	a.remove();
-	URL.revokeObjectURL(url);
+	downloadBlob(new Blob([bytes.slice()], { type: 'application/octet-stream' }), filename);
 }

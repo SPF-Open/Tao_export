@@ -1,6 +1,6 @@
 import tailwindcss from '@tailwindcss/vite';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { defineConfig } from 'vite';
+import { defineConfig } from 'vitest/config';
 import { readFileSync } from 'fs';
 import { fileURLToPath } from 'url';
 import { generateSitemap } from './scripts/generate-sitemap.mjs';
@@ -35,5 +35,30 @@ export default defineConfig({
     },
     worker: {
         format: 'es'
+    },
+    test: {
+        projects: [
+            {
+                extends: true,
+                test: {
+                    name: 'unit',
+                    environment: 'node',
+                    include: ['src/**/__tests__/**/*.test.ts'],
+                    exclude: ['src/**/*.svelte.test.ts']
+                }
+            },
+            {
+                extends: true,
+                resolve: {
+                    conditions: ['browser']
+                },
+                test: {
+                    name: 'component',
+                    environment: 'jsdom',
+                    include: ['src/**/*.svelte.test.ts'],
+                    setupFiles: ['./vitest-setup-client.ts']
+                }
+            }
+        ]
     }
 });

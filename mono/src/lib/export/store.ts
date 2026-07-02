@@ -1,18 +1,10 @@
 import { writable, derived, get, } from "svelte/store";
-import type { QuestionType } from "$lib/export/helper";
 import type { Assessment, AssessmentItem } from "$lib/questions/types.js";
 import { pushError as pushUiError } from "$lib/ui/notifications";
 
-export let errors = writable<{ title: string, txt: string, visible: boolean }[]>([]);
-
+/** Forwards to the app-wide notification queue ($lib/ui/notifications). */
 export const pushError = (title: string, txt: string) => {
-  const obj = { txt, title, visible: true };
-  errors.update(errors => [...errors, obj]);
   pushUiError(title, txt);
-  // remove error after 5 seconds
-  setTimeout(() => {
-    errors.update(errors => errors.filter(err => err !== obj));
-  }, 5000);
 }
 
 // Assessments
@@ -26,7 +18,10 @@ export const sourceFileName = writable<string>("");
 // Per-item visibility overrides (false = hidden by user, undefined/absent = visible)
 export const showItems = writable<Map<string, boolean>>(new Map());
 
-examsIndex.subscribe((index) => {
+/** Activates the assessment at `index`: flattens its items and resets per-exam state. */
+export const selectExam = (index: number) => {
+  if (get(examsIndex) === index) return;
+  examsIndex.set(index);
   const list = get(assessments);
   if (!list || index >= list.length) return;
   const assessment = list[index];
@@ -35,11 +30,9 @@ examsIndex.subscribe((index) => {
   activeItems.set(items);
   oldItems.set([]);
   showItems.set(new Map());
-  originalItemOrder = [];
-  originalItemIndices = new Map();
-  originalAnswerOrders = new Map();
+  resetOrderState();
   windowName.set(assessment.title || "TAO-Export" + Math.floor(Math.random() * 1000));
-});
+};
 
 // Actions
 
@@ -82,7 +75,6 @@ export const compareExamIndex2 = writable<number>(-1);
 export const zoom = writable(1);
 export const multiple = writable(false);
 export const merge = writable(false);
-export const darkMode = writable(false);
 
 // ============================================================================
 // PAGE MODE
@@ -97,9 +89,17 @@ export const currentPage = writable<PageType>('questions');
 export const randomizeAnswer = writable(false);
 export const randomizeQuestion = writable(false);
 
+// Imperative undo state for the two randomizers: remembers the original
+// question order and per-question answer order so toggling off can restore.
 let originalItemOrder: AssessmentItem[] = [];
 let originalItemIndices: Map<AssessmentItem, number> = new Map();
 let originalAnswerOrders: Map<string, { id: string; originalIndex: number }[]> = new Map();
+
+const resetOrderState = () => {
+  originalItemOrder = [];
+  originalItemIndices = new Map();
+  originalAnswerOrders = new Map();
+};
 
 const shuffleArray = <T>(array: T[]): T[] => {
   const shuffled = [...array];
@@ -130,12 +130,28 @@ const unrandomizeItems = () => {
   }
 };
 
-randomizeQuestion.subscribe((value) => {
+/** Turns question shuffling on/off, restoring the original order when off. */
+export const setRandomizeQuestion = (value: boolean) => {
+  if (get(randomizeQuestion) === value) return;
+  randomizeQuestion.set(value);
   if (value) randomizeItems();
   else unrandomizeItems();
-});
+};
 
-export const getQuestionMapping = (items: AssessmentItem[]): { currentIndex: number; originalIndex: number; title: string; type: string }[] => {
+export interface QuestionMappingEntry {
+  currentIndex: number;
+  originalIndex: number;
+  title: string;
+  type: string;
+}
+
+export interface AnswerMappingEntry {
+  currentIndex: number;
+  originalIndex: number;
+  id: string;
+}
+
+export const getQuestionMapping = (items: AssessmentItem[]): QuestionMappingEntry[] => {
   return items.map((item, currentIdx) => {
     const originalIdx = originalItemIndices.get(item) ?? currentIdx;
     return { currentIndex: currentIdx + 1, originalIndex: originalIdx + 1, title: item.title, type: item.type };
@@ -182,7 +198,10 @@ export const shuffleCurrentAnswers = (item: AssessmentItem): AssessmentItem => {
   return { ...item, responses: [{ ...resp, options: shuffled }, ...(item.responses?.slice(1) ?? [])] };
 };
 
-randomizeAnswer.subscribe((value) => {
+/** Turns answer shuffling on/off for single-choice items, restoring order when off. */
+export const setRandomizeAnswer = (value: boolean) => {
+  if (get(randomizeAnswer) === value) return;
+  randomizeAnswer.set(value);
   const current = get(activeItems);
   if (current.length === 0) return;
 
@@ -214,9 +233,9 @@ randomizeAnswer.subscribe((value) => {
       })
     );
   }
-});
+};
 
-export const getAnswerMapping = (title: string, options: { id: string }[]): { currentIndex: number; originalIndex: number; id: string }[] => {
+export const getAnswerMapping =(title: string, options: { id: string }[]): AnswerMappingEntry[] => {
   const original = originalAnswerOrders.get(title);
   if (!original) return [];
   return options.map((opt, currentIdx) => {
@@ -225,7 +244,13 @@ export const getAnswerMapping = (title: string, options: { id: string }[]): { cu
   });
 };
 
-sort.subscribe((value) => {
+/**
+ * Turns numeric sorting on/off. Note: the saved copy (oldItems) is sorted as
+ * well, so toggling sort off keeps the sorted order — pinned by the store tests.
+ */
+export const setSort = (value: boolean) => {
+  if (get(sort) === value) return;
+  sort.set(value);
   if (value) {
     sortQuestions();
     oldItems.update(items => [...items].sort((a, b) => {
@@ -239,18 +264,24 @@ sort.subscribe((value) => {
   } else {
     activeItems.set(get(oldItems));
   }
-});
+};
 
-multiple.subscribe((value) => {
+/** Enables/disables multi-exam mode; disabling cascades compare mode off. */
+export const setMultiple = (value: boolean) => {
+  if (get(multiple) === value) return;
+  multiple.set(value);
   if (!value) {
-    compareMode.set(false);
+    setCompareMode(false);
     compareExamIndex1.set(-1);
     compareExamIndex2.set(-1);
     currentPage.set('questions');
   }
-});
+};
 
-compareMode.subscribe((value) => {
+/** Enters/leaves the side-by-side comparison view. */
+export const setCompareMode = (value: boolean) => {
+  if (get(compareMode) === value) return;
+  compareMode.set(value);
   const isMultiple = get(multiple);
   const list = get(assessments);
 
@@ -263,21 +294,22 @@ compareMode.subscribe((value) => {
     compareExamIndex2.set(-1);
     currentPage.set('questions');
   }
-});
+};
 
-merge.subscribe((merge) => {
+/** Merges every loaded exam into one list, or restores the selected exam. */
+export const setMerge = (value: boolean) => {
+  if (get(merge) === value) return;
+  merge.set(value);
   const list = get(assessments);
   const index = get(examsIndex);
   let items: AssessmentItem[] = [];
-  if (merge) items = list.flatMap(a => a.sections.flatMap(s => s.items));
+  if (value) items = list.flatMap(a => a.sections.flatMap(s => s.items));
   else if (list[index]) items = list[index].sections.flatMap(s => s.items);
   activeItems.set(items);
   oldItems.set([]);
   showItems.set(new Map());
-  originalItemOrder = [];
-  originalItemIndices = new Map();
-  originalAnswerOrders = new Map();
-});
+  resetOrderState();
+};
 
 export const settings = derived(
   [showAnswer, showInstruction, showLetter, inzage, sort],
@@ -295,6 +327,6 @@ export const resetSettings = () => {
   showInstruction.set(true);
   showLetter.set(false);
   inzage.set(false);
-  sort.set(false);
+  setSort(false);
 };
 

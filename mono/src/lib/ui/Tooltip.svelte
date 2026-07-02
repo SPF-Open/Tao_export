@@ -9,13 +9,18 @@
   let visible = $state(false);
 </script>
 
+<!-- focusin/focusout bubble from the slotted trigger, unlike focus/blur,
+     so keyboard users see the tip when the child receives focus. -->
 <span
   class="tooltip-anchor"
   role="presentation"
   onmouseenter={() => (visible = true)}
   onmouseleave={() => (visible = false)}
-  onfocus={() => (visible = true)}
-  onblur={() => (visible = false)}
+  onfocusin={() => (visible = true)}
+  onfocusout={() => (visible = false)}
+  onkeydown={(e) => {
+    if (e.key === "Escape") visible = false;
+  }}
 >
   {@render children?.()}
   {#if visible && tip}

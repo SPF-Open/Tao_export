@@ -1,5 +1,52 @@
 ## Changelog
 
+### 2.11.8
+- Improve : The IAT page now shows a guiding empty state before a workbook is loaded, instead of a blank area
+
+### 2.11.7
+- Improve : Full end-to-end browser test suite (18 tests)
+  - Every page is loaded and checked for rendering and console errors; the error page, Library SQLite worker boot, Format tool happy path (real QTI zip), phone drawer navigation and slides keyboard navigation are all covered
+
+### 2.11.6
+- Refactor : The presentation deck (/slides) is split into one component per slide
+  - The 1991-line page becomes 8 slide components plus shared data, styles and a reusable card-tilt helper — no visual change
+  - Unused styles from removed slides were dropped along the way
+
+### 2.11.5
+- Remove : Dead code cleanup — obsolete export helper copy, unused CSV adapter, unused styles and leftover debug logging removed
+- Refactor : One shared file-download helper now serves Export, Format, Library, Audit and IAT (five separate copies before)
+- Fix : Every button now declares its type explicitly, and the shared Button component honours its `type` prop
+- Improve : "Coming soon" tiles on the home page are no longer fake links; tooltips show on keyboard focus and dismiss with Escape
+
+### 2.11.4
+- Improve : Dialogs are now fully keyboard-accessible
+  - Escape closes any dialog, Tab stays trapped inside it, and focus returns to where you were when it closes
+  - Screen readers now announce the dialog with its title
+- Feat : Friendly error page — broken links and unexpected errors now show a styled page with a way back home instead of a blank default
+
+### 2.11.3
+- Fix : Import page no longer re-parses the workbook once per past visit
+  - Store subscriptions leaked every time the page was opened, multiplying parse work after navigating back and forth
+- Fix : Unreadable or corrupt Excel files now show an error notification in Import and IAT instead of failing silently
+- Improve : IAT statistics parsing extracted into a typed, unit-tested module; missing sheets (`Speed_Pages`, `Questions`, `Alternatives`) now produce a clear error
+- Fix : A flaky license test that could accept a tampered signature is now deterministic
+
+### 2.11.2
+- Refactor : Export tool internals reorganized for reliability — no behaviour change
+  - Sorting, shuffling, merge and compare logic now runs through explicit, tested functions instead of hidden store side effects
+  - Question lists in the preview and mapping table are now keyed, so per-question show/hide toggles stay attached to the right question when the order changes
+  - Removed an unused internal error queue in favour of the app-wide notification system
+
+### 2.11.1
+- Improve : The Export tool's question logic (exam switching, sorting, shuffling, mappings, compare mode) is now covered by an automated test suite, protecting these behaviours against future regressions
+
+### 2.11.0
+- Improve : Test suite now runs with Vitest under npm, and Playwright end-to-end tests are in place
+  - All existing unit tests were migrated from `bun test` to Vitest (`npm run test:unit`) so the whole project works with a single package manager
+  - New `npm run test:e2e` runs browser tests against the built site; `npm test` runs both
+  - Tests are now type-checked by `npm run check` (they were previously excluded), and outdated library-schema tests were fixed to follow the current database version
+- Fix : Corrected a TypeScript import error on the home page (`$lib/docs.ts` extension)
+
 ### 2.10.1
 - Fix : Bullet detection now catches markers running together in one paragraph
   - Previously only a bullet at the very start of a line was recognized; now `• item` or `- item` is detected anywhere in the text, so a question opens with its list already correct, before any editing

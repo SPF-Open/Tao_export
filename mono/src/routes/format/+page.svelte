@@ -4,6 +4,7 @@
   import { pushError, pushNotification } from "$lib/ui/notifications";
   import { parseStemZip, buildStemZip, type StemItem } from "$lib/format/stemZip";
   import StemEditor from "$lib/format/StemEditor.svelte";
+  import { downloadBlob } from "$lib/utils/download";
 
   const SITE_URL = "https://tao.lv0.eu";
   const PAGE_TITLE = "Format — TAO";
@@ -106,14 +107,7 @@
 
   function download() {
     if (!result) return;
-    const url = URL.createObjectURL(result.blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = outName || "formatted-stems.zip";
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    downloadBlob(result.blob, outName || "formatted-stems.zip");
   }
 </script>
 

@@ -26,8 +26,9 @@
     showLetter,
     currentPage,
   } from "$lib/export/store";
-  import { JsonAdapter } from "$lib/questions/adapters/json.js";
   import ExamToolsBadge from "$lib/questions/ExamToolsBadge.svelte";
+  import { exportAssessmentToJson } from "$lib/export/helper";
+  import { isItemVisible, reconcileInstructionVisibility } from "$lib/export/visibility";
 
   import { get } from "svelte/store";
 
@@ -36,20 +37,9 @@
   let rrnHeader = $state("");
 
   async function exportToJson() {
-    const list = get(assessments);
-    const index = get(examsIndex);
-    const assessment = list[index];
+    const assessment = get(assessments)[get(examsIndex)];
     if (!assessment) return;
-    const adapter = new JsonAdapter();
-    const blob = await adapter.write(assessment);
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `${get(windowName).replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.json`;
-    document.body.appendChild(a);
-    a.click();
-    document.body.removeChild(a);
-    URL.revokeObjectURL(url);
+    await exportAssessmentToJson(assessment, get(windowName));
   }
 
   function exportToPdf() {
@@ -59,34 +49,15 @@
   function toggleItemShow(itemId: string, show: boolean) {
     showItems.update(m => { const u = new Map(m); u.set(itemId, show); return u; });
   }
-  function isItemVisible(itemId: string, itemType: string): boolean {
-    if (itemType === 'instruction' && !$showInstruction) {
-      return $showItems.get(itemId) === true;
-    }
-    return $showItems.get(itemId) !== false;
-  }
 
+  const itemVisible = $derived(
+    (itemId: string, itemType: string) => isItemVisible($showItems, $showInstruction, itemId, itemType)
+  );
+
+  // Keep the per-item overrides in sync with the global instruction toggle.
   $effect(() => {
-    const visible = $showInstruction;
-    const items = $activeItems;
-    const map = new Map(get(showItems));
-    let changed = false;
-
-    for (const item of items) {
-      if (item.type !== 'instruction') continue;
-
-      if (!visible) {
-        if (map.get(item.id) !== false) {
-          map.set(item.id, false);
-          changed = true;
-        }
-      } else if (map.has(item.id)) {
-        map.delete(item.id);
-        changed = true;
-      }
-    }
-
-    if (changed) showItems.set(map);
+    const reconciled = reconcileInstructionVisibility(get(showItems), $activeItems, $showInstruction);
+    if (reconciled) showItems.set(reconciled);
   });
 </script>
 
@@ -136,8 +107,8 @@
                   </div>
                 </div>
               {/if}
-              {#each $assessments[$compareExamIndex1]?.sections.flatMap(s => s.items) ?? [] as item}
-                {@const show = isItemVisible(item.id, item.type)}
+              {#each $assessments[$compareExamIndex1]?.sections.flatMap(s => s.items) ?? [] as item (item.id)}
+                {@const show = itemVisible(item.id, item.type)}
                 <Question {item} {show} onToggleShow={(s) => toggleItemShow(item.id, s)} />
               {/each}
             </div>
@@ -155,8 +126,8 @@
                   </div>
                 </div>
               {/if}
-              {#each $assessments[$compareExamIndex2]?.sections.flatMap(s => s.items) ?? [] as item}
-                {@const show = isItemVisible(item.id, item.type)}
+              {#each $assessments[$compareExamIndex2]?.sections.flatMap(s => s.items) ?? [] as item (item.id)}
+                {@const show = itemVisible(item.id, item.type)}
                 <Question {item} {show} onToggleShow={(s) => toggleItemShow(item.id, s)} />
               {/each}
             </div>
@@ -209,8 +180,8 @@
                 />
               </div>
             {/if}
-            {#each $activeItems as item}
-              {@const show = isItemVisible(item.id, item.type)}
+            {#each $activeItems as item (item.id)}
+              {@const show = itemVisible(item.id, item.type)}
               <Question {item} {show} onToggleShow={(s) => toggleItemShow(item.id, s)} />
             {/each}
           {/if}
@@ -230,8 +201,8 @@
                   </tr>
                 </thead>
                 <tbody>
-                  {#each $questionMapping.filter((m: { type: string }) => m.type !== 'instruction') as qm}
-                    {@const ansMap = $answerMapping.find((a: { title: string }) => a.title.trim() === qm.title.trim())?.mapping || []}
+                  {#each $questionMapping.filter((m) => m.type !== 'instruction') as qm (qm.currentIndex)}
+                    {@const ansMap = $answerMapping.find((a) => a.title.trim() === qm.title.trim())?.mapping || []}
                     <tr>
                       {#if $randomizeQuestion}
                         <td>{qm.currentIndex}</td>

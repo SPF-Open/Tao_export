@@ -8,7 +8,7 @@
   let { checked = $bindable(false), disabled = false } = $props();
 </script>
 
-<button
+<button type="button"
   role="switch"
   aria-checked={checked}
   aria-disabled={disabled}

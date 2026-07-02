@@ -35,7 +35,6 @@ export async function runAudit(
 
   try {
     // Step 1: Parse Excel with the Import pipeline, then normalize to QTIQuestion.
-    console.log('[Audit] Step 1: Parsing Excel file (Import pipeline)...');
     let excelQuestions: QTIQuestion[];
 
     try {
@@ -58,10 +57,8 @@ export async function runAudit(
       };
     }
 
-    console.log(`[Audit] Found ${excelQuestions.length} Excel questions, ${qtiQuestions.length} QTI questions`);
 
     // Step 2: Positional matching (order-based).
-    console.log('[Audit] Step 2: Matching Excel questions to QTI (positional)...');
     const { pairs, unmatchedExcel, unmatchedQTI } = matchPositional(
       excelQuestions,
       qtiQuestions,
@@ -76,7 +73,6 @@ export async function runAudit(
     }
 
     // Step 3: Compare each matched pair.
-    console.log('[Audit] Step 3: Comparing matched pairs...');
     const results = pairs.map((pair) => ({
       pair,
       errors: compare(pair, {
@@ -86,16 +82,7 @@ export async function runAudit(
     }));
 
     // Step 4: Build report (unmatched items are folded into the critical count).
-    console.log('[Audit] Step 4: Building report...');
     const report = buildReport(pairs, results, unmatchedExcel, unmatchedQTI);
-
-    console.log('[Audit] Audit complete:', {
-      matched: report.summary.matched,
-      unmatched: report.summary.unmatched,
-      bloquants: report.summary.bloquants,
-      majeurs: report.summary.majeurs,
-      mineurs: report.summary.mineurs,
-    });
 
     return {
       success: true,

@@ -67,7 +67,7 @@
 
     <div class="lang-switcher" role="group" aria-label="Language">
       {#each Object.entries(LANG_LABELS) as [lang, label]}
-        <button
+        <button type="button"
           class="lang-btn"
           class:active={$docLang === lang}
           onclick={() => docLang.set(lang as DocLang)}

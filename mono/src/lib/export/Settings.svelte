@@ -14,9 +14,14 @@
     merge,
     randomizeAnswer,
     randomizeQuestion,
-    darkMode,
     activeItems,
     showItems,
+    setSort,
+    setRandomizeAnswer,
+    setRandomizeQuestion,
+    setMultiple,
+    setCompareMode,
+    setMerge,
   } from "./store";
   import { slide } from "svelte/transition";
   import type { AssessmentItem } from "$lib/questions/types.js";
@@ -155,7 +160,7 @@
   <Tables />
   <!-- General Section -->
   <div class="settings-section">
-    <button
+    <button type="button"
       class="section-header"
       onclick={() => (sectionState.general = !sectionState.general)}
     >
@@ -181,7 +186,7 @@
             <List size={14} />
             <span>Sort Questions</span>
           </span>
-          <Switch bind:checked={$sort} />
+          <Switch bind:checked={() => $sort, setSort} />
         </div>
       </div>
     {/if}
@@ -189,7 +194,7 @@
 
   <!-- Paper Test Section -->
   <div class="settings-section">
-    <button
+    <button type="button"
       class="section-header"
       onclick={() => (sectionState.paperTest = !sectionState.paperTest)}
     >
@@ -208,14 +213,14 @@
             <Shuffle size={14} />
             <span>Randomize Answers</span>
           </span>
-          <Switch bind:checked={$randomizeAnswer} />
+          <Switch bind:checked={() => $randomizeAnswer, setRandomizeAnswer} />
         </div>
         <div class="setting-row">
           <span class="setting-label">
             <Shuffle size={14} />
             <span>Randomize Questions</span>
           </span>
-          <Switch bind:checked={$randomizeQuestion} />
+          <Switch bind:checked={() => $randomizeQuestion, setRandomizeQuestion} />
         </div>
         <div class="setting-row">
           <span class="setting-label">
@@ -237,7 +242,7 @@
 
   <!-- Advanced Section -->
   <div class="settings-section">
-    <button
+    <button type="button"
       class="section-header"
       onclick={() => (sectionState.advanced = !sectionState.advanced)}
     >
@@ -263,7 +268,7 @@
             <Folder size={14} />
             <span>Multiple Files</span>
           </span>
-          <Switch bind:checked={$multiple} />
+          <Switch bind:checked={() => $multiple, setMultiple} />
         </div>
         <div class="setting-row">
           <span class="setting-label">
@@ -278,14 +283,14 @@
               <Layout size={14} />
               <span>Compare Test</span>
             </span>
-            <Switch bind:checked={$compareMode} />
+            <Switch bind:checked={() => $compareMode, setCompareMode} />
           </div>
           <div class="setting-row sub-setting">
             <span class="setting-label">
               <Grid size={14} />
               <span>Merge Files</span>
             </span>
-            <Switch bind:checked={$merge} />
+            <Switch bind:checked={() => $merge, setMerge} />
           </div>
         {/if}
       </div>
@@ -295,7 +300,7 @@
   <!-- Question Filtering Section -->
   {#if $activeItems && $activeItems.length}
     <div class="settings-section">
-      <button
+      <button type="button"
         class="section-header"
         onclick={() => (sectionState.filtering = !sectionState.filtering)}
       >

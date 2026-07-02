@@ -4,7 +4,7 @@
   import Menu from "$lib/import/Menu.svelte";
   import QuestionPreview from "$lib/export/template/Question.svelte";
   import { showAnswer } from "$lib/export/store";
-  import type { AssessmentItem } from "$lib/questions/types.js";
+  import { pushError } from "$lib/ui/notifications";
   import DropZone from "$lib/import/Input/DropZone.svelte";
   import {
     alternative,
@@ -31,17 +31,12 @@
   import { FileSpreadsheet, Eye, EyeOff } from "lucide-svelte";
 
   let questions = $state<QCM[]>([]);
-  let renderItems = $state<AssessmentItem[]>([]);
   let itemVisibility = $state<Map<string, boolean>>(new Map());
   let workbook = $state<XLSX.WorkBook | undefined>(undefined);
   let showMeta = $state(false);
 
+  const renderItems = $derived(qcmsToAssessmentItems(questions));
   const metaModel = $derived(buildMetaModel(renderItems));
-
-  $effect(() => {
-    renderItems = qcmsToAssessmentItems(questions);
-    itemVisibility = new Map();
-  });
 
   // Keep the shared renderer's answer visibility in sync with the import-side
   // "hide answers" toggle (Question.svelte / QCM.svelte read the export store).
@@ -49,39 +44,60 @@
     showAnswer.set(!$hideAnswer);
   });
 
-  const parseAndShow = () => {
-    if (!workbook) return;
-    questions = Question.parseSheet(
-      workbook.Sheets[get(currentSheet)],
-      {
-        title: get(titleColumn),
-        prompt: get(promptColumn),
-        correct: get(correctColumn),
-        competency: get(competencyColumn),
-        indicator: get(indicatorColumn),
-        competencyDescr: get(competencyDescrColumn),
-        masteryDescr: get(masteryDescrColumn),
-      },
-      {
-        offset: get(rowOffset),
-        alternative: get(alternative),
-        skipRow: get(skipRow),
-      },
-    );
+  const parseAndShow = (wb: XLSX.WorkBook) => {
+    try {
+      questions = Question.parseSheet(
+        wb.Sheets[get(currentSheet)],
+        {
+          title: get(titleColumn),
+          prompt: get(promptColumn),
+          correct: get(correctColumn),
+          competency: get(competencyColumn),
+          indicator: get(indicatorColumn),
+          competencyDescr: get(competencyDescrColumn),
+          masteryDescr: get(masteryDescrColumn),
+        },
+        {
+          offset: get(rowOffset),
+          alternative: get(alternative),
+          skipRow: get(skipRow),
+        },
+      );
+    } catch (e) {
+      questions = [];
+      pushError("Parse Error", e instanceof Error ? e.message : String(e));
+    }
+    itemVisibility = new Map();
   };
 
-  file.subscribe(async (f) => {
+  // Read the selected file into a workbook. $effect subscriptions are torn
+  // down on unmount, unlike manual store.subscribe calls, which used to leak
+  // (and re-parse N times) after every visit to this page.
+  $effect(() => {
+    const f = $file;
     if (!f) return;
     questions = [];
-    workbook = XLSX.read(await f.arrayBuffer());
+    let stale = false;
+    f.arrayBuffer()
+      .then((buffer) => {
+        if (!stale) workbook = XLSX.read(buffer);
+      })
+      .catch((e) => {
+        if (stale) return;
+        workbook = undefined;
+        pushError("File Error", `Could not read "${f.name}": ${e instanceof Error ? e.message : String(e)}`);
+      });
+    return () => {
+      stale = true;
+    };
   });
 
-  column_row.subscribe(async () => {
-    parseAndShow();
-  });
-
-  currentSheet.subscribe(async () => {
-    parseAndShow();
+  // Re-parse when the workbook, the selected sheet or the column/row
+  // configuration changes.
+  $effect(() => {
+    $column_row;
+    $currentSheet;
+    if (workbook) parseAndShow(workbook);
   });
 </script>
 
@@ -124,7 +140,7 @@
           </div>
         {/if}
 
-        {#each renderItems as item}
+        {#each renderItems as item (item.id)}
           {@const show = itemVisibility.get(item.id) !== false}
           <div class="question-block">
             <QuestionPreview

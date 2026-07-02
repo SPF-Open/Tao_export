@@ -104,10 +104,8 @@ export class Question {
             masteryDescr: previousDataInfo.masteryDescr,
           });
         }
-        catch (e) {
-          console.log(e);
-          console.log(sheet[column.title + currentRow]);
-          console.log(sheet[column.prompt + currentRow]);
+        catch {
+          // Malformed row (missing title/prompt): skip this question block.
           currentRow = currentRow + row.alternative + 2;
           continue;
         }

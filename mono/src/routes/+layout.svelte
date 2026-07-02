@@ -141,7 +141,7 @@
 
 <header class="layout-header hide-print">
 	<div class="header-left">
-		<button
+		<button type="button"
 			class="burger"
 			onclick={() => sidebarOpen.update((v) => !v)}
 			aria-label={$sidebarEnabled && $sidebarOpen
@@ -164,7 +164,7 @@
 				<span class="bc-sep" aria-hidden="true">/</span>
 				{#if i === bcSegments.length - 1 && currentToolSlug}
 					<div class="tool-switcher">
-						<button
+						<button type="button"
 							class="bc-tool-btn"
 							onclick={() => (toolMenuOpen = !toolMenuOpen)}
 							aria-haspopup="listbox"
@@ -182,7 +182,7 @@
 							>
 								{#each docs as d (d.slug)}
 									{@const Icon = d.icon}
-									<button
+									<button type="button"
 										class="tool-menu-item"
 										class:active={d.slug ===
 											currentToolSlug}
@@ -200,7 +200,7 @@
 					</div>
 				{:else if i === bcSegments.length - 1 && currentDocSlug}
 					<div class="tool-switcher">
-						<button
+						<button type="button"
 							class="bc-tool-btn"
 							onclick={() => (docMenuOpen = !docMenuOpen)}
 							aria-haspopup="listbox"
@@ -218,7 +218,7 @@
 							>
 								{#each allDocs as d (d.slug)}
 									{@const Icon = d.icon}
-									<button
+									<button type="button"
 										class="tool-menu-item"
 										class:active={d.slug === currentDocSlug}
 										role="option"
@@ -252,7 +252,7 @@
 			<ScrollText size={15} />
 			<span class="nav-link-text">Changelog</span>
 		</a>
-		<button
+		<button type="button"
 			class="icon-btn"
 			onclick={() => (debugOpen = !debugOpen)}
 			aria-label="Debug"
@@ -262,7 +262,7 @@
 			<Bug size={15} />
 		</button>
 		<div class="about-container">
-			<button
+			<button type="button"
 				class="icon-btn"
 				onclick={() => (showAbout = !showAbout)}
 				aria-label="About"
@@ -306,7 +306,7 @@
 					</div>
 					{#if PAYWALL_ENABLED}
 						<div class="about-menu-divider"></div>
-						<button
+						<button type="button"
 							class="about-menu-item"
 							role="menuitem"
 							onclick={() => {
@@ -322,7 +322,7 @@
 							>
 						</button>
 						{#if $licenseState.status === "valid"}
-							<button
+							<button type="button"
 								class="about-menu-item"
 								role="menuitem"
 								onclick={() => {
@@ -338,7 +338,7 @@
 				</div>
 			{/if}
 		</div>
-		<button
+		<button type="button"
 			class="icon-btn"
 			onclick={() => (darkMode = !darkMode)}
 			aria-label="Toggle dark mode"
@@ -370,7 +370,7 @@
 	{/snippet}
 </Modal>
 {#if $sidebarEnabled && $sidebarOpen}
-	<button
+	<button type="button"
 		class="sidebar-backdrop hide-print"
 		aria-label="Close menu"
 		onclick={() => sidebarOpen.set(false)}
@@ -379,7 +379,7 @@
 {/if}
 
 {#if debugOpen}
-	<button
+	<button type="button"
 		class="debug-backdrop hide-print"
 		aria-label="Close debug panel"
 		onclick={() => (debugOpen = false)}

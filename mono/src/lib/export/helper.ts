@@ -1,4 +1,7 @@
 import { TextWriter, BlobWriter, type Entry } from '@zip.js/zip.js';
+import { JsonAdapter } from '$lib/questions/adapters/json.js';
+import { downloadBlob } from '$lib/utils/download.js';
+import type { Assessment } from '$lib/questions/types.js';
 
 export type zipObj = {
   path: string;
@@ -216,4 +219,11 @@ export const xmlToObj = (xml: EntryObj): QuestionType => {
     maxLenght,
     show: true
   };
+};
+
+/** Serializes an assessment through the JSON adapter and downloads it. */
+export const exportAssessmentToJson = async (assessment: Assessment, name: string): Promise<void> => {
+  const adapter = new JsonAdapter();
+  const blob = await adapter.write(assessment);
+  downloadBlob(blob, `${name.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_export.json`);
 };

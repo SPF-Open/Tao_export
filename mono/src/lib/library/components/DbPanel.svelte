@@ -94,9 +94,9 @@
           {/if}
           {#if !editing}
             <div class="sec-actions">
-              <button class="link-btn" onclick={startEdit}>{$dbHasPassword ? "Change" : "Set password"}</button>
+              <button type="button" class="link-btn" onclick={startEdit}>{$dbHasPassword ? "Change" : "Set password"}</button>
               {#if $dbHasPassword}
-                <button class="link-btn danger" onclick={removePassword}>Remove</button>
+                <button type="button" class="link-btn danger" onclick={removePassword}>Remove</button>
               {/if}
             </div>
           {/if}
@@ -109,7 +109,7 @@
             {#if pwError}<p class="pw-error">{pwError}</p>{/if}
             <div class="pw-buttons">
               <Button variant="primary" onclick={savePassword}><Lock size={15} strokeWidth={1.9} /> Save</Button>
-              <button class="link-btn" onclick={cancelEdit}>Cancel</button>
+              <button type="button" class="link-btn" onclick={cancelEdit}>Cancel</button>
             </div>
           </div>
         {/if}
@@ -127,7 +127,7 @@
         {#if unlockError}<p class="pw-error">{unlockError}</p>{/if}
         <div class="pw-buttons">
           <Button variant="primary" disabled={$busy || !unlockPw} onclick={submitUnlock}><LockOpen size={15} strokeWidth={1.9} /> Unlock &amp; open</Button>
-          <button class="link-btn" onclick={cancelUnlock} disabled={$busy}>Cancel</button>
+          <button type="button" class="link-btn" onclick={cancelUnlock} disabled={$busy}>Cancel</button>
         </div>
       </div>
     {/if}

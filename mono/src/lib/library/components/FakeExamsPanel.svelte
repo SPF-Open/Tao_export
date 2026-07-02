@@ -68,14 +68,14 @@
       <ul class="exam-list">
         {#each $fakeExams as exam (exam.id)}
           <li>
-            <button class="exam-card" onclick={() => (openId = exam.id)}>
+            <button type="button" class="exam-card" onclick={() => (openId = exam.id)}>
               <span class="ec-head">
                 <span class="ec-title">{exam.title || "Untitled exam"}</span>
                 <span class="ec-count">{exam.itemCount} question{exam.itemCount === 1 ? "" : "s"}</span>
               </span>
               <span class="ec-meta">Updated {formatDate(exam.updatedAt)}</span>
             </button>
-            <button class="delete-btn" onclick={(e) => onDelete(exam.id, e)} aria-label="Delete exam" title="Delete exam">
+            <button type="button" class="delete-btn" onclick={(e) => onDelete(exam.id, e)} aria-label="Delete exam" title="Delete exam">
               <Trash2 size={15} strokeWidth={1.75} />
             </button>
           </li>

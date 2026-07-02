@@ -3,30 +3,23 @@
     variant?: "primary" | "secondary" | "ghost" | "success" | "danger" | "info";
     disabled?: boolean;
     onclick?: (e: MouseEvent) => void;
-    onClick?: (e: MouseEvent) => void;
-    type?: string;
-    [key: string]: any;
+    type?: "button" | "submit" | "reset";
+    children?: import('svelte').Snippet;
   }
 
-  let { 
-    variant = "primary", 
-    disabled = false, 
+  let {
+    variant = "primary",
+    disabled = false,
     onclick = undefined,
-    onClick = undefined,
     type = "button",
     children,
-    ...rest 
-  } = $props();
-
-  // Support both onclick and onClick
-  function handleClick(e: MouseEvent) {
-    (onclick || onClick)?.(e);
-  }
+  }: Props = $props();
 </script>
 
-<button 
+<button
+  {type}
   class="btn variant-{variant}"
-  onclick={handleClick} 
+  onclick={onclick}
   disabled={disabled}
 >
   {@render children?.()}

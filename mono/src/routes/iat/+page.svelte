@@ -4,7 +4,7 @@
   import DynamicTable from "$lib/iat/components/DynamicTable.svelte";
   import Header from "$lib/iat/components/Header.svelte";
   import Summary from "$lib/iat/components/Summary.svelte";
-  import { PageHeader, SidebarLayout } from "$lib/ui";
+  import { EmptyState, PageHeader, SidebarLayout } from "$lib/ui";
 </script>
 
 <svelte:head>
@@ -29,5 +29,11 @@
   {#if $pagesData}
     <Summary />
     <DynamicTable pagesData={$pagesData} />
+  {:else}
+    <EmptyState
+      icon={ClipboardCheck}
+      title="Load an IAT statistics workbook"
+      description="Upload the Excel export (Speed_Pages / Questions / Alternatives sheets) from the sidebar to analyse item statistics."
+    />
   {/if}
 </SidebarLayout>

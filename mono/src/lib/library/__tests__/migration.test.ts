@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, test } from 'bun:test';
+import { beforeAll, beforeEach, describe, expect, test } from 'vitest';
 import sqlite3InitModule, { type Database, type Sqlite3Static } from '@sqlite.org/sqlite-wasm';
 import { migrate, getUserVersion, MIGRATIONS, type Migration } from '../worker/schema.js';
 import { initMeta } from '../worker/meta.js';
@@ -17,28 +17,30 @@ beforeEach(() => {
 });
 
 describe('migration runner', () => {
-	test('builds a v1 schema from scratch', () => {
-		expect(migrate(db)).toBe(1);
-		expect(getUserVersion(db)).toBe(1);
+	const latestVersion = MIGRATIONS[MIGRATIONS.length - 1].version;
+
+	test('builds the latest schema from scratch', () => {
+		expect(migrate(db)).toBe(latestVersion);
+		expect(getUserVersion(db)).toBe(latestVersion);
 	});
 
-	test('upgrades a populated v1 DB to v2 without data loss', () => {
-		// Start at v1 with real content.
+	test('upgrades a populated DB to the next version without data loss', () => {
+		// Start at the current schema with real content.
 		migrate(db);
 		initMeta(db, { databaseId: 'mig', appVersion: '0' });
 		ingest(db, qcmPayload());
 		const before = Number(db.selectValue('SELECT COUNT(*) FROM questions'));
 		expect(before).toBe(3);
 
-		// A synthetic v2 step that adds a column, mirroring a future schema change.
-		const v2: Migration = {
-			version: 2,
+		// A synthetic next step that adds a column, mirroring a future schema change.
+		const next: Migration = {
+			version: latestVersion + 1,
 			up: (d) => d.exec('ALTER TABLE questions ADD COLUMN difficulty INTEGER NOT NULL DEFAULT 0')
 		};
 
-		const result = migrate(db, [...MIGRATIONS, v2]);
-		expect(result).toBe(2);
-		expect(getUserVersion(db)).toBe(2);
+		const result = migrate(db, [...MIGRATIONS, next]);
+		expect(result).toBe(latestVersion + 1);
+		expect(getUserVersion(db)).toBe(latestVersion + 1);
 
 		// Existing rows survive and the new column is queryable.
 		expect(Number(db.selectValue('SELECT COUNT(*) FROM questions'))).toBe(before);
@@ -50,13 +52,13 @@ describe('migration runner', () => {
 	test('rolls back and rethrows when a migration step fails', () => {
 		migrate(db);
 		const bad: Migration = {
-			version: 2,
+			version: latestVersion + 1,
 			up: () => {
 				throw new Error('boom');
 			}
 		};
 		expect(() => migrate(db, [...MIGRATIONS, bad])).toThrow('boom');
-		// Version stays at 1 because the failed step rolled back.
-		expect(getUserVersion(db)).toBe(1);
+		// Version is unchanged because the failed step rolled back.
+		expect(getUserVersion(db)).toBe(latestVersion);
 	});
 });

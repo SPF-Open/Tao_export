@@ -10,32 +10,74 @@
   }
 
   let { open = $bindable(false), title, footer, children, size = "md" }: Props = $props();
+
+  const uid = $props.id();
+  const titleId = `${uid}-title`;
+  let panel = $state<HTMLDivElement | null>(null);
+
+  // Move focus into the dialog when it opens and give it back on close.
+  $effect(() => {
+    if (!open || !panel) return;
+    const previous = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    panel.focus();
+    return () => previous?.focus();
+  });
+
+  const FOCUSABLE =
+    'a[href], button:not([disabled]), textarea:not([disabled]), input:not([disabled]), select:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+  function onWindowKeydown(event: KeyboardEvent) {
+    if (!open) return;
+    if (event.key === "Escape") {
+      event.preventDefault();
+      open = false;
+      return;
+    }
+    if (event.key !== "Tab" || !panel) return;
+
+    // Cycle Tab/Shift+Tab inside the dialog.
+    const focusables = Array.from(panel.querySelectorAll<HTMLElement>(FOCUSABLE));
+    if (focusables.length === 0) {
+      event.preventDefault();
+      panel.focus();
+      return;
+    }
+    const first = focusables[0];
+    const last = focusables[focusables.length - 1];
+    const active = document.activeElement;
+    if (event.shiftKey && (active === first || active === panel)) {
+      event.preventDefault();
+      last.focus();
+    } else if (!event.shiftKey && (active === last || active === panel)) {
+      event.preventDefault();
+      first.focus();
+    }
+  }
 </script>
+
+<svelte:window onkeydown={onWindowKeydown} />
 
 {#if open}
   <div
     class="modal-backdrop"
-    role="button"
-    tabindex="0"
-    aria-label="Close modal"
-    onclick={() => (open = false)}
-    onkeydown={(event) => {
-      if (event.key === "Enter" || event.key === " ") open = false;
+    role="presentation"
+    onclick={(event) => {
+      if (event.target === event.currentTarget) open = false;
     }}
   >
     <div
+      bind:this={panel}
       class="modal-panel size-{size}"
-      onclick={(e) => e.stopPropagation()}
-      onkeydown={(e) => e.stopPropagation()}
       role="dialog"
       aria-modal="true"
+      aria-labelledby={title ? titleId : undefined}
       tabindex="-1"
     >
       <div class="modal-header">
-        <div class="modal-header-content">
+        <div class="modal-header-content" id={titleId}>
           {@render title?.()}
         </div>
-        <button class="modal-close" onclick={() => (open = false)} aria-label="Close">
+        <button type="button" class="modal-close" onclick={() => (open = false)} aria-label="Close">
           <X size={14} />
         </button>
       </div>
@@ -65,6 +107,14 @@
     animation: modal-fade 150ms ease;
     cursor: default;
     text-align: left;
+  }
+
+  .modal-panel:focus {
+    outline: none;
+  }
+
+  .modal-panel:focus-visible {
+    box-shadow: var(--shadow-xl), 0 0 0 3px rgba(var(--brand-rgb), 0.18);
   }
 
   .modal-panel {

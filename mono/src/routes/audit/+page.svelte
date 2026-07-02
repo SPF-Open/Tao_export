@@ -127,7 +127,7 @@
         <div class="badge">
           <span class="badge-name" title={$auditZipName}>{$auditZipName}</span>
           <span class="badge-count">{$auditItems.length}</span>
-          <button class="badge-clear" onclick={clearZip} aria-label="Remove ZIP"><X size={13} /></button>
+          <button type="button" class="badge-clear" onclick={clearZip} aria-label="Remove ZIP"><X size={13} /></button>
         </div>
       {:else}
         <FileInput accept=".zip" invalidTitle="Unsupported file" onfiles={handleZip} />
@@ -156,7 +156,7 @@
         <Play size={16} strokeWidth={2} /> {$auditLoading ? "Running…" : "Run audit"}
       </Button>
       {#if $auditZipName || $auditFilename || $auditReport}
-        <button class="ghost" onclick={reset}><RotateCcw size={15} strokeWidth={1.75} /> Reset</button>
+        <button type="button" class="ghost" onclick={reset}><RotateCcw size={15} strokeWidth={1.75} /> Reset</button>
       {/if}
     </div>
   {/snippet}
@@ -186,7 +186,6 @@
 </SidebarLayout>
 
 <style>
-  .brand { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em; padding: 2px; }
 
   .field { display: flex; flex-direction: column; gap: 0.4rem; }
   .field-label { display: inline-flex; align-items: center; gap: 0.35rem; font-size: 0.78rem; font-weight: 600; color: var(--text-muted); }

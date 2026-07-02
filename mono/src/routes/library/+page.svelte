@@ -65,7 +65,7 @@
     <nav class="mode-switch" aria-label="Library sections">
       {#each tabs as t (t.id)}
         {@const Icon = t.icon}
-        <button class="mode-btn" class:active={tab === t.id} onclick={() => (tab = t.id)}
+        <button type="button" class="mode-btn" class:active={tab === t.id} onclick={() => (tab = t.id)}
           aria-current={tab === t.id ? "page" : undefined}>
           <Icon size={15} strokeWidth={1.75} />
           <span>{t.label}</span>
@@ -86,7 +86,7 @@
 
     <div class="divider"></div>
 
-    <button class="query-btn" onclick={() => (queryOpen = true)} disabled={!$dbInfo}>
+    <button type="button" class="query-btn" onclick={() => (queryOpen = true)} disabled={!$dbInfo}>
       <TerminalSquare size={15} strokeWidth={1.75} /> Write SQL query
     </button>
 
@@ -118,7 +118,6 @@
 <QueryModal bind:open={queryOpen} />
 
 <style>
-  .brand { display: flex; align-items: center; gap: 0.5rem; font-weight: 700; color: var(--text); letter-spacing: -0.01em; padding: 2px; }
 
   .mode-switch {
     display: flex; flex-direction: column; gap: 4px;
