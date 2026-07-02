@@ -1,5 +1,12 @@
 ## Changelog
 
+### 2.11.0
+- Improve : Test suite now runs with Vitest under npm, and Playwright end-to-end tests are in place
+  - All existing unit tests were migrated from `bun test` to Vitest (`npm run test:unit`) so the whole project works with a single package manager
+  - New `npm run test:e2e` runs browser tests against the built site; `npm test` runs both
+  - Tests are now type-checked by `npm run check` (they were previously excluded), and outdated library-schema tests were fixed to follow the current database version
+- Fix : Corrected a TypeScript import error on the home page (`$lib/docs.ts` extension)
+
 ### 2.10.1
 - Fix : Bullet detection now catches markers running together in one paragraph
   - Previously only a bullet at the very start of a line was recognized; now `• item` or `- item` is detected anywhere in the text, so a question opens with its list already correct, before any editing

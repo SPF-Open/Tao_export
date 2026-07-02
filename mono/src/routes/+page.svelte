@@ -3,7 +3,7 @@
   import { goto } from "$app/navigation";
   import { ArrowUpRight } from "lucide-svelte";
   import DotCanvas from "$lib/ui/DotCanvas.svelte";
-  import { docs } from "$lib/docs.ts";
+  import { docs } from "$lib/docs";
 
   // Production origin — used to build absolute URLs for SEO/social metadata.
   // Change this if the app is deployed somewhere other than tao.lv0.eu.

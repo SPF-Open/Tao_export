@@ -1,4 +1,4 @@
-import { describe, expect, it } from 'bun:test';
+import { describe, expect, it } from 'vitest';
 import { matchPositional } from '../matcher';
 import { compare } from '../comparator';
 import { buildReport } from '../classifier';

@@ -1,9 +1,10 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { locateStemRegion, spliceStemRegion } from '../stemRegion.js';
 
-const fixtures = join(import.meta.dir, 'fixtures');
+const fixtures = fileURLToPath(new URL('fixtures', import.meta.url));
 const read = (name: string) => readFileSync(join(fixtures, name), 'utf-8');
 
 describe('locateStemRegion', () => {

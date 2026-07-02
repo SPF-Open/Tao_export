@@ -1,4 +1,4 @@
-import { beforeAll, beforeEach, describe, expect, test } from 'bun:test';
+import { beforeAll, beforeEach, describe, expect, test } from 'vitest';
 import sqlite3InitModule, { type Database, type Sqlite3Static } from '@sqlite.org/sqlite-wasm';
 import { migrate } from '../worker/schema.js';
 import { initMeta } from '../worker/meta.js';

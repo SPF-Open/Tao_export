@@ -1,6 +1,6 @@
-import { beforeAll, beforeEach, describe, expect, test } from 'bun:test';
+import { beforeAll, beforeEach, describe, expect, test } from 'vitest';
 import sqlite3InitModule, { type Database, type Sqlite3Static } from '@sqlite.org/sqlite-wasm';
-import { migrate, getUserVersion } from '../worker/schema.js';
+import { migrate, getUserVersion, MIGRATIONS } from '../worker/schema.js';
 import { initMeta, getInfo } from '../worker/meta.js';
 import { ingest, analyze } from '../worker/ingest.js';
 import { search, facets } from '../worker/search.js';
@@ -27,15 +27,17 @@ beforeEach(() => {
 });
 
 describe('schema & migration', () => {
-	test('migrate sets user_version to 1 and is idempotent', () => {
-		expect(getUserVersion(db)).toBe(1);
-		expect(migrate(db)).toBe(1); // running again is a no-op
-		expect(getUserVersion(db)).toBe(1);
+	const latestVersion = MIGRATIONS[MIGRATIONS.length - 1].version;
+
+	test('migrate sets user_version to the latest migration and is idempotent', () => {
+		expect(getUserVersion(db)).toBe(latestVersion);
+		expect(migrate(db)).toBe(latestVersion); // running again is a no-op
+		expect(getUserVersion(db)).toBe(latestVersion);
 	});
 
 	test('fresh info reports zero counts and content_version 0', () => {
 		const info = getInfo(db, 'memory');
-		expect(info.schemaVersion).toBe(1);
+		expect(info.schemaVersion).toBe(latestVersion);
 		expect(info.contentVersion).toBe(0);
 		expect(info.counts).toEqual({ tests: 0, questions: 0, competencies: 0 });
 	});

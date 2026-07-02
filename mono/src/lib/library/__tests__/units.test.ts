@@ -1,4 +1,4 @@
-import { describe, expect, test } from 'bun:test';
+import { describe, expect, test } from 'vitest';
 import { fnv1aHex } from '../hashUtil.js';
 import { buildMatchQuery } from '../worker/search.js';
 import { extractCompetencies } from '../parse/competency.js';
