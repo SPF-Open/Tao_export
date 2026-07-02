@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2.11.7
+- Improve : Full end-to-end browser test suite (18 tests)
+  - Every page is loaded and checked for rendering and console errors; the error page, Library SQLite worker boot, Format tool happy path (real QTI zip), phone drawer navigation and slides keyboard navigation are all covered
+
 ### 2.11.6
 - Refactor : The presentation deck (/slides) is split into one component per slide
   - The 1991-line page becomes 8 slide components plus shared data, styles and a reusable card-tilt helper — no visual change
