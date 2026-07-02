@@ -1,0 +1,450 @@
+/*
+ * Shared styles for the /slides presentation deck.
+ * Every selector is namespaced under `.deck`: this file is imported globally
+ * by the slides route in an SPA, so unprefixed selectors would leak into
+ * other routes after client-side navigation.
+ * Keyframes are global — hence the `deck-` prefix.
+ */
+
+@property --beam {
+	syntax: "<angle>";
+	initial-value: 0deg;
+	inherits: false;
+}
+
+.deck .slide-body {
+	width: 100%;
+	max-width: 880px;
+	text-align: left;
+}
+
+.deck .slide-body.wide {
+	max-width: 1060px;
+}
+
+.deck .slide-body.center {
+	text-align: center;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+}
+
+/* ── Shared type scale ─────────────────────────────────── */
+.deck .eyebrow {
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	color: var(--brand);
+	font-size: 0.74rem;
+	font-weight: 700;
+	letter-spacing: 0.1em;
+	text-transform: uppercase;
+	margin-bottom: 0.9rem;
+}
+
+.deck .eyebrow::before {
+	content: "";
+	width: 7px;
+	height: 7px;
+	border-radius: 50%;
+	background: var(--brand);
+	box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0.5);
+	animation: deck-pulse 2.4s ease-out infinite;
+}
+
+@keyframes deck-pulse {
+	0% {
+		box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0.5);
+	}
+	70% {
+		box-shadow: 0 0 0 7px rgba(var(--brand-rgb), 0);
+	}
+	100% {
+		box-shadow: 0 0 0 0 rgba(var(--brand-rgb), 0);
+	}
+}
+
+.deck .title {
+	position: relative;
+	margin: 0;
+	padding-bottom: 0.55rem;
+	color: var(--text);
+	font-size: clamp(1.9rem, 4.8vw, 3.1rem);
+	font-weight: 700;
+	letter-spacing: -0.03em;
+	line-height: 1.05;
+}
+
+.deck .title::after {
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: 0;
+	height: 3px;
+	width: 0;
+	border-radius: 3px;
+	background: linear-gradient(90deg, var(--brand), rgba(var(--brand-rgb), 0.15));
+	animation: deck-underline 0.7s cubic-bezier(0.22, 1, 0.36, 1) 0.25s forwards;
+}
+
+.deck .center .title::after {
+	left: 50%;
+	transform: translateX(-50%);
+}
+
+@keyframes deck-underline {
+	to {
+		width: 3.4rem;
+	}
+}
+
+.deck .message {
+	color: var(--text-muted);
+	font-size: clamp(1rem, 1.7vw, 1.2rem);
+	line-height: 1.6;
+	max-width: 44rem;
+	margin: 1.1rem 0 0;
+}
+
+.deck .message.center-msg {
+	margin-left: auto;
+	margin-right: auto;
+}
+
+.deck .aside {
+	color: var(--text-muted);
+	font-size: 0.9rem;
+	margin: 1.4rem 0 0;
+}
+
+/* ── Cover / close ─────────────────────────────────────── */
+.deck .brand {
+	display: inline-flex;
+	align-items: center;
+	gap: 1rem;
+}
+
+.deck .logomark {
+	display: grid;
+	place-items: center;
+	width: 60px;
+	height: 60px;
+	border-radius: 16px;
+	color: var(--brand);
+	background: var(--surface-elevated);
+	border: 1px solid var(--border);
+	box-shadow: var(--shadow-sm);
+}
+
+.deck .logomark.big {
+	width: 52px;
+	height: 52px;
+	margin-bottom: 1.6rem;
+}
+
+.deck .wordmark {
+	position: relative;
+	margin: 0;
+	font-size: clamp(3rem, 11vw, 5rem);
+	font-weight: 700;
+	letter-spacing: -0.045em;
+	line-height: 1;
+	color: var(--text);
+}
+
+/* One-shot brand light sweep across the letters on load. */
+.deck .wordmark::after {
+	content: attr(data-text);
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		100deg,
+		transparent 38%,
+		rgba(var(--brand-rgb), 0.95) 50%,
+		transparent 62%
+	);
+	background-size: 250% 100%;
+	background-position: 120% 0;
+	-webkit-background-clip: text;
+	background-clip: text;
+	-webkit-text-fill-color: transparent;
+	color: transparent;
+	pointer-events: none;
+	animation: deck-sheen 1.6s cubic-bezier(0.22, 1, 0.36, 1) 0.4s both;
+}
+
+@keyframes deck-sheen {
+	from {
+		background-position: 120% 0;
+	}
+	to {
+		background-position: -60% 0;
+	}
+}
+
+.deck .lead {
+	margin: 1.6rem 0 0;
+	color: var(--text);
+	font-size: clamp(1.15rem, 2.4vw, 1.6rem);
+	font-weight: 600;
+}
+
+.deck .sub {
+	margin: 0.5rem 0 0;
+	color: var(--text-muted);
+	font-size: 1rem;
+}
+
+.deck .hint {
+	margin: 1.6rem 0 0;
+	color: var(--text-muted);
+	font-size: 0.82rem;
+}
+
+.deck .hint kbd,
+.deck .cover kbd {
+	font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+	font-size: 0.72rem;
+	padding: 0.1rem 0.4rem;
+	border: 1px solid var(--border-strong);
+	border-radius: 5px;
+	color: var(--text);
+	background: var(--surface-elevated);
+}
+
+.deck .cta {
+	position: relative;
+	overflow: hidden;
+	display: inline-flex;
+	align-items: center;
+	gap: 0.5rem;
+	margin: 1.8rem 0 0;
+	padding: 0.7rem 1.3rem;
+	border-radius: var(--radius-lg);
+	background: var(--primary);
+	color: var(--primary-foreground);
+	border: 1px solid var(--primary);
+	font-weight: 600;
+	font-size: 0.95rem;
+	text-decoration: none;
+	transition:
+		transform 0.2s ease,
+		box-shadow 0.2s ease;
+}
+
+/* Light sweep travelling across the button forever. */
+.deck .cta::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	background: linear-gradient(
+		100deg,
+		transparent 30%,
+		rgba(255, 255, 255, 0.35) 50%,
+		transparent 70%
+	);
+	background-size: 250% 100%;
+	background-position: 150% 0;
+	animation: deck-cta-sheen 2.6s ease-in-out infinite;
+}
+
+@keyframes deck-cta-sheen {
+	to {
+		background-position: -80% 0;
+	}
+}
+
+.deck .cta:hover {
+	transform: translateY(-2px);
+	box-shadow: var(--shadow-lg);
+}
+
+.deck .cta:focus-visible {
+	outline: none;
+	box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.35);
+}
+
+/* ── Points / lists ────────────────────────────────────── */
+.deck .points {
+	list-style: none;
+	margin: 1.4rem 0 0;
+	padding: 0;
+	display: grid;
+	gap: 0.5rem;
+}
+
+.deck .points li {
+	position: relative;
+	padding-left: 1.4rem;
+	color: var(--text);
+	font-size: 1rem;
+	line-height: 1.5;
+}
+
+.deck .points li::before {
+	content: "";
+	position: absolute;
+	left: 0;
+	top: 0.55em;
+	width: 6px;
+	height: 6px;
+	border-radius: 50%;
+	background: var(--brand);
+}
+
+.deck .points code {
+	font-family: "SF Mono", "Roboto Mono", ui-monospace, monospace;
+	font-size: 0.85em;
+	padding: 0.05rem 0.3rem;
+	border-radius: 4px;
+	background: var(--surface);
+	border: 1px solid var(--border);
+}
+
+/* ── Interactive card FX (tilt + spotlight + beam border) ─ */
+.deck .fx {
+	--rx: 0deg;
+	--ry: 0deg;
+	--lift: 0px;
+	position: relative;
+	overflow: hidden;
+	isolation: isolate;
+	height: 100%;
+	background: var(--surface-elevated);
+	border: 1px solid var(--border);
+	border-radius: var(--radius-xl);
+	box-shadow: var(--shadow-sm);
+	transform-style: preserve-3d;
+	transform: perspective(900px) rotateX(var(--rx)) rotateY(var(--ry)) translateY(var(--lift));
+	transition:
+		transform 0.18s ease,
+		border-color 0.25s ease,
+		box-shadow 0.25s ease;
+}
+
+.deck .fx:hover {
+	--lift: -4px;
+	border-color: rgba(var(--brand-rgb), 0.45);
+	box-shadow: var(--shadow-lg);
+}
+
+/* cursor-following brand spotlight */
+.deck .fx::after {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	background: radial-gradient(
+		220px circle at var(--mx, 50%) var(--my, 50%),
+		rgba(var(--brand-rgb), 0.13),
+		transparent 60%
+	);
+	opacity: 0;
+	transition: opacity 0.25s ease;
+	pointer-events: none;
+	z-index: 0;
+}
+
+.deck .fx:hover::after {
+	opacity: 1;
+}
+
+/* single-accent beam that sweeps the hairline on hover */
+.deck .fx::before {
+	content: "";
+	position: absolute;
+	inset: 0;
+	border-radius: inherit;
+	padding: 1px;
+	background: conic-gradient(
+		from var(--beam),
+		transparent 0deg,
+		rgba(var(--brand-rgb), 0.75) 40deg,
+		transparent 120deg
+	);
+	-webkit-mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	-webkit-mask-composite: xor;
+	mask:
+		linear-gradient(#000 0 0) content-box,
+		linear-gradient(#000 0 0);
+	mask-composite: exclude;
+	opacity: 0;
+	transition: opacity 0.25s ease;
+	pointer-events: none;
+	z-index: 1;
+}
+
+.deck .fx:hover::before {
+	opacity: 1;
+	animation: deck-beam 2.6s linear infinite;
+}
+
+@keyframes deck-beam {
+	to {
+		--beam: 360deg;
+	}
+}
+
+.deck .fx > * {
+	position: relative;
+	z-index: 2;
+}
+
+/* Staggered entrance wrapper (replays each slide via {#key}) */
+.deck .in {
+	animation: deck-pop 0.55s cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-delay: var(--d, 0ms);
+}
+
+@keyframes deck-pop {
+	from {
+		opacity: 0;
+		transform: translateY(16px) scale(0.96);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0) scale(1);
+	}
+}
+
+@keyframes deck-fade-in {
+	from {
+		opacity: 0;
+	}
+	to {
+		opacity: 1;
+	}
+}
+
+/* ── Text entrance stagger ─────────────────────────────── */
+.deck .r {
+	animation: deck-rise 0.5s cubic-bezier(0.22, 1, 0.36, 1) both;
+	animation-delay: calc(var(--i, 0) * 70ms);
+}
+
+@keyframes deck-rise {
+	from {
+		opacity: 0;
+		transform: translateY(14px);
+	}
+	to {
+		opacity: 1;
+		transform: translateY(0);
+	}
+}
+
+@media (prefers-reduced-motion: reduce) {
+	.deck .r,
+	.deck .in,
+	.deck .title::after,
+	.deck .wordmark::after,
+	.deck .cta::after,
+	.deck .eyebrow::before {
+		animation: none !important;
+	}
+	.deck .title::after {
+		width: 3.4rem;
+	}
+}

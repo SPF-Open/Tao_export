@@ -1,5 +1,10 @@
 ## Changelog
 
+### 2.11.6
+- Refactor : The presentation deck (/slides) is split into one component per slide
+  - The 1991-line page becomes 8 slide components plus shared data, styles and a reusable card-tilt helper — no visual change
+  - Unused styles from removed slides were dropped along the way
+
 ### 2.11.5
 - Remove : Dead code cleanup — obsolete export helper copy, unused CSV adapter, unused styles and leftover debug logging removed
 - Refactor : One shared file-download helper now serves Export, Format, Library, Audit and IAT (five separate copies before)
