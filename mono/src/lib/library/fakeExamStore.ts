@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { libraryClient } from './client.js';
 import { pushError } from '$lib/ui/notifications';
 import { downloadBlob } from '$lib/utils/download.js';
@@ -19,6 +19,8 @@ export const fakeExams = writable<LibraryFakeExamSummary[]>([]);
 export const activeFakeExam = writable<LibraryFakeExam | null>(null);
 /** Whether a fake-exam operation is in flight. */
 export const fakeExamBusy = writable<boolean>(false);
+/** Question IDs currently held in memory for quick adding to exams. */
+export const heldQuestionIds = writable<Set<number>>(new Set());
 
 async function run<T>(fn: () => Promise<T>): Promise<T | null> {
 	fakeExamBusy.set(true);
@@ -30,6 +32,46 @@ async function run<T>(fn: () => Promise<T>): Promise<T | null> {
 	} finally {
 		fakeExamBusy.set(false);
 	}
+}
+
+/* ------------------------------------------------------------------ */
+/* Held questions (temporary memory for quick exam building)            */
+/* ------------------------------------------------------------------ */
+
+export function toggleHeldQuestion(id: number): void {
+	heldQuestionIds.update((ids) => {
+		const newIds = new Set(ids);
+		if (newIds.has(id)) {
+			newIds.delete(id);
+		} else {
+			newIds.add(id);
+		}
+		return newIds;
+	});
+}
+
+export function clearHeldQuestions(): void {
+	heldQuestionIds.set(new Set());
+}
+
+export async function addHeldQuestionsToExam(examId: number): Promise<void> {
+	const ids = Array.from(get(heldQuestionIds));
+	if (ids.length === 0) return;
+	await addQuestionsToActiveExam(examId, ids);
+	clearHeldQuestions();
+}
+
+export async function createExamWithHeldQuestions(title: string, language = ''): Promise<LibraryFakeExam | null> {
+	const exam = await createFakeExam(title, language);
+	if (!exam) return null;
+	
+	const ids = Array.from(get(heldQuestionIds));
+	if (ids.length > 0) {
+		await addQuestionsToActiveExam(exam.id, ids);
+		clearHeldQuestions();
+	}
+	
+	return exam;
 }
 
 export async function loadFakeExams(): Promise<void> {
