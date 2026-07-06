@@ -1,4 +1,4 @@
-import { writable } from 'svelte/store';
+import { writable, get } from 'svelte/store';
 import { libraryClient } from './client.js';
 import { pushError } from '$lib/ui/notifications';
 import { downloadBlob } from '$lib/utils/download.js';
@@ -19,6 +19,8 @@ export const fakeExams = writable<LibraryFakeExamSummary[]>([]);
 export const activeFakeExam = writable<LibraryFakeExam | null>(null);
 /** Whether a fake-exam operation is in flight. */
 export const fakeExamBusy = writable<boolean>(false);
+/** Question IDs held from search results, waiting to be added to an exam. */
+export const heldQuestionIds = writable<Set<number>>(new Set());
 
 async function run<T>(fn: () => Promise<T>): Promise<T | null> {
 	fakeExamBusy.set(true);
@@ -30,6 +32,35 @@ async function run<T>(fn: () => Promise<T>): Promise<T | null> {
 	} finally {
 		fakeExamBusy.set(false);
 	}
+}
+
+/** Adds or removes a question from the held set. */
+export function toggleHeldQuestion(id: number): void {
+	heldQuestionIds.update((ids) => {
+		const next = new Set(ids);
+		if (next.has(id)) next.delete(id);
+		else next.add(id);
+		return next;
+	});
+}
+
+export function clearHeldQuestions(): void {
+	heldQuestionIds.set(new Set());
+}
+
+/** Adds every held question to the given exam, then clears the held set. */
+export async function addHeldQuestionsToExam(examId: number): Promise<void> {
+	const ids = Array.from(get(heldQuestionIds));
+	if (ids.length === 0) return;
+	await addQuestionsToActiveExam(examId, ids);
+	clearHeldQuestions();
+}
+
+/** Creates a new exam seeded with the held questions, then clears the held set. */
+export async function createExamWithHeldQuestions(title: string, language = ''): Promise<LibraryFakeExam | null> {
+	const exam = await createFakeExam(title, language);
+	if (exam) await addHeldQuestionsToExam(exam.id);
+	return exam;
 }
 
 export async function loadFakeExams(): Promise<void> {

@@ -1,7 +1,7 @@
 <script lang="ts">
   import { get } from "svelte/store";
   import { onMount } from "svelte";
-  import { Library, Database, Upload, Search, TerminalSquare, FileStack, ClipboardList } from "lucide-svelte";
+  import { Library, Database, Upload, Search, TerminalSquare, FileStack, ClipboardList, Sparkles } from "lucide-svelte";
   import { PageHeader, SidebarLayout } from "$lib/ui";
   import { dbInfo, busy, ingestRunning, restoreDb } from "$lib/library/store";
   import DbPanel from "$lib/library/components/DbPanel.svelte";
@@ -10,10 +10,12 @@
   import SearchResults from "$lib/library/components/SearchResults.svelte";
   import FakeExamsPanel from "$lib/library/components/FakeExamsPanel.svelte";
   import QueryModal from "$lib/library/components/QueryModal.svelte";
+  import AiPromptModal from "$lib/library/components/AiPromptModal.svelte";
 
   type Tab = "db" | "ingest" | "search" | "exams";
   let tab = $state<Tab>("db");
   let queryOpen = $state(false);
+  let aiPromptOpen = $state(false);
 
   const tabs: { id: Tab; label: string; icon: typeof Database }[] = [
     { id: "db", label: "Database", icon: Database },
@@ -90,6 +92,10 @@
       <TerminalSquare size={15} strokeWidth={1.75} /> Write SQL query
     </button>
 
+    <button type="button" class="query-btn" onclick={() => (aiPromptOpen = true)} disabled={!$dbInfo}>
+      <Sparkles size={15} strokeWidth={1.75} /> Ask AI to write SQL
+    </button>
+
     {#if $dbInfo}
       <div class="db-chip">
         <FileStack size={13} strokeWidth={1.75} />
@@ -116,6 +122,7 @@
 </SidebarLayout>
 
 <QueryModal bind:open={queryOpen} />
+<AiPromptModal bind:open={aiPromptOpen} onOpenQueryConsole={() => (queryOpen = true)} />
 
 <style>
 
@@ -142,12 +149,13 @@
   .divider { height: 1px; background: var(--border); margin: 2px 0; }
 
   .query-btn {
-    display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem;
-    padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius);
+    display: flex; align-items: center; justify-content: center; gap: 0.45rem;
+    width: 100%; padding: 8px 12px; border: 1px solid var(--border); border-radius: var(--radius);
     background: var(--surface-elevated); color: var(--text);
     font-family: var(--font-family); font-size: 0.85rem; font-weight: 500; cursor: pointer;
     transition: border-color 0.15s, background 0.15s, color 0.15s;
   }
+  .query-btn + .query-btn { margin-top: 0.5rem; }
   .query-btn:hover:not(:disabled) { border-color: rgba(var(--brand-rgb), 0.5); color: var(--brand); background: rgba(var(--brand-rgb), 0.06); }
   .query-btn:disabled { opacity: 0.5; cursor: not-allowed; }
   .query-btn:focus-visible { outline: none; box-shadow: 0 0 0 3px rgba(var(--brand-rgb), 0.18); }
