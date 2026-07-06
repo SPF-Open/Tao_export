@@ -44,11 +44,6 @@
     }
   }
 
-  async function onAddHeldToExam(examId: number) {
-    await addHeldQuestionsToExam(examId);
-    await loadFakeExams();
-  }
-
   async function onDelete(id: number, event: MouseEvent) {
     event.stopPropagation();
     if (!confirm("Delete this fake exam? This cannot be undone.")) return;
@@ -93,7 +88,7 @@
           {#if $fakeExams.length > 0}
             <div class="held-add-to">
               <label for="exam-select">Or add to existing exam:</label>
-              <select id="exam-select" onchange={(e) => { const id = Number(e.currentTarget.value); if (id) void onAddHeldToExam(id); e.currentTarget.value = ""; }} disabled={$fakeExamBusy}>
+              <select id="exam-select" onchange={(e) => { const id = Number(e.currentTarget.value); if (id) void addHeldQuestionsToExam(id); e.currentTarget.value = ""; }} disabled={$fakeExamBusy}>
                 <option value="">Select an exam…</option>
                 {#each $fakeExams as exam (exam.id)}
                   <option value={exam.id}>{exam.title || "Untitled exam"}</option>
@@ -103,14 +98,14 @@
           {/if}
         </div>
       </div>
+    {:else}
+      <form class="create-row" onsubmit={(e) => { e.preventDefault(); void onCreate(); }}>
+        <input type="text" bind:value={newTitle} placeholder="New exam title…" />
+        <button class="create-btn" type="submit" disabled={$fakeExamBusy}>
+          <Plus size={15} strokeWidth={1.9} /> Create
+        </button>
+      </form>
     {/if}
-
-    <form class="create-row" onsubmit={(e) => { e.preventDefault(); void onCreate(); }}>
-      <input type="text" bind:value={newTitle} placeholder="New exam title…" />
-      <button class="create-btn" type="submit" disabled={$fakeExamBusy || $heldQuestionIds.size > 0}>
-        <Plus size={15} strokeWidth={1.9} /> Create
-      </button>
-    </form>
 
     {#if $fakeExams.length === 0}
       <EmptyState icon={ClipboardList} title="No fake exams yet"

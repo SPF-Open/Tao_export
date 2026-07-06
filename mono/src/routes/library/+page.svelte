@@ -122,7 +122,7 @@
 </SidebarLayout>
 
 <QueryModal bind:open={queryOpen} />
-<AiPromptModal bind:open={aiPromptOpen} on:openQueryConsole={() => (queryOpen = true)} />
+<AiPromptModal bind:open={aiPromptOpen} onOpenQueryConsole={() => (queryOpen = true)} />
 
 <style>
 

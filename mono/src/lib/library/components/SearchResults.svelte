@@ -52,14 +52,14 @@
         <span>{response.total} result{response.total === 1 ? "" : "s"}</span>
         <span class="time"><Timer size={13} strokeWidth={2} /> {response.durationMs.toFixed(1)} ms</span>
       </div>
-      <div class="view-switcher">
-        <button type="button" class="view-btn" class:active={viewMode === "list"} onclick={() => (viewMode = "list")} title="List view" aria-label="List view">
+      <div class="view-switcher" role="group" aria-label="Result layout">
+        <button type="button" class="view-btn" class:active={viewMode === "list"} aria-pressed={viewMode === "list"} onclick={() => (viewMode = "list")} title="List view" aria-label="List view">
           <List size={16} strokeWidth={1.75} />
         </button>
-        <button type="button" class="view-btn" class:active={viewMode === "table"} onclick={() => (viewMode = "table")} title="Table view" aria-label="Table view">
+        <button type="button" class="view-btn" class:active={viewMode === "table"} aria-pressed={viewMode === "table"} onclick={() => (viewMode = "table")} title="Table view" aria-label="Table view">
           <LayoutList size={16} strokeWidth={1.75} />
         </button>
-        <button type="button" class="view-btn" class:active={viewMode === "card"} onclick={() => (viewMode = "card")} title="Card view" aria-label="Card view">
+        <button type="button" class="view-btn" class:active={viewMode === "card"} aria-pressed={viewMode === "card"} onclick={() => (viewMode = "card")} title="Card view" aria-label="Card view">
           <Grid2x2 size={16} strokeWidth={1.75} />
         </button>
       </div>
@@ -118,6 +118,7 @@
                   </td>
                   <td>{typeLabels[r.type] ?? r.type}</td>
                   <td>{r.testTitle}</td>
+                  <!-- eslint-disable-next-line svelte/no-at-html-tags -->
                   <td class="table-snippet">{@html sanitizeSnippet(r.snippet)}</td>
                   <td class="table-actions">
                     <button type="button" class="hold-btn" class:held onclick={() => toggleHeldQuestion(r.id)} aria-label={held ? "Remove from memory" : "Hold in memory"} title={held ? "Remove from memory" : "Hold in memory for quick add"}>
@@ -146,11 +147,11 @@
                 <span class="card-test">{r.testTitle}</span>
               </button>
               <div class="card-actions">
-                <button type="button" class="action-btn hold-btn" class:held onclick={() => toggleHeldQuestion(r.id)} aria-label={held ? "Remove from memory" : "Hold in memory"} title={held ? "Remove from memory" : "Hold in memory for quick add"}>
+                <button type="button" class="hold-btn" class:held onclick={() => toggleHeldQuestion(r.id)} aria-label={held ? "Remove from memory" : "Hold in memory"} title={held ? "Remove from memory" : "Hold in memory for quick add"}>
                   <Bookmark size={14} strokeWidth={held ? 2 : 1.5} />
                 </button>
                 {#if onAdd}
-                  <button type="button" class="action-btn add-btn" class:added disabled={added} onclick={() => onAdd?.(r.id)} aria-label={added ? "Already in exam" : "Add to exam"} title={added ? "Already in exam" : "Add to exam"}>
+                  <button type="button" class="add-btn" class:added disabled={added} onclick={() => onAdd?.(r.id)} aria-label={added ? "Already in exam" : "Add to exam"} title={added ? "Already in exam" : "Add to exam"}>
                     {#if added}<Check size={14} strokeWidth={2} />{:else}<Plus size={14} strokeWidth={2} />{/if}
                   </button>
                 {/if}
@@ -212,7 +213,8 @@
   .r-type { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); white-space: nowrap; }
   .r-test { font-size: 0.78rem; color: var(--text-muted); }
   .r-snippet { font-size: 0.85rem; color: var(--text-muted); line-height: 1.4; }
-  .r-snippet :global(mark) { background: rgba(var(--brand-rgb), 0.22); color: var(--text); border-radius: 2px; padding: 0 1px; }
+  .r-snippet :global(mark),
+  .table-snippet :global(mark) { background: rgba(var(--brand-rgb), 0.22); color: var(--text); border-radius: 2px; padding: 0 1px; }
 
   /* TABLE VIEW */
   .results-table-wrapper {
@@ -247,7 +249,7 @@
   }
 
   .result-row-table:nth-child(odd) {
-    background: rgba(var(--border-rgb), 0.04);
+    background: color-mix(in srgb, var(--border) 22%, transparent);
   }
 
   .result-row-table:hover {
@@ -281,6 +283,9 @@
     align-items: center;
   }
 
+  .table-actions .hold-btn,
+  .table-actions .add-btn { width: 30px; height: 30px; border-radius: var(--radius); }
+
   .results-table td:last-child {
     white-space: nowrap;
   }
@@ -295,15 +300,11 @@
   .card-type { font-size: 0.7rem; text-transform: uppercase; letter-spacing: 0.04em; color: var(--text-muted); }
   .card-title { font-weight: 600; color: var(--text); line-height: 1.3; }
   .card-test { font-size: 0.78rem; color: var(--text-muted); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-  .card-actions { display: flex; gap: 0.4rem; padding: 0.6rem; border-top: 1px solid var(--border); background: rgba(var(--border-rgb), 0.5); }
-  .action-btn { flex: 1; display: inline-flex; align-items: center; justify-content: center; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface-elevated); color: var(--text-muted); cursor: pointer; transition: border-color 150ms ease, color 150ms ease, background 150ms ease; padding: 0.4rem; }
-  .action-btn:hover:not(:disabled) { border-color: rgba(var(--brand-rgb), 0.5); color: var(--brand); background: rgba(var(--brand-rgb), 0.06); }
-  .action-btn:focus-visible { outline: none; box-shadow: 0 0 0 2px var(--surface-elevated), 0 0 0 4px rgba(var(--brand-rgb), 0.3); }
-  .action-btn.held { color: var(--brand); border-color: var(--brand); background: rgba(var(--brand-rgb), 0.1); }
-  .action-btn.added { color: var(--success); border-color: var(--success); cursor: default; }
-  .action-btn:disabled { opacity: 0.7; }
+  .card-actions { display: flex; gap: 0.4rem; padding: 0.6rem; border-top: 1px solid var(--border); background: var(--surface); }
+  .card-actions .hold-btn,
+  .card-actions .add-btn { flex: 1; width: auto; padding: 0.4rem; border-radius: var(--radius); }
 
-  /* SHARED BUTTON STYLES */
+  /* SHARED BUTTON STYLES (list, table and card actions) */
   .hold-btn {
     flex-shrink: 0; display: inline-flex; align-items: center; justify-content: center;
     width: 36px; border: 1px solid var(--border); border-radius: var(--radius-lg);

@@ -19,7 +19,7 @@ export const fakeExams = writable<LibraryFakeExamSummary[]>([]);
 export const activeFakeExam = writable<LibraryFakeExam | null>(null);
 /** Whether a fake-exam operation is in flight. */
 export const fakeExamBusy = writable<boolean>(false);
-/** Question IDs currently held in memory for quick adding to exams. */
+/** Question IDs held from search results, waiting to be added to an exam. */
 export const heldQuestionIds = writable<Set<number>>(new Set());
 
 async function run<T>(fn: () => Promise<T>): Promise<T | null> {
@@ -34,19 +34,13 @@ async function run<T>(fn: () => Promise<T>): Promise<T | null> {
 	}
 }
 
-/* ------------------------------------------------------------------ */
-/* Held questions (temporary memory for quick exam building)            */
-/* ------------------------------------------------------------------ */
-
+/** Adds or removes a question from the held set. */
 export function toggleHeldQuestion(id: number): void {
 	heldQuestionIds.update((ids) => {
-		const newIds = new Set(ids);
-		if (newIds.has(id)) {
-			newIds.delete(id);
-		} else {
-			newIds.add(id);
-		}
-		return newIds;
+		const next = new Set(ids);
+		if (next.has(id)) next.delete(id);
+		else next.add(id);
+		return next;
 	});
 }
 
@@ -54,6 +48,7 @@ export function clearHeldQuestions(): void {
 	heldQuestionIds.set(new Set());
 }
 
+/** Adds every held question to the given exam, then clears the held set. */
 export async function addHeldQuestionsToExam(examId: number): Promise<void> {
 	const ids = Array.from(get(heldQuestionIds));
 	if (ids.length === 0) return;
@@ -61,16 +56,10 @@ export async function addHeldQuestionsToExam(examId: number): Promise<void> {
 	clearHeldQuestions();
 }
 
+/** Creates a new exam seeded with the held questions, then clears the held set. */
 export async function createExamWithHeldQuestions(title: string, language = ''): Promise<LibraryFakeExam | null> {
 	const exam = await createFakeExam(title, language);
-	if (!exam) return null;
-	
-	const ids = Array.from(get(heldQuestionIds));
-	if (ids.length > 0) {
-		await addQuestionsToActiveExam(exam.id, ids);
-		clearHeldQuestions();
-	}
-	
+	if (exam) await addHeldQuestionsToExam(exam.id);
 	return exam;
 }
 

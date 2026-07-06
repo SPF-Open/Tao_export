@@ -1,5 +1,13 @@
 ## Changelog
 
+### 2.12.0
+- Feat : Library search results can now be viewed as a list, a table or cards
+  - The layout switcher sits next to the result count; matched terms stay highlighted in every view
+- Feat : Hold questions in memory from the search results and turn them into an exam in one step
+  - The bookmark button on each result holds it; the Exams tab then offers "Create & Add" or adding the held questions to an existing exam
+- Feat : "Ask AI to write SQL" in the Library sidebar generates a ready-to-paste prompt (including the full database schema) for ChatGPT, Gemini, Claude or any other assistant
+  - The resulting SQL runs in the existing read-only SQL query console
+
 ### 2.11.8
 - Improve : The IAT page now shows a guiding empty state before a workbook is loaded, instead of a blank area
 
