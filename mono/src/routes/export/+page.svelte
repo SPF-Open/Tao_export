@@ -107,7 +107,7 @@
                   </div>
                 </div>
               {/if}
-              {#each $assessments[$compareExamIndex1]?.sections.flatMap(s => s.items) ?? [] as item (item.id)}
+              {#each $assessments[$compareExamIndex1]?.sections.flatMap(s => s.items) ?? [] as item, i (item.id + '-' + i)}
                 {@const show = itemVisible(item.id, item.type)}
                 <Question {item} {show} onToggleShow={(s) => toggleItemShow(item.id, s)} />
               {/each}
@@ -126,7 +126,7 @@
                   </div>
                 </div>
               {/if}
-              {#each $assessments[$compareExamIndex2]?.sections.flatMap(s => s.items) ?? [] as item (item.id)}
+              {#each $assessments[$compareExamIndex2]?.sections.flatMap(s => s.items) ?? [] as item, i (item.id + '-' + i)}
                 {@const show = itemVisible(item.id, item.type)}
                 <Question {item} {show} onToggleShow={(s) => toggleItemShow(item.id, s)} />
               {/each}
@@ -180,7 +180,7 @@
                 />
               </div>
             {/if}
-            {#each $activeItems as item (item.id)}
+            {#each $activeItems as item, i (item.id + '-' + i)}
               {@const show = itemVisible(item.id, item.type)}
               <Question {item} {show} onToggleShow={(s) => toggleItemShow(item.id, s)} />
             {/each}
