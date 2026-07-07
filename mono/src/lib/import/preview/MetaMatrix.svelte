@@ -40,7 +40,7 @@
       {/each}
     </div>
     <div class="grid-body">
-      {#each items as item, i (item.id)}
+      {#each items as item, i (item.id + '-' + i)}
         <div class="grid-row" role="row">
           <span class="cell-q" role="cell" title={item.title}>{item.title || `#${i + 1}`}</span>
           {#each model.dimensions as dim (dim.key)}

@@ -140,7 +140,7 @@
           </div>
         {/if}
 
-        {#each renderItems as item (item.id)}
+        {#each renderItems as item, i (item.id + '-' + i)}
           {@const show = itemVisibility.get(item.id) !== false}
           <div class="question-block">
             <QuestionPreview

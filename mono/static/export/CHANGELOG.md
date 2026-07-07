@@ -1,5 +1,9 @@
 ## Changelog
 
+### 2.12.1
+- Fix : Importing/exporting a TAO zip whose test references the same item more than once no longer crashes with a Svelte `each_key_duplicate` error
+  - The question lists in Export, Import and the metadata matrix now key each rendered item by id **and** position, so repeated items render instead of throwing
+
 ### 2.12.0
 - Feat : Library search results can now be viewed as a list, a table or cards
   - The layout switcher sits next to the result count; matched terms stay highlighted in every view
