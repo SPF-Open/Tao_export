@@ -96,6 +96,7 @@
 		"/import": "import",
 		"/forge": "forge",
 		"/format": "format",
+		"/editor": "editor",
 		"/library": "library",
 		"/iat": "iat",
 		"/audit": "audit",

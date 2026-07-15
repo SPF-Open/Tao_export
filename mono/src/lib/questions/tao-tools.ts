@@ -43,3 +43,17 @@ export function mergeTools(a: TaoTools, b: TaoTools): TaoTools {
 	}
 	return result;
 }
+
+const TOOL_TO_CATEGORY: Record<string, string> = Object.fromEntries(
+	Object.entries(CATEGORY_TO_TOOL).map(([category, tool]) => [tool, category])
+);
+
+/** Inverse of {@link parseCategory} — rebuild an `assessmentItemRef/@category` token string. */
+export function stringifyCategory(tools: TaoTools, informational: boolean): string {
+	const tokens: string[] = [];
+	for (const key of Object.keys(TOOL_LABELS)) {
+		if (tools[key]) tokens.push(TOOL_TO_CATEGORY[key]);
+	}
+	if (informational) tokens.push('x-tao-itemusage-informational');
+	return tokens.join(' ');
+}

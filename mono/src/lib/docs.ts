@@ -3,6 +3,7 @@ import {
   Hammer,
   Download,
   Bold,
+  FilePenLine,
   ClipboardCheck,
   Library,
   ScanSearch,
@@ -43,6 +44,13 @@ export const docs: DocEntry[] = [
     eyebrow: 'Bold prompts',
     description: 'Upload a TAO QTI export and get the same ZIP back with every question prompt wrapped in bold, ready to re-import.',
     icon: Bold,
+  },
+  {
+    slug: 'editor',
+    title: 'Editor',
+    eyebrow: 'Full QTI editor',
+    description: 'Open a TAO QTI export and edit every question in full: prompt, answers, character limits and metadata — in a simple form or raw XML — then export a ZIP ready to re-import.',
+    icon: FilePenLine,
   },
   {
     slug: 'export',

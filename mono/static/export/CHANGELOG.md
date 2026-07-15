@@ -1,5 +1,11 @@
 ## Changelog
 
+### 2.13.0
+- Feat : New tool — Editor, a full QTI question editor
+  - Open a TAO QTI export and edit the prompt, answer choices and correct answer(s), per-choice score, character limit on open questions, and metadata (title/label/language, TAO test options, LOM/manifest metadata) for every question
+  - Simple mode offers a friendly form for every field; Raw XML mode edits the underlying XML directly (per question, and per test.xml/imsmanifest.xml section when present), with the two views always in sync
+  - Export rebuilds the ZIP with only the edited bytes changed, so the package stays importable into TAO
+
 ### 2.12.1
 - Fix : Importing/exporting a TAO zip whose test references the same item more than once no longer crashes with a Svelte `each_key_duplicate` error
   - The question lists in Export, Import and the metadata matrix now key each rendered item by id **and** position, so repeated items render instead of throwing
