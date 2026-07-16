@@ -1,5 +1,10 @@
 ## Changelog
 
+### 2.13.1
+- Fix : Importing an Excel question file no longer leaves the last question without a correct answer
+  - Affected the Import tool and the Audit tool's "compare against Excel source" side, since both share the same Excel parser
+  - Only templates with no dedicated "correct answer" column were affected (the default template); templates with an explicit correct-answer column were never affected
+
 ### 2.13.0
 - Feat : New tool — Editor, a full QTI question editor
   - Open a TAO QTI export and edit the prompt, answer choices and correct answer(s), per-choice score, character limit on open questions, and metadata (title/label/language, TAO test options, LOM/manifest metadata) for every question
