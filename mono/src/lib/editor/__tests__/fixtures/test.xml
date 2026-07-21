@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assessmentTest xmlns="http://www.imsglobal.org/xsd/imsqti_v2p2" identifier="test-1" title="Test Editor" toolName="TAO" toolVersion="2024.11 LTS">
+  <testPart identifier="testPart-1" navigationMode="linear" submissionMode="individual">
+    <assessmentSection identifier="section-1" title="Section 1" visible="true">
+      <assessmentItemRef identifier="ref-choice-1" href="../../items/item-choice-1/qti.xml" category="x-tao-option-zoom x-tao-option-calculator"/>
+      <assessmentItemRef identifier="ref-text-1" href="../../items/item-text-1/qti.xml" category=""/>
+    </assessmentSection>
+  </testPart>
+</assessmentTest>

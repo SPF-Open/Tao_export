@@ -6,6 +6,7 @@ const routes: { path: string; heading: RegExp }[] = [
 	{ path: '/import', heading: /import a question file/i },
 	{ path: '/export', heading: /import a tao export/i },
 	{ path: '/format', heading: /format/i },
+	{ path: '/editor', heading: /editor/i },
 	{ path: '/audit', heading: /audit/i },
 	{ path: '/library', heading: /database|library/i },
 	{ path: '/iat', heading: /iat|item analysis/i },

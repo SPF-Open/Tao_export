@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<manifest identifier="MANIFEST-test-1" xmlns="http://www.imsglobal.org/xsd/imscp_v1p1" xmlns:imsmd="http://ltsc.ieee.org/xsd/LOM" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance">
+  <metadata>
+    <schema>QTIv2.2 Package</schema>
+    <schemaversion>1.0.0</schemaversion>
+  </metadata>
+  <organizations/>
+  <resources>
+    <resource identifier="res-choice-1" type="imsqti_item_xmlv2p2" href="items/item-choice-1/qti.xml">
+      <metadata>
+        <imsmd:lom>
+          <imsmd:classification>
+            <imsmd:taxonPath>
+              <imsmd:source><imsmd:string xml:lang="fr-FR">competency</imsmd:string></imsmd:source>
+              <imsmd:taxon><imsmd:entry><imsmd:string xml:lang="fr-FR">C12</imsmd:string></imsmd:entry></imsmd:taxon>
+            </imsmd:taxonPath>
+          </imsmd:classification>
+        </imsmd:lom>
+      </metadata>
+      <file href="items/item-choice-1/qti.xml"/>
+    </resource>
+    <resource identifier="res-text-1" type="imsqti_item_xmlv2p2" href="items/item-text-1/qti.xml">
+      <file href="items/item-text-1/qti.xml"/>
+    </resource>
+  </resources>
+</manifest>

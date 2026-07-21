@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<assessmentItem xmlns="http://www.imsglobal.org/xsd/imsqti_v2p2" xmlns:m="http://www.w3.org/1998/Math/MathML" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.imsglobal.org/xsd/imsqti_v2p2 http://www.imsglobal.org/xsd/qti/qtiv2p2/imsqti_v2p2.xsd" identifier="item-text-1" title="Question ouverte" label="Question ouverte" xml:lang="fr-FR" adaptive="false" timeDependent="false" toolName="TAO" toolVersion="2024.11 LTS">
+  <responseDeclaration identifier="RESPONSE" cardinality="single" baseType="string">
+    <correctResponse>
+      <value></value>
+    </correctResponse>
+  </responseDeclaration>
+  <outcomeDeclaration identifier="SCORE" cardinality="single" baseType="float" normalMaximum="3"/>
+  <itemBody>
+    <div class="grid-row">
+      <div class="col-12">
+        <extendedTextInteraction responseIdentifier="RESPONSE" expectedLength="500" patternMask=".{0,500}">
+          <prompt>Expliquez le fonctionnement de la TVA intracommunautaire.</prompt>
+        </extendedTextInteraction>
+      </div>
+    </div>
+  </itemBody>
+  <responseProcessing/>
+</assessmentItem>

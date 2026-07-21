@@ -126,6 +126,13 @@ export class Question {
       }
       currentRow++;
     }
+
+    // The sheet's last question never sees a "next" header row to trigger
+    // the same default-correct marking above, so apply it once more here.
+    if (currentQuestion && !column.correct) {
+      currentQuestion.answers[0].correct = true;
+    }
+
     return questions;
   }
 }
